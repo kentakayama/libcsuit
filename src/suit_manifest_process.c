@@ -1015,6 +1015,12 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted) {
         case SUIT_REFERENCE_URI:
             result = SUIT_ERR_NOT_IMPLEMENTED;
             break;
+        case SUIT_MANIFEST_COMPONENT_ID:
+            result = suit_decode_component_identifiers_from_item(
+                SUIT_DECODE_MODE_STRICT,
+                &context, &item, true,
+                &extracted->manifest_component_id);
+            break;
         case SUIT_VALIDATE:
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->validate);

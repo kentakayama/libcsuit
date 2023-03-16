@@ -106,7 +106,7 @@ typedef struct suit_store_args {
     /**
         Pointer to source memory object in the caller.
      */
-    void *ptr;
+    const void *ptr;
     size_t buf_len;
 
     suit_rep_policy_t report;
@@ -237,6 +237,7 @@ typedef struct suit_inputs {
 
 typedef struct suit_extracted {
     suit_dependencies_t dependencies;
+    suit_component_identifier_t manifest_component_id;
     suit_components_t components;
     suit_payloads_t payloads;
 
