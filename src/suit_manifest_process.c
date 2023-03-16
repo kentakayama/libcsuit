@@ -622,6 +622,9 @@ error:
 
 suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                                         suit_parameter_args_t parameters[]) {
+    if (extracted->shared_sequence.len == 0) {
+        return SUIT_SUCCESS;
+    }
     suit_err_t result = SUIT_SUCCESS;
     QCBORDecodeContext context;
     QCBORItem item;
@@ -1254,6 +1257,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs) {
     QCBORDecode_ExitMap(&context);
     error = QCBORDecode_Finish(&context);
     if (error != QCBOR_SUCCESS) {
+        result = SUIT_ERR_NOT_A_SUIT_MANIFEST;
         goto out;
     }
 
