@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
 
     // Process manifest file.
     printf("\nmain : Process Manifest file.\n");
-    //suit_inputs.all = 0;
+    suit_inputs.all = 0;
     suit_inputs.install = 1;
     suit_inputs.invoke = 1;
     result = suit_process_envelope(&suit_inputs);
