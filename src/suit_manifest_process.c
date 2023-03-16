@@ -134,12 +134,22 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                 }
             }
             break;
+        case SUIT_PARAMETER_INVOKE_ARGS:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < index.len; j++) {
+                uint8_t tmp_index = index.index[j].val + (index.is_dependency) * SUIT_MAX_COMPONENT_NUM;
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
+                    parameters[tmp_index].invoke_args = val.str;
+                }
+            }
+
+            break;
         case SUIT_PARAMETER_USE_BEFORE:
 
         case SUIT_PARAMETER_STRICT_ORDER:
 
         case SUIT_PARAMETER_ENCRYPTION_INFO:
-        case SUIT_PARAMETER_INVOKE_ARGS:
 
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
         case SUIT_PARAMETER_MINIMUM_BATTERY:
@@ -612,6 +622,9 @@ error:
 
 suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                                         suit_parameter_args_t parameters[]) {
+    if (extracted->shared_sequence.len == 0) {
+        return SUIT_SUCCESS;
+    }
     suit_err_t result = SUIT_SUCCESS;
     QCBORDecodeContext context;
     QCBORItem item;
@@ -1015,6 +1028,12 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted) {
         case SUIT_REFERENCE_URI:
             result = SUIT_ERR_NOT_IMPLEMENTED;
             break;
+        case SUIT_MANIFEST_COMPONENT_ID:
+            result = suit_decode_component_identifiers_from_item(
+                SUIT_DECODE_MODE_STRICT,
+                &context, &item, true,
+                &extracted->manifest_component_id);
+            break;
         case SUIT_VALIDATE:
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->validate);
@@ -1238,6 +1257,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs) {
     QCBORDecode_ExitMap(&context);
     error = QCBORDecode_Finish(&context);
     if (error != QCBOR_SUCCESS) {
+        result = SUIT_ERR_NOT_A_SUIT_MANIFEST;
         goto out;
     }
 
@@ -1245,41 +1265,64 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs) {
 
     /* TODO: check digests */
 
+    if (extracted.manifest_component_id.len > 0) {
+        suit_store_args_t store = {0};
+        store.report.val = 0;
+        store.dst_component_identifier = extracted.manifest_component_id;
+        store.ptr = suit_inputs->manifest.ptr;
+        store.buf_len = suit_inputs->manifest.len;
+        result = suit_store_callback(store);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
+    }
 
     /* dependency-resolution */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_DEPENDENCY_RESOLUTION, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->dependency_resolution) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_DEPENDENCY_RESOLUTION, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* payload-fetch */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_PAYLOAD_FETCH, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->payload_fetch) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_PAYLOAD_FETCH, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* install */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->install) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* validate */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->validate) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* load */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->load) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* invoke */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->invoke) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
 out:

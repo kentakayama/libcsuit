@@ -30,7 +30,7 @@
 #define SUIT_PARAMETER_CONTAINS_UNPACK_INFO BIT(SUIT_PARAMETER_UNPACK_INFO)
 #define SUIT_PARAMETER_CONTAINS_URI BIT(SUIT_PARAMETER_URI)
 #define SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT BIT(SUIT_PARAMETER_SOURCE_COMPONENT)
-#define SUIT_PARAMETER_CONTAINS_RUN_ARGS BIT(SUIT_PARAMETER_RUN_ARGS)
+#define SUIT_PARAMETER_CONTAINS_INVOKE_ARGS BIT(SUIT_PARAMETER_INVOKE_ARGS)
 #define SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER BIT(SUIT_PARAMETER_DEVICE_IDENTIFIER)
 #define SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY BIT(SUIT_PARAMETER_MINIMUM_BATTERY)
 #define SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY BIT(SUIT_PARAMETER_UPDATE_PRIORITY)
@@ -106,7 +106,7 @@ typedef struct suit_store_args {
     /**
         Pointer to source memory object in the caller.
      */
-    void *ptr;
+    const void *ptr;
     size_t buf_len;
 
     suit_rep_policy_t report;
@@ -226,6 +226,9 @@ typedef struct suit_common_args {
     } signatures;
 } suit_common_args_t;
 
+
+typedef uint16_t suit_process_flag_t;
+
 typedef struct suit_inputs {
     UsefulBufC manifest;
     uint8_t *ptr;
@@ -233,10 +236,37 @@ typedef struct suit_inputs {
     size_t left_len;
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+
+/*
+    int dependency_resolution;
+    int payload_fetch;
+    int install;
+    int validate;
+    int load;
+    int invoke;
+*/
+    union {
+        suit_process_flag_t all;
+        struct {
+            suit_process_flag_t reference_uri          : 1;
+            suit_process_flag_t dependency_resolution  : 1;
+            suit_process_flag_t payload_fetch          : 1;
+            suit_process_flag_t install                : 1;
+            suit_process_flag_t uninstall              : 1;
+
+            suit_process_flag_t validate               : 1;
+            suit_process_flag_t load                   : 1;
+            suit_process_flag_t invoke                 : 1;
+
+            suit_process_flag_t text                   : 1;
+            suit_process_flag_t coswid                 : 1;
+        };
+    };
 } suit_inputs_t;
 
 typedef struct suit_extracted {
     suit_dependencies_t dependencies;
+    suit_component_identifier_t manifest_component_id;
     suit_components_t components;
     suit_payloads_t payloads;
 
