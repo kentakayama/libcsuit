@@ -20,7 +20,7 @@
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/q_useful_buf.h"
 
-#define MAX_FILE_BUFFER_SIZE            2048
+#define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
 
 #define NUM_PUBLIC_KEYS                 1
 /* TC signer's public_key */
@@ -153,6 +153,11 @@ int main(int argc, char *argv[]) {
     int32_t result = 0;
     int i;
 
+    uint8_t *manifest_buf = malloc(MAX_FILE_BUFFER_SIZE);
+    if (manifest_buf == NULL) {
+        printf("main : Failed to allocate memory for manifest_buf.\n");
+        return EXIT_FAILURE;
+    }
     suit_inputs_t suit_inputs = {0};
     suit_inputs.left_len = SUIT_MAX_DATA_SIZE;
     suit_inputs.ptr = suit_inputs.buf;
@@ -172,19 +177,21 @@ int main(int argc, char *argv[]) {
     }
     // Read manifest file.
     printf("\nmain : Read Manifest file.\n");
-    suit_inputs.manifest.len = read_from_file(argv[1], MAX_FILE_BUFFER_SIZE, suit_inputs.buf);
+    suit_inputs.manifest.ptr = manifest_buf;
+    suit_inputs.manifest.len = read_from_file(argv[1], MAX_FILE_BUFFER_SIZE, manifest_buf);
     if (suit_inputs.manifest.len <= 0) {
         printf("main : Failed to read Manifest file.\n");
         return EXIT_FAILURE;
     }
-    suit_inputs.manifest.ptr = suit_inputs.buf;
-    suit_inputs.left_len -= suit_inputs.manifest.len;
 
-    // Decode manifest file.
-    printf("\nmain : Decode Manifest file.\n");
+    // Process manifest file.
+    printf("\nmain : Process Manifest file.\n");
+    //suit_inputs.all = 0;
+    suit_inputs.install = 1;
+    suit_inputs.invoke = 1;
     result = suit_process_envelope(&suit_inputs);
     if (result != SUIT_SUCCESS) {
-        printf("main : Failed to parse Manifest file. %s(%d)\n", suit_err_to_str(result), result);
+        printf("main : Failed to install and invoke a Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
 

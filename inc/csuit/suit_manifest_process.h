@@ -226,6 +226,9 @@ typedef struct suit_common_args {
     } signatures;
 } suit_common_args_t;
 
+
+typedef uint16_t suit_process_flag_t;
+
 typedef struct suit_inputs {
     UsefulBufC manifest;
     uint8_t *ptr;
@@ -233,6 +236,32 @@ typedef struct suit_inputs {
     size_t left_len;
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+
+/*
+    int dependency_resolution;
+    int payload_fetch;
+    int install;
+    int validate;
+    int load;
+    int invoke;
+*/
+    union {
+        suit_process_flag_t all;
+        struct {
+            suit_process_flag_t reference_uri          : 1;
+            suit_process_flag_t dependency_resolution  : 1;
+            suit_process_flag_t payload_fetch          : 1;
+            suit_process_flag_t install                : 1;
+            suit_process_flag_t uninstall              : 1;
+
+            suit_process_flag_t validate               : 1;
+            suit_process_flag_t load                   : 1;
+            suit_process_flag_t invoke                 : 1;
+
+            suit_process_flag_t text                   : 1;
+            suit_process_flag_t coswid                 : 1;
+        };
+    };
 } suit_inputs_t;
 
 typedef struct suit_extracted {

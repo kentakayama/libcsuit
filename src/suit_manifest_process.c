@@ -1265,41 +1265,64 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs) {
 
     /* TODO: check digests */
 
+    if (extracted.manifest_component_id.len > 0) {
+        suit_store_args_t store = {0};
+        store.report.val = 0;
+        store.dst_component_identifier = extracted.manifest_component_id;
+        store.ptr = suit_inputs->manifest.ptr;
+        store.buf_len = suit_inputs->manifest.len;
+        result = suit_store_callback(store);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
+    }
 
     /* dependency-resolution */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_DEPENDENCY_RESOLUTION, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->dependency_resolution) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_DEPENDENCY_RESOLUTION, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* payload-fetch */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_PAYLOAD_FETCH, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->payload_fetch) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_PAYLOAD_FETCH, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* install */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->install) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* validate */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->validate) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* load */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->load) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
     /* invoke */
-    result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        goto error;
+    if (suit_inputs->invoke) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
     }
 
 out:

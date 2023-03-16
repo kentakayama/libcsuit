@@ -58,7 +58,7 @@ typedef enum {
 #define SUIT_MAX_COMPONENT_NUM          3
 #define SUIT_MAX_DEPENDENCY_NUM         1
 #define SUIT_MAX_ARGS_LENGTH            64
-#define SUIT_MAX_DATA_SIZE              1024 * 128
+#define SUIT_MAX_DATA_SIZE              (128 * 1024)
 
 #define SUIT_ENVELOPE_CBOR_TAG               107
 
