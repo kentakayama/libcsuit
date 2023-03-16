@@ -134,12 +134,22 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                 }
             }
             break;
+        case SUIT_PARAMETER_INVOKE_ARGS:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < index.len; j++) {
+                uint8_t tmp_index = index.index[j].val + (index.is_dependency) * SUIT_MAX_COMPONENT_NUM;
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
+                    parameters[tmp_index].invoke_args = val.str;
+                }
+            }
+
+            break;
         case SUIT_PARAMETER_USE_BEFORE:
 
         case SUIT_PARAMETER_STRICT_ORDER:
 
         case SUIT_PARAMETER_ENCRYPTION_INFO:
-        case SUIT_PARAMETER_INVOKE_ARGS:
 
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
         case SUIT_PARAMETER_MINIMUM_BATTERY:
