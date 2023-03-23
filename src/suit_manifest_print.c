@@ -1130,7 +1130,10 @@ suit_err_t suit_print_manifest(uint8_t mode, const suit_manifest_t *manifest, co
 suit_err_t suit_print_integrated_payload(uint8_t mode, const suit_payloads_t *payloads, const uint32_t indent_space, const uint32_t indent_delta) {
     for (size_t i = 0; i < payloads->len; i++) {
         printf("%*s\"%.*s\" : ", indent_space, "", (int)payloads->payload[i].key.len, (char *)payloads->payload[i].key.ptr);
-        suit_print_hex(payloads->payload[i].bytes.ptr, payloads->payload[i].bytes.len);
+        suit_print_hex_in_max(payloads->payload[i].bytes.ptr, payloads->payload[i].bytes.len, SUIT_MAX_PRINT_BYTE_COUNT);
+        if (i + 1 < payloads->len) {
+            printf(",\n");
+        }
     }
     return SUIT_SUCCESS;
 }

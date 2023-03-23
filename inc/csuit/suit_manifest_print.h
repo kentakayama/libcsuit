@@ -18,7 +18,7 @@
 #include "suit_manifest_data.h"
 #include "suit_manifest_process.h"
 
-#define SUIT_MAX_PRINT_BYTE_COUNT        5
+#define SUIT_MAX_PRINT_BYTE_COUNT        64
 #define SUIT_MAX_PRINT_TEXT_COUNT        64
 #define SUIT_MAX_PRINT_URI_COUNT         64
 
