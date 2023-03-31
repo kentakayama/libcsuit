@@ -22,7 +22,8 @@
 suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                                const suit_con_dir_key_t directive,
                                suit_parameter_args_t *parameters,
-                               const suit_index_t index) {
+                               const suit_index_t index)
+{
     suit_err_t result = SUIT_SUCCESS;
     QCBORItem item;
     QCBORError error = QCBOR_SUCCESS;
@@ -190,7 +191,8 @@ error:
 }
 
 suit_payload_t* suit_index_to_payload(suit_extracted_t *extracted,
-                                      suit_index_t index) {
+                                      suit_index_t index)
+{
     if (index.len != 1) {
         return NULL;
     }
@@ -203,7 +205,8 @@ suit_payload_t* suit_index_to_payload(suit_extracted_t *extracted,
 }
 
 suit_payload_t* suit_key_to_payload(suit_extracted_t *extracted,
-                                    UsefulBufC key) {
+                                    UsefulBufC key)
+{
     for (size_t i = 0; i < extracted->payloads.len; i++) {
         if (extracted->payloads.payload[i].key.len != key.len) {
             continue;
@@ -220,7 +223,8 @@ suit_payload_t* suit_key_to_payload(suit_extracted_t *extracted,
 
 suit_err_t suit_process_dependency(suit_extracted_t *extracted,
                                    suit_index_t dependency_index,
-                                   const suit_inputs_t *suit_inputs) {
+                                   const suit_inputs_t *suit_inputs)
+{
     suit_payload_t *payload = suit_index_to_payload(extracted, dependency_index);
     if (payload == NULL) {
         return SUIT_ERR_NO_ARGUMENT;
@@ -232,7 +236,8 @@ suit_err_t suit_process_dependency(suit_extracted_t *extracted,
 
 suit_err_t suit_set_index(QCBORDecodeContext *context,
                           const suit_extracted_t *extracted,
-                          suit_index_t *index) {
+                          suit_index_t *index)
+{
     union {
         uint64_t u64;
         bool b;
@@ -291,7 +296,8 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                                              const suit_manifest_key_t command_key,
                                              UsefulBufC buf,
                                              suit_parameter_args_t parameters[],
-                                             suit_inputs_t *suit_inputs) {
+                                             suit_inputs_t *suit_inputs)
+{
     suit_err_t result = SUIT_SUCCESS;
     suit_index_t index = {.is_dependency = 0, .len = 1, .index[0].val = 0};
     suit_con_dir_key_t condition_directive_key = SUIT_CONDITION_INVALID;
@@ -621,7 +627,8 @@ error:
 }
 
 suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
-                                        suit_parameter_args_t parameters[]) {
+                                        suit_parameter_args_t parameters[])
+{
     if (extracted->shared_sequence.len == 0) {
         return SUIT_SUCCESS;
     }
@@ -805,7 +812,8 @@ error:
 
 suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
                                                     const suit_manifest_key_t command_key,
-                                                    suit_inputs_t *suit_inputs) {
+                                                    suit_inputs_t *suit_inputs)
+{
     suit_err_t result = SUIT_SUCCESS;
     suit_parameter_args_t parameters[SUIT_MAX_COMPONENT_NUM + SUIT_MAX_DEPENDENCY_NUM];
 
@@ -863,7 +871,9 @@ error:
     return result;
 }
 
-void suit_process_digest(QCBORDecodeContext *context, suit_digest_t *digest) {
+void suit_process_digest(QCBORDecodeContext *context,
+                         suit_digest_t *digest)
+{
     int64_t algorithm_id;
     UsefulBufC digest_bytes;
     QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
@@ -879,7 +889,8 @@ void suit_process_digest(QCBORDecodeContext *context, suit_digest_t *digest) {
 
 suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
                                                const suit_inputs_t *suit_inputs,
-                                               suit_digest_t *digest) {
+                                               suit_digest_t *digest)
+{
     QCBORItem item;
 
     /* authentication-wrapper */
@@ -906,7 +917,8 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
 }
 
 suit_err_t suit_extract_common(QCBORDecodeContext *context,
-                               suit_extracted_t *extracted) {
+                               suit_extracted_t *extracted)
+{
     QCBORItem item;
     QCBORError error = QCBOR_SUCCESS;
     suit_err_t result = SUIT_SUCCESS;
@@ -969,7 +981,8 @@ error:
 }
 
 
-suit_err_t suit_extract_manifest(suit_extracted_t *extracted) {
+suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
+{
     suit_err_t result = SUIT_SUCCESS;
     QCBORDecodeContext context;
     QCBORItem item;
@@ -1145,7 +1158,8 @@ error:
 /*
     Public function. See suit_manifest_process.h
  */
-suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs) {
+suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
+{
     QCBORDecodeContext context;
     QCBORError error = QCBOR_SUCCESS;
     QCBORItem item;
@@ -1296,6 +1310,14 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs) {
     /* install */
     if (suit_inputs->install) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
+        if (result != SUIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    /* uninstall */
+    if (suit_inputs->uninstall) {
+        result = suit_process_common_and_command_sequence(&extracted, SUIT_UNINSTALL, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
         }

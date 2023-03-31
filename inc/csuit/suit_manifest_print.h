@@ -22,13 +22,13 @@
 #define SUIT_MAX_PRINT_TEXT_COUNT        64
 #define SUIT_MAX_PRINT_URI_COUNT         64
 
-const char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
-const char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
-const char* suit_common_key_to_str(suit_common_key_t common_key);
-const char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive);
-const char* suit_parameter_key_to_str(suit_parameter_key_t parameter);
-const char* suit_info_key_to_str(const suit_info_key_t info_key);
-const char* suit_err_to_str(suit_err_t error);
+char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
+char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
+char* suit_common_key_to_str(suit_common_key_t common_key);
+char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive);
+char* suit_parameter_key_to_str(suit_parameter_key_t parameter);
+char* suit_info_key_to_str(const suit_info_key_t info_key);
+char* suit_err_to_str(suit_err_t error);
 
 suit_err_t suit_print_hex_in_max(const uint8_t *array, const size_t size, const size_t max_print_size);
 suit_err_t suit_print_hex(const uint8_t *array, size_t size);

@@ -7,7 +7,8 @@
 #include "csuit/suit_common.h"
 #include "csuit/suit_digest.h"
 
-suit_err_t suit_error_from_qcbor_error(QCBORError error) {
+suit_err_t suit_error_from_qcbor_error(QCBORError error)
+{
     switch (error) {
         case QCBOR_SUCCESS:
             return SUIT_SUCCESS;
@@ -20,7 +21,9 @@ suit_err_t suit_error_from_qcbor_error(QCBORError error) {
     }
 }
 
-bool suit_continue(uint8_t mode, suit_err_t result) {
+bool suit_continue(const uint8_t mode,
+                   suit_err_t result)
+{
     bool ret = false;
     switch (result) {
         case SUIT_SUCCESS:
@@ -48,7 +51,10 @@ bool suit_continue(uint8_t mode, suit_err_t result) {
     return true;
 }
 
-suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message, QCBORItem *item, uint8_t data_type) {
+suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message,
+                               QCBORItem *item,
+                               uint8_t data_type)
+{
     QCBORError error;
     error = QCBORDecode_GetNext(message, item);
     switch (error) {
@@ -68,7 +74,10 @@ suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message, QCBORItem *item, uin
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message, QCBORItem *item, uint8_t data_type) {
+suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message,
+                                QCBORItem *item,
+                                uint8_t data_type)
+{
     QCBORError error;
     error = QCBORDecode_PeekNext(message, item);
     switch (error) {
@@ -88,7 +97,11 @@ suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message, QCBORItem *item, ui
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_qcbor_get(QCBORDecodeContext *message, QCBORItem *item, bool next, uint8_t data_type) {
+suit_err_t suit_qcbor_get(QCBORDecodeContext *message,
+                          QCBORItem *item,
+                          bool next,
+                          uint8_t data_type)
+{
     if (next) {
         return suit_qcbor_get_next(message, item, data_type);
     }
@@ -98,7 +111,8 @@ suit_err_t suit_qcbor_get(QCBORDecodeContext *message, QCBORItem *item, bool nex
     return SUIT_SUCCESS;
 }
 
-bool suit_qcbor_value_is_uint64(QCBORItem *item) {
+bool suit_qcbor_value_is_uint64(QCBORItem *item)
+{
     if (item->uDataType == QCBOR_TYPE_INT64) {
         if (item->val.int64 < 0) {
             return false;
@@ -111,7 +125,8 @@ bool suit_qcbor_value_is_uint64(QCBORItem *item) {
     return true;
 }
 
-bool suit_qcbor_value_is_uint32(QCBORItem *item) {
+bool suit_qcbor_value_is_uint32(QCBORItem *item)
+{
     switch (item->uDataType) {
         case QCBOR_TYPE_INT64:
             if (item->val.int64 < 0 || item->val.int64 > UINT32_MAX) {
@@ -129,7 +144,9 @@ bool suit_qcbor_value_is_uint32(QCBORItem *item) {
     return true;
 }
 
-suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message, QCBORItem *item) {
+suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message,
+                                    QCBORItem *item)
+{
     suit_err_t result = suit_qcbor_get_next(message, item, QCBOR_TYPE_ANY);
     if (result != SUIT_SUCCESS) {
         return result;
@@ -139,7 +156,9 @@ suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message, QCBORItem *item
 
 bool suit_qcbor_skip_any(QCBORDecodeContext *message, QCBORItem *item);
 
-bool suit_qcbor_skip_array_and_map(QCBORDecodeContext *message, QCBORItem *item) {
+bool suit_qcbor_skip_array_and_map(QCBORDecodeContext *message,
+                                   QCBORItem *item)
+{
     if (item->uDataType != QCBOR_TYPE_ARRAY && item->uDataType != QCBOR_TYPE_MAP) {
         return false;
     }
@@ -156,7 +175,9 @@ bool suit_qcbor_skip_array_and_map(QCBORDecodeContext *message, QCBORItem *item)
     return true;
 }
 
-bool suit_qcbor_skip_any(QCBORDecodeContext *message, QCBORItem *item) {
+bool suit_qcbor_skip_any(QCBORDecodeContext *message,
+                         QCBORItem *item)
+{
     switch (item->uDataType) {
         case QCBOR_TYPE_ARRAY:
         case QCBOR_TYPE_MAP:
@@ -191,7 +212,8 @@ bool suit_qcbor_skip_any(QCBORDecodeContext *message, QCBORItem *item) {
     but with ARRAY, MAP, MAP_AS_ARRAY,
     the current cursor is tail of the type and length declaration.
  */
-size_t suit_qcbor_calc_rollback(QCBORItem *item) {
+size_t suit_qcbor_calc_rollback(QCBORItem *item)
+{
     uint8_t type = item->uDataType;
     if (item->uDataType == QCBOR_TYPE_INT64 && suit_qcbor_value_is_uint64(item)) {
         type = QCBOR_TYPE_UINT64;
@@ -260,7 +282,10 @@ size_t suit_qcbor_calc_rollback(QCBORItem *item) {
     return 0;
 }
 
-suit_err_t suit_verify_item(QCBORDecodeContext *context, QCBORItem *item, suit_digest_t *digest) {
+suit_err_t suit_verify_item(QCBORDecodeContext *context,
+                            QCBORItem *item,
+                            suit_digest_t *digest)
+{
     if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
         return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
     }
@@ -274,7 +299,10 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context, QCBORItem *item, suit_d
     return suit_verify_digest(&buf, digest);
 }
 
-suit_err_t suit_use_suit_encode_buf(suit_encode_t *suit_encode, size_t len, UsefulBuf *buf) {
+suit_err_t suit_use_suit_encode_buf(suit_encode_t *suit_encode,
+                                    size_t len,
+                                    UsefulBuf *buf)
+{
     if (suit_encode->pos != suit_encode->cur_pos) {
         /* need to "fix" it */
         return SUIT_ERR_NO_MEMORY;
@@ -290,7 +318,9 @@ suit_err_t suit_use_suit_encode_buf(suit_encode_t *suit_encode, size_t len, Usef
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_fix_suit_encode_buf(suit_encode_t *suit_encode, const size_t used_len) {
+suit_err_t suit_fix_suit_encode_buf(suit_encode_t *suit_encode,
+                                    const size_t used_len)
+{
     if (suit_encode->pos + used_len > suit_encode->max_pos) {
         return SUIT_ERR_NO_MEMORY;
     }

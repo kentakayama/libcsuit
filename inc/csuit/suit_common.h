@@ -51,14 +51,37 @@ typedef enum {
 /*! \brief through excepting fatal error */
 #define SUIT_DECODE_MODE_SKIP_ANY_ERROR       255
 
+#ifndef SUIT_MAX_ARRAY_LENGTH
 #define SUIT_MAX_ARRAY_LENGTH           20
+#endif
+
+#ifndef SUIT_MAX_KEY_NUM
 #define SUIT_MAX_KEY_NUM                4 /* must be <=64 */
+#endif
+
+#ifndef SUIT_MAX_NAME_LENGTH
 #define SUIT_MAX_NAME_LENGTH            256 /* the length of path or name such as component_identifier */
+#endif
+
+#ifndef SUIT_MAX_URI_LENGTH
 #define SUIT_MAX_URI_LENGTH             256 /* the length of uri to fetch something */
+#endif
+
+#ifndef SUIT_MAX_COMPONENT_NUM
 #define SUIT_MAX_COMPONENT_NUM          3
+#endif
+
+#ifndef SUIT_MAX_DEPENDENCY_NUM
 #define SUIT_MAX_DEPENDENCY_NUM         1
+#endif
+
+#ifndef SUIT_MAX_ARGS_LENGTH
 #define SUIT_MAX_ARGS_LENGTH            64
+#endif
+
+#ifndef SUIT_MAX_DATA_SIZE
 #define SUIT_MAX_DATA_SIZE              (128 * 1024)
+#endif
 
 #define SUIT_ENVELOPE_CBOR_TAG               107
 
@@ -103,7 +126,7 @@ typedef enum suit_manifest_key {
     SUIT_TEXT                           = 23,
 
     /* draft-ietf-suit-trust-domains */
-    SUIT_DEPENDENCY_RESOLUTION          = 15, // TODO: conflicted with SUIT_VALIDATE
+    SUIT_DEPENDENCY_RESOLUTION          = 15,
     SUIT_UNINSTALL                      = 24,
 
     /* draft-ietf-suit-update-management */
@@ -131,7 +154,6 @@ typedef enum suit_con_dir_key {
     SUIT_CONDITION_IMAGE_MATCH          = 3,
     SUIT_CONDITION_COMPONENT_SLOT       = 5,
     SUIT_CONDITION_CHECK_CONTENT        = 6,
-
     SUIT_CONDITION_ABORT                = 14,
     SUIT_CONDITION_DEVICE_IDENTIFIER    = 24,
 
@@ -142,13 +164,14 @@ typedef enum suit_con_dir_key {
     SUIT_DIRECTIVE_FETCH                = 21,
     SUIT_DIRECTIVE_COPY                 = 22,
     SUIT_DIRECTIVE_INVOKE               = 23,
-
     SUIT_DIRECTIVE_SWAP                 = 31,
     SUIT_DIRECTIVE_RUN_SEQUENCE         = 32,
 
     /* draft-ietf-suit-trust-domains */
-    SUIT_CONDITION_IS_DEPENDENCY        = 7,
-    SUIT_DIRECTIVE_PROCESS_DEPENDENCY   = 8,
+    SUIT_CONDITION_DEPENDENCY_INTEGRITY = 7,
+    SUIT_CONDITION_IS_DEPENDENCY        = 8,
+
+    SUIT_DIRECTIVE_PROCESS_DEPENDENCY   = 11,
     SUIT_DIRECTIVE_SET_PARAMETERS       = 19,
     SUIT_DIRECTIVE_UNLINK               = 33,
 
@@ -160,6 +183,8 @@ typedef enum suit_con_dir_key {
     SUIT_CONDITION_VERSION              = 28,
 
     SUIT_DIRECTIVE_WAIT                 = 29,
+    //SUIT_DIRECTIVE_OVERRIDE_MULTIPLE    = ?,
+    //SUIT_DIRECTIVE_COPY_PARAMS          = ?,
 
     /* deprecated, to be removed */
     //SUIT_DIRECTIVE_SET_DEPENDENCY_INDEX = 13,
@@ -233,6 +258,7 @@ typedef enum suit_condition_version_comparison_types {
     SUIT_CONDITION_VERSION_COMPARISON_LESSER        = 5,
 } suit_condition_version_comparison_types_t;
 
+/* TODO: needed? just UsefulBufC UsefulBuf_IsNULLC(enctyption_info) may work well */
 typedef enum suit_info_key {
     SUIT_INFO_DEFAULT               = 0,
     SUIT_INFO_ENCRYPTION            = 1,
@@ -342,6 +368,7 @@ typedef struct suit_parameters {
         suit_buf_t                  string;
         int64_t                     int64;
         uint64_t                    uint64;
+        bool                        boolean;
         bool                        isNull;
         suit_digest_t               digest;
     } value;

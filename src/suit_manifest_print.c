@@ -17,7 +17,8 @@
 #include "csuit/suit_manifest_print.h"
 
 
-const char* suit_err_to_str(suit_err_t error) {
+char* suit_err_to_str(suit_err_t error)
+{
     switch(error) {
     case SUIT_SUCCESS:
         return "SUIT_SUCCESS";
@@ -64,7 +65,8 @@ const char* suit_err_to_str(suit_err_t error) {
     }
 }
 
-const char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key) {
+char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key)
+{
     switch (envelope_key) {
     case SUIT_DELEGATION:
         return "delegation";
@@ -73,11 +75,12 @@ const char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key) {
     case SUIT_MANIFEST:
         return "manifest";
     default:
-        return "(NULL)";
+        return NULL;
     }
 }
 
-const char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key) {
+char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key)
+{
     switch (manifest_key) {
     case SUIT_MANIFEST_VERSION:
         return "manifest-version";
@@ -89,28 +92,31 @@ const char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key) {
         return "reference-uri";
     case SUIT_MANIFEST_COMPONENT_ID:
         return "manifest-component-id";
-    case SUIT_DEPENDENCY_RESOLUTION:
-        return "dependency-resolution";
-    case SUIT_PAYLOAD_FETCH:
-        return "payload-fetch";
-    case SUIT_INSTALL:
-        return "install";
     case SUIT_VALIDATE:
         return "validate";
     case SUIT_LOAD:
         return "load";
     case SUIT_INVOKE:
         return "invoke";
-    case SUIT_TEXT:
-        return "text";
     case SUIT_COSWID:
         return "coswid";
+    case SUIT_DEPENDENCY_RESOLUTION:
+        return "dependency-resolution";
+    case SUIT_PAYLOAD_FETCH:
+        return "payload-fetch";
+    case SUIT_INSTALL:
+        return "install";
+    case SUIT_TEXT:
+        return "text";
+    case SUIT_UNINSTALL:
+        return "uninstall";
     default:
-        return "(NULL)";
+        return NULL;
     }
 }
 
-const char* suit_common_key_to_str(suit_common_key_t common_key) {
+char* suit_common_key_to_str(suit_common_key_t common_key)
+{
     switch (common_key) {
     case SUIT_DEPENDENCIES:
         return "dependencies";
@@ -119,11 +125,12 @@ const char* suit_common_key_to_str(suit_common_key_t common_key) {
     case SUIT_SHARED_SEQUENCE:
         return "shared-sequence";
     default:
-        return "(NULL)";
+        return NULL;
     }
 }
 
-const char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive) {
+char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
+{
     switch (condition_directive) {
     case SUIT_CONDITION_VENDOR_IDENTIFIER:
         return "condition-vendor-identifier";
@@ -135,24 +142,14 @@ const char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_direct
         return "condition-use-before";
     case SUIT_CONDITION_COMPONENT_SLOT:
         return "condition-component-slot";
-    case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
-        return "directive-set-component-index";
+    case SUIT_CONDITION_CHECK_CONTENT:
+        return "condition-check-content";
+    case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        return "condition-dependency-integrity";
+    case SUIT_CONDITION_IS_DEPENDENCY:
+        return "condition-is-dependency";
     case SUIT_CONDITION_ABORT:
         return "condition-abort";
-    case SUIT_DIRECTIVE_TRY_EACH:
-        return "directive-try-each";
-    case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
-        return "directive-process-dependency";
-    case SUIT_DIRECTIVE_SET_PARAMETERS:
-        return "directive-set-parameters";
-    case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-        return "directive-override-parameters";
-    case SUIT_DIRECTIVE_FETCH:
-        return "directive-fetch";
-    case SUIT_DIRECTIVE_COPY:
-        return "directive-copy";
-    case SUIT_DIRECTIVE_INVOKE:
-        return "directive-invoke";
     case SUIT_CONDITION_DEVICE_IDENTIFIER:
         return "condition-device-identifier";
     case SUIT_CONDITION_IMAGE_NOT_MATCH:
@@ -163,6 +160,23 @@ const char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_direct
         return "condition-update-authorized";
     case SUIT_CONDITION_VERSION:
         return "condition-version";
+
+    case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+        return "directive-process-dependency";
+    case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
+        return "directive-set-component-index";
+    case SUIT_DIRECTIVE_TRY_EACH:
+        return "directive-try-each";
+    case SUIT_DIRECTIVE_SET_PARAMETERS:
+        return "directive-set-parameters";
+    case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
+        return "directive-override-parameters";
+    case SUIT_DIRECTIVE_FETCH:
+        return "directive-fetch";
+    case SUIT_DIRECTIVE_COPY:
+        return "directive-copy";
+    case SUIT_DIRECTIVE_INVOKE:
+        return "directive-invoke";
     case SUIT_DIRECTIVE_WAIT:
         return "directive-wait";
     case SUIT_DIRECTIVE_SWAP:
@@ -171,12 +185,20 @@ const char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_direct
         return "directive-run-sequence";
     case SUIT_DIRECTIVE_UNLINK:
         return "directive-unlink";
+
+    /* To Be Defined?
+    case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+        return "directive-override-multiple";
+    case SUIT_DIRECTIVE_COPY_PARAMS:
+        return "directive-copy-params";
+    */
     default:
-        return "(NULL)";
+        return NULL;
     }
 }
 
-const char* suit_parameter_key_to_str(suit_parameter_key_t parameter) {
+char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
+{
     switch (parameter) {
     case SUIT_PARAMETER_VENDOR_IDENTIFIER:
         return "vendor-id";
@@ -194,6 +216,8 @@ const char* suit_parameter_key_to_str(suit_parameter_key_t parameter) {
         return "soft-failure";
     case SUIT_PARAMETER_IMAGE_SIZE:
         return "image-size";
+    case SUIT_PARAMETER_CONTENT:
+        return "content";
     case SUIT_PARAMETER_ENCRYPTION_INFO:
         return "encryption-info";
     case SUIT_PARAMETER_URI:
@@ -212,23 +236,29 @@ const char* suit_parameter_key_to_str(suit_parameter_key_t parameter) {
         return "version";
     case SUIT_PARAMETER_WAIT_INFO:
         return "wait-info";
+    /* To Be Defined?
+    case SUIT_PARAMETER_FETCH_ARGS:
+        return "fetch-args";
+    */
     default:
-        return "(NULL)";
+        return NULL;
     }
 }
 
-const char* suit_info_key_to_str(const suit_info_key_t info_key) {
+char* suit_info_key_to_str(const suit_info_key_t info_key)
+{
     switch (info_key) {
     case SUIT_INFO_DEFAULT:
         return "default";
     case SUIT_INFO_ENCRYPTION:
         return "SUIT_Encryption_Info";
     default:
-        return "(NULL)";
+        return NULL;
     }
 }
 
-const char* suit_cose_protected_key_to_str(int64_t key) {
+char* suit_cose_protected_key_to_str(int64_t key)
+{
     switch (key) {
     case 1:
         return "alg";
@@ -245,14 +275,15 @@ const char* suit_cose_protected_key_to_str(int64_t key) {
     case 7:
         return "counter signature";
     default:
-        return "(UNKNOWN)";
+        return NULL;
     }
 }
 
 /*
  *  see https://datatracker.ietf.org/doc/draft-moran-suit-mti/
  */
-const char* suit_cose_alg_to_str(int64_t id) {
+char* suit_cose_alg_to_str(int64_t id)
+{
     switch (id) {
     case -16:
         return "SHA-256";
@@ -279,7 +310,7 @@ const char* suit_cose_alg_to_str(int64_t id) {
     case -35:
         return "ES384";
     case -36:
-        return "es512";
+        return "ES512";
 
     case -46:
         return "HSS-LMS";
@@ -343,61 +374,134 @@ const char* suit_cose_alg_to_str(int64_t id) {
         return "AES-CCM-64-128-256";
 
     default:
-        return "(UNKNOWN)";
+        return NULL;
     }
 }
 
-const char* suit_cose_protected_key_and_value_to_str(int64_t key, int64_t value) {
+char* suit_cose_protected_key_and_value_to_str(int64_t key,
+                                               int64_t value)
+{
     switch (key) {
     case 1:
         return suit_cose_alg_to_str(value);
     default:
-        return "(UNKNOWN)";
+        return NULL;
     }
 }
 
-suit_err_t suit_print_hex_in_max(const uint8_t *array, const size_t size, const size_t max_print_size) {
+suit_err_t suit_print_hex_string(const uint8_t *array,
+                                 const int size)
+{
+    if (array == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    printf("'");
+    printf("%.*s", size, array);
+    printf("'");
+    return SUIT_SUCCESS;
+}
+
+bool suit_is_printable_char(const uint8_t c)
+{
+    return (' ' <= c && c <= '~');
+}
+
+bool suit_printable_hex_string(const char *array,
+                               const size_t size)
+{
+    size_t i;
+    for (i = 0; i < size; i++) {
+        if (!suit_is_printable_char(array[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+suit_err_t suit_print_tstr_body(const char *text,
+                                const size_t size)
+{
+    for (size_t i = 0; i < size; i++) {
+        if (text[i] == '\n') {
+            putchar('\\'); putchar('n');
+        }
+        else {
+            putchar(text[i]);
+        }
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_tstr(const char *text,
+                           const size_t size)
+{
+    if (text == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+
+    printf("\"");
+    suit_print_tstr_body(text, size);
+    printf("\"");
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_tstr_in_max(const char *text,
+                                  const size_t size,
+                                  const size_t size_max)
+{
     suit_err_t result = SUIT_SUCCESS;
-    if (size <= max_print_size) {
-        result = suit_print_hex(array, size);
+    if (size <= size_max) {
+        result = suit_print_tstr(text, size);
     }
     else {
-        result = suit_print_hex(array, max_print_size);
+        result = suit_print_tstr(text, size_max);
         printf("..");
     }
     return result;
 }
 
-suit_err_t suit_print_hex(const uint8_t *array, size_t size) {
+suit_err_t suit_print_string(const suit_buf_t *string)
+{
+    return suit_print_tstr_in_max((const char *)string->ptr, string->len, SUIT_MAX_PRINT_TEXT_COUNT);
+}
+
+suit_err_t suit_print_hex(const uint8_t *array, const size_t size)
+{
     if (array == NULL) {
         return SUIT_ERR_FATAL;
     }
-    printf("h'");
-    for (size_t i = 0; i < size; i++) {
-        printf("%02x", (unsigned char)array[i]);
+    if (suit_printable_hex_string((const char *)array, size)) {
+        printf("'");
+        suit_print_tstr_body((const char *)array, size);
+        printf("'");
     }
-    printf("'");
+    else {
+        printf("h'");
+        for (size_t i = 0; i < size; i++) {
+            printf("%02x", (unsigned char)array[i]);
+        }
+        printf("'");
+    }
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_string(const suit_buf_t *string) {
-    if (string == NULL) {
-        return SUIT_ERR_FATAL;
+suit_err_t suit_print_hex_in_max(const uint8_t *array,
+                                 const size_t size,
+                                 const size_t size_max)
+{
+    suit_err_t result = SUIT_SUCCESS;
+    if (size <= size_max) {
+        result = suit_print_hex(array, size);
     }
-    printf("\"");
-    for (size_t j = 0; j < string->len; j++) {
-        if (string->ptr[j] == '\n') {
-            putchar('\\'); putchar('n');
-        }
-        else {
-            putchar(string->ptr[j]);
-        }
+    else {
+        result = suit_print_hex(array, size_max);
+        printf("..");
     }
-    printf("\"");
-    return SUIT_SUCCESS;
+    return result;
 }
 
-suit_err_t suit_print_uuid(const suit_buf_t *buf) {
+suit_err_t suit_print_uuid(const suit_buf_t *buf)
+{
     if (buf == NULL || buf->len != 16) {
         return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
     }
@@ -415,7 +519,10 @@ suit_err_t suit_print_uuid(const suit_buf_t *buf) {
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_list, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_list,
+                                           const uint32_t indent_space,
+                                           const uint32_t indent_delta)
+{
     suit_err_t result = SUIT_SUCCESS;
     for (size_t i = 0; i < params_list->len; i++) {
         printf("%*s/ %s / %ld: ", indent_space, "", suit_parameter_key_to_str(params_list->params[i].label), params_list->params[i].label);
@@ -491,24 +598,50 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_cmd_seq(uint8_t mode, const suit_command_sequence_t *cmd_seq, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_cmd_seq(const uint8_t mode,
+                              const suit_command_sequence_t *cmd_seq,
+                              const uint32_t indent_space,
+                              const uint32_t indent_delta)
+{
     suit_err_t result = SUIT_SUCCESS;
     suit_command_sequence_t tmp_cmd_seq;
     for (size_t i = 0; i < cmd_seq->len; i++) {
         printf("%*s/ %s / %ld, ", indent_space, "", suit_command_sequence_key_to_str(cmd_seq->commands[i].label), cmd_seq->commands[i].label);
         switch (cmd_seq->commands[i].label) {
+            /* SUIT_Rep_Policy */
             case SUIT_CONDITION_VENDOR_IDENTIFIER:
             case SUIT_CONDITION_CLASS_IDENTIFIER:
             case SUIT_CONDITION_IMAGE_MATCH:
             case SUIT_CONDITION_COMPONENT_SLOT:
+            case SUIT_CONDITION_CHECK_CONTENT:
+            case SUIT_CONDITION_ABORT:
+            case SUIT_CONDITION_DEVICE_IDENTIFIER:
+
+            /* in draft-ietf-suit-update-management */
+            case SUIT_CONDITION_USE_BEFORE:
+            case SUIT_CONDITION_IMAGE_NOT_MATCH:
+            case SUIT_CONDITION_MINIMUM_BATTERY:
+            case SUIT_CONDITION_UPDATE_AUTHORIZED:
+            case SUIT_CONDITION_VERSION:
+
+
             case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
-            case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+            case SUIT_DIRECTIVE_WRITE:
             case SUIT_DIRECTIVE_FETCH:
             case SUIT_DIRECTIVE_COPY:
             case SUIT_DIRECTIVE_INVOKE:
+            case SUIT_DIRECTIVE_SWAP:
+
+            /* in draft-ietf-suit-update-management */
+            case SUIT_DIRECTIVE_WAIT:
+
+            /* in draft-ietf-suit-trust-domains */
+            case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
             case SUIT_DIRECTIVE_UNLINK:
                 printf("%lu", cmd_seq->commands[i].value.uint64);
                 break;
+
+            /* $$SUIT_Parameters */
             case SUIT_DIRECTIVE_SET_PARAMETERS:
             case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
                 printf("{\n");
@@ -517,6 +650,8 @@ suit_err_t suit_print_cmd_seq(uint8_t mode, const suit_command_sequence_t *cmd_s
                 }
                 printf("%*s}", indent_space, "");
                 break;
+
+            /* SUIT_Directive_Try_Each_Argument */
             case SUIT_DIRECTIVE_TRY_EACH:
                 printf("[\n");
                 bool l1_comma = false;
@@ -544,22 +679,18 @@ suit_err_t suit_print_cmd_seq(uint8_t mode, const suit_command_sequence_t *cmd_s
                 }
                 printf("\n%*s]", indent_space, "");
                 break;
-            case SUIT_CONDITION_USE_BEFORE:
-            case SUIT_CONDITION_ABORT:
-            case SUIT_CONDITION_DEVICE_IDENTIFIER:
-            case SUIT_CONDITION_IMAGE_NOT_MATCH:
-            case SUIT_CONDITION_MINIMUM_BATTERY:
-            case SUIT_CONDITION_UPDATE_AUTHORIZED:
-            case SUIT_CONDITION_VERSION:
 
-            case SUIT_DIRECTIVE_WAIT:
-            case SUIT_DIRECTIVE_SWAP:
+            /* SUIT_Command_Sequence */
             case SUIT_DIRECTIVE_RUN_SEQUENCE:
-                result = SUIT_ERR_FATAL;
-                printf("?");
-                break;
+
+            /* SUIT_Override_Mult_Arg */
+            //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+
+            /* SUIT_Directive_Copy_Params */
+            //case SUIT_DIRECTIVE_COPY_PARAMS:
+
             default:
-                result = SUIT_ERR_INVALID_KEY;
+                result = SUIT_ERR_NOT_IMPLEMENTED;
                 break;
         }
         if (result != SUIT_SUCCESS) {
@@ -575,7 +706,8 @@ suit_err_t suit_print_cmd_seq(uint8_t mode, const suit_command_sequence_t *cmd_s
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_component_identifier(const suit_component_identifier_t *identifier) {
+suit_err_t suit_print_component_identifier(const suit_component_identifier_t *identifier)
+{
     if (identifier == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -590,7 +722,10 @@ suit_err_t suit_print_component_identifier(const suit_component_identifier_t *id
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_signature(const suit_buf_t *signature, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_signature(const suit_buf_t *signature,
+                                const uint32_t indent_space,
+                                const uint32_t indent_delta)
+{
     if (signature == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -674,7 +809,10 @@ suit_err_t suit_print_signature(const suit_buf_t *signature, const uint32_t inde
     return result;
 }
 
-suit_err_t suit_print_digest(const suit_digest_t *digest, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_digest(const suit_digest_t *digest,
+                             const uint32_t indent_space,
+                             const uint32_t indent_delta)
+{
     if (digest == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -690,7 +828,10 @@ suit_err_t suit_print_digest(const suit_digest_t *digest, const uint32_t indent_
     return result;
 }
 
-int32_t suit_print_dependency(const suit_dependency_t *dependency, const uint32_t indent_space, const uint32_t indent_delta) {
+int32_t suit_print_dependency(const suit_dependency_t *dependency,
+                              const uint32_t indent_space,
+                              const uint32_t indent_delta)
+{
     if (dependency == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -707,7 +848,8 @@ int32_t suit_print_dependency(const suit_dependency_t *dependency, const uint32_
     return SUIT_SUCCESS;
 }
 
-bool suit_text_component_have_something_to_print(const suit_text_component_t *text_component) {
+bool suit_text_component_have_something_to_print(const suit_text_component_t *text_component)
+{
     return (text_component->vendor_name.ptr != NULL ||
             text_component->model_name.ptr != NULL ||
             text_component->vendor_domain.ptr != NULL ||
@@ -717,7 +859,10 @@ bool suit_text_component_have_something_to_print(const suit_text_component_t *te
             text_component->version_required.ptr != NULL);
 }
 
-suit_err_t suit_print_text_component(const suit_text_component_t *text_component, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_text_component(const suit_text_component_t *text_component,
+                                     const uint32_t indent_space,
+                                     const uint32_t indent_delta)
+{
     if (text_component == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -803,24 +948,30 @@ suit_err_t suit_print_text_component(const suit_text_component_t *text_component
     return SUIT_SUCCESS;
 }
 
-bool suit_whether_print_now(bool in_suit_manifest, uint8_t status) {
+bool suit_whether_print_now(bool in_suit_manifest,
+                            uint8_t status)
+{
     return ((in_suit_manifest && (status & SUIT_SEVERABLE_IN_MANIFEST)) ||
            (!in_suit_manifest && (status & SUIT_SEVERABLE_IN_ENVELOPE)));
 }
 
-bool suit_is_severable_manifest_member_verified(uint8_t status) {
+bool suit_is_severable_manifest_member_verified(uint8_t status)
+{
     return (status & SUIT_SEVERABLE_IS_VERIFIED);
 }
 
-char *suit_str_verified(bool verified) {
+char *suit_str_verified(bool verified)
+{
     return (verified) ? "verified" : "not verified";
 }
 
-char *suit_str_member_is_verified(uint8_t status) {
+char *suit_str_member_is_verified(uint8_t status)
+{
     return suit_str_verified(suit_is_severable_manifest_member_verified(status));
 }
 
-bool suit_text_have_something_to_print(const suit_text_t *text) {
+bool suit_text_have_something_to_print(const suit_text_t *text)
+{
     return (text->manifest_description.ptr != NULL ||
             text->update_description.ptr != NULL ||
             text->manifest_json_source.ptr != NULL ||
@@ -828,7 +979,10 @@ bool suit_text_have_something_to_print(const suit_text_t *text) {
             text->component_len > 0);
 }
 
-suit_err_t suit_print_text(const suit_text_t *text, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_text(const suit_text_t *text,
+                           const uint32_t indent_space,
+                           const uint32_t indent_delta)
+{
     if (text == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -897,7 +1051,11 @@ suit_err_t suit_print_text(const suit_text_t *text, const uint32_t indent_space,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_manifest(uint8_t mode, const suit_manifest_t *manifest, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_manifest(const uint8_t mode,
+                               const suit_manifest_t *manifest,
+                               const uint32_t indent_space,
+                               const uint32_t indent_delta)
+{
     if (manifest == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -1127,7 +1285,11 @@ suit_err_t suit_print_manifest(uint8_t mode, const suit_manifest_t *manifest, co
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_integrated_payload(uint8_t mode, const suit_payloads_t *payloads, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_integrated_payload(const uint8_t mode,
+                                         const suit_payloads_t *payloads,
+                                         const uint32_t indent_space,
+                                         const uint32_t indent_delta)
+{
     for (size_t i = 0; i < payloads->len; i++) {
         printf("%*s\"%.*s\" : ", indent_space, "", (int)payloads->payload[i].key.len, (char *)payloads->payload[i].key.ptr);
         suit_print_hex_in_max(payloads->payload[i].bytes.ptr, payloads->payload[i].bytes.len, SUIT_MAX_PRINT_BYTE_COUNT);
@@ -1138,7 +1300,11 @@ suit_err_t suit_print_integrated_payload(uint8_t mode, const suit_payloads_t *pa
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_envelope(uint8_t mode, const suit_envelope_t *envelope, const uint32_t indent_space, const uint32_t indent_delta) {
+suit_err_t suit_print_envelope(const uint8_t mode,
+                               const suit_envelope_t *envelope,
+                               const uint32_t indent_space,
+                               const uint32_t indent_delta)
+{
     if (envelope == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -1324,17 +1490,12 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
 {
     suit_err_t ret = SUIT_SUCCESS;
     printf("fetch callback : {\n");
-    int print_len = SUIT_MAX_PRINT_URI_COUNT;
-    if (fetch_args.uri_len < print_len) {
-        print_len = (int)fetch_args.uri_len;
-    }
-    printf("  uri : \"%.*s\"", print_len, (char *)fetch_args.uri);
-    if (fetch_args.uri_len > SUIT_MAX_PRINT_URI_COUNT) {
-        printf("...");
-    }
+    printf("  uri : ");
+    suit_print_tstr_in_max(fetch_args.uri, fetch_args.uri_len, SUIT_MAX_PRINT_URI_COUNT);
     printf(" (%ld)\n", fetch_args.uri_len);
     printf("  dst-component-identifier : ");
     suit_print_component_identifier(&fetch_args.dst_component_identifier);
+    printf("\n");
 
     printf("  fetch buf : %p(%ld)\n", fetch_args.ptr, fetch_args.buf_len);
     printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", fetch_args.report.record_on_success, fetch_args.report.record_on_failure, fetch_args.report.sysinfo_success, fetch_args.report.sysinfo_failure);
@@ -1343,7 +1504,8 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
     return ret;
 }
 
-suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret)
+suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args,
+                               suit_fetch_ret_t *fetch_ret)
 {
     return suit_print_fetch(fetch_args, fetch_ret);
 }
