@@ -2,8 +2,8 @@
 libcsuit has 3 core features: decode (Read), encode (Write) and process (eXecute).  
 SUIT features are listed below for each SUIT documents.  
 **R** means that libcsuit supports to decode it, and **r** not.  
-**W** means that libcsuit supports to decode it, and **w** not.  
-**X** means that libcsuit supports to decode it, and **x** not.  
+**W** means that libcsuit supports to encode it, and **w** not.  
+**X** means that libcsuit supports to process it, and **x** not.  
 
 ## SUIT Manifest
 
