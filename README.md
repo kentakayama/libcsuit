@@ -7,6 +7,8 @@ For more information on how the IETF SUIT manifest is used to protect firmware u
  [IETF SUIT architecture](https://datatracker.ietf.org/doc/html/draft-ietf-suit-architecture) document and the
  [IETF SUIT](https://datatracker.ietf.org/wg/suit/about/) working group.
 
+Supported features are listed [SUPPORTED.md](./SUPPORTED.md).
+
 ## Overview
 
 This implementation uses
