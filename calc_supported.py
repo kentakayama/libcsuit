@@ -50,7 +50,7 @@ w.write(head)
 for i in range(len(documents)):
     w.write(f"### {documents[i]}\n")
     w.write("Operation | Metadata | Condition | Directive | Parameter | Text\n")
-    w.write("---|---|---|---|---\n")
+    w.write("---|---|---|---|---|---\n")
     w.write("decode")
     for level in range(len(pos_list)):
         w.write(f" | {':green_square:'*tab[i][level][0][0]}{':white_large_square:'*tab[i][level][0][1]}")
