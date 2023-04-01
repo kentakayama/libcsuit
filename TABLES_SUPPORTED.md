@@ -61,14 +61,14 @@ Custom Condition | ? | suit-condition-custom | SUIT Manifest | N/M | ---
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
 Process Dependency | 11 | suit-directive-process-dependency | SUIT Multiple Trust Domains | N/M | RW-
-Set Component Index | 12 | suit-directive-set-component-index | SUIT Manifest | REQUIRED | RW?
-Try Each | 15 | suit-directive-try-each | SUIT Manifest | OPTIONAL | ---
+Set Component Index | 12 | suit-directive-set-component-index | SUIT Manifest | REQUIRED | RWX
+Try Each | 15 | suit-directive-try-each | SUIT Manifest | OPTIONAL | RW-
 Write | 18 | suit-directive-write | SUIT Manifest | N/M | ---
-Set Parameters | 19 | suit-directive-set-parameters | SUIT Multiple Trust Domains | N/M | RW-
-Override Parameters | 20 | suit-directive-override-parameters | SUIT Manifest | N/M | RW?
-Fetch | 21 | suit-directive-fetch | SUIT Manifest | N/M | RW?
+Set Parameters | 19 | suit-directive-set-parameters | SUIT Multiple Trust Domains | N/M | RWX
+Override Parameters | 20 | suit-directive-override-parameters | SUIT Manifest | N/M | RWX
+Fetch | 21 | suit-directive-fetch | SUIT Manifest | N/M | RWX
 Copy | 22 | suit-directive-copy | SUIT Manifest | N/M | ---
-Invoke | 23 | suit-directive-invoke | SUIT Manifest | REQUIRED for Bootloader | RW?
+Invoke | 23 | suit-directive-invoke | SUIT Manifest | REQUIRED for Bootloader | RWX
 Wait | 29 | suit-directive-wait | SUIT Update Management | N/M | ---
 Swap | 31 | suit-directive-swap | SUIT Manifest | N/M | ---
 Run Sequence | 32 | suit-directive-run-sequence | SUIT Manifest | OPTIONAL | ---
