@@ -53,24 +53,16 @@ for i in range(len(documents)):
     w.write("---|---|---|---|---|---\n")
     w.write("decode")
     for level in range(len(pos_list)):
-        w.write(f" | {':green_square:'*tab[i][level][0][0]}{':white_large_square:'*tab[i][level][0][1]}")
+        w.write(f" | {':green_square:'*tab[i][level][0][0]}{':black_large_square:'*tab[i][level][0][1]}")
     w.write("\n")
     w.write("encode")
     for level in range(len(pos_list)):
-        w.write(f" | {':green_square:'*tab[i][level][1][0]}{':white_large_square:'*tab[i][level][1][1]}")
+        w.write(f" | {':green_square:'*tab[i][level][1][0]}{':black_large_square:'*tab[i][level][1][1]}")
     w.write("\n")
     w.write("process")
     for level in range(len(pos_list)):
-        w.write(f" | {':green_square:'*tab[i][level][2][0]}{':white_large_square:'*tab[i][level][2][1]}")
+        w.write(f" | {':green_square:'*tab[i][level][2][0]}{':black_large_square:'*tab[i][level][2][1]}")
     w.write("\n")
-
-# expected
-e = """
-decode | :green_square: :green_square: | :green_square: :white_large_square: | :green_square: :white_large_square: | :green_square: :white_large_square:
-encode |
-process | 
-"""
-#w.write(e)
 
 middle = """
 ## NOTE: How to read the Supported Features Tables

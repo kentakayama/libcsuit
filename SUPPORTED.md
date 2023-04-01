@@ -4,27 +4,27 @@
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::white_large_square::white_large_square::white_large_square::white_large_square: | :green_square::green_square::green_square::green_square::white_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::white_large_square::white_large_square::white_large_square::white_large_square: | :green_square::green_square::green_square::green_square::white_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :white_large_square::white_large_square::white_large_square::white_large_square::white_large_square::white_large_square::white_large_square: | :green_square::green_square::green_square::green_square::white_large_square::white_large_square::white_large_square::white_large_square::white_large_square: | :green_square::white_large_square::white_large_square::white_large_square::white_large_square: | :white_large_square::white_large_square::white_large_square::white_large_square::white_large_square::white_large_square:
+decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square: | :white_large_square::white_large_square: | :green_square::green_square::green_square: |  | 
-encode | :green_square::green_square::green_square: | :white_large_square::white_large_square: | :green_square::green_square::green_square: |  | 
-process | :green_square::green_square::white_large_square: | :white_large_square::white_large_square: | :green_square::white_large_square::white_large_square: |  | 
+decode | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::green_square::green_square: |  | 
+encode | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::green_square::green_square: |  | 
+process | :green_square::green_square::black_large_square: | :black_large_square::black_large_square: | :green_square::black_large_square::black_large_square: |  | 
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :white_large_square: | :green_square::green_square::green_square::white_large_square::white_large_square: | :green_square:
-encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :white_large_square: | :green_square::green_square::green_square::white_large_square::white_large_square: | :green_square:
-process | :white_large_square: | :white_large_square::white_large_square::white_large_square::white_large_square::white_large_square: | :white_large_square: | :white_large_square::white_large_square::white_large_square::white_large_square::white_large_square: | :white_large_square:
+decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :black_large_square: | :green_square::green_square::green_square::black_large_square::black_large_square: | :green_square:
+encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :black_large_square: | :green_square::green_square::green_square::black_large_square::black_large_square: | :green_square:
+process | :black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square:
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode |  |  |  | :white_large_square: | 
-encode |  |  |  | :white_large_square: | 
-process |  |  |  | :white_large_square: | 
+decode |  |  |  | :black_large_square: | 
+encode |  |  |  | :black_large_square: | 
+process |  |  |  | :black_large_square: | 
 ### SUIT Report
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
