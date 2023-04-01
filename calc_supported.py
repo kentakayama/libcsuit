@@ -44,6 +44,8 @@ w = open("SUPPORTED.md", "w")
 head = """# Supported features by libcsuit
 
 ## Summary
+:green_square: : supported
+:black_square: : **not** supported
 """
 w.write(head)
 
