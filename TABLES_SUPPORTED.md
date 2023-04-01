@@ -1,7 +1,7 @@
 ### SUIT Metadata
 
 Name | Label | CDDL Structure | IN | IS | Supported?
----|---|---|---|---
+---|---|---|---|---|---
 Delegation | 1 | suit-delegation | SUIT Multiple Trust Domains | N/M | ---
 Authentication Wrapper | 2 | suit-authentication-wrapper | SUIT Manifest | N/M | RWX
 Manifest | 3 | suit-manifest | SUIT Manifest | N/M | RWX
@@ -12,7 +12,7 @@ Text Description (s) | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
 Uninstall (s) | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RW-
 
 Name | Label | CDDL Structure | IN | IS | Supported?
----|---|---|---|---
+---|---|---|---|---|---
 Encoding Version | 1 | suit-manifest-version | SUIT Manifest | REQUIRED | RWX
 Sequence Number | 2 | suit-manifest-sequence-number | SUIT Manifest | REQUIRED | RWX
 Common Data | 3 | suit-common | SUIT Manifest | REQUIRED | RWX
@@ -31,7 +31,7 @@ Uninstall | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RW-
 ### SUIT Common
 
 Name | Label | CDDL Structure | IN | IS | Supported?
----|---|---|---|---
+---|---|---|---|---|---
 Dependencies | 1 | suit-dependencies | SUIT Multiple Trust Domains | N/M | RW-
 Components | 2 | suit-components | SUIT Manifest | REQUIRED | RWX
 Shared Sequence | 4 | suit-shared-sequence | SUIT Manifest | RECOMMENDED/REQUIRED | RWX
@@ -106,7 +106,7 @@ Custom | nint | suit-parameter-custom | SUIT Manifest | N/M | ---
 NOTE: libcsuit ignores this while processing a SUIT Manifest
 
 Name | Label | CDDL Structure | IN | IS | Supported?
----|---|---|---|---
+---|---|---|---|---|---
 Vendor Name | 1 | suit-text-vendor-name | SUIT Manifest | OPTIONAL | RW-
 Model Name | 2 | suit-text-model-name | SUIT Manifest | OPTIONAL | RW-
 Vendor Domain | 3 | suit-text-vendor-domain | SUIT Manifest | OPTIONAL | RW-
