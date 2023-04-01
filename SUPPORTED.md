@@ -1,8 +1,8 @@
 # Supported features by libcsuit
 
 ## Summary
-:green_square: : supported
-:black_square: : **not** supported
+- :green_square: : supported
+- :black_large_square: : **not** supported
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
