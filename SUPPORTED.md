@@ -6,9 +6,9 @@
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
+decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -141,20 +141,20 @@ Copy Params | ? | suit-directive-copy-params | SUIT Update Management | N/M | --
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
-Vendor ID | 1 | suit-parameter-vendor-identifier | SUIT Manifest | N/M | RW?
-Class ID | 2 | suit-parameter-class-identifier | SUIT Manifest | N/M | RW?
-Image Digest | 3 | suit-parameter-image-digest | SUIT Manifest | N/M | RW?
+Vendor ID | 1 | suit-parameter-vendor-identifier | SUIT Manifest | N/M | RWX
+Class ID | 2 | suit-parameter-class-identifier | SUIT Manifest | N/M | RWX
+Image Digest | 3 | suit-parameter-image-digest | SUIT Manifest | N/M | RWX
 Use Before | 4 | suit-parameter-use-before | SUIT Update Management | N/M | RW-
-Component Slot | 5 | suit-parameter-component-slot | SUIT Manifest | N/M | RW?
+Component Slot | 5 | suit-parameter-component-slot | SUIT Manifest | N/M | RWX
 Strict Order | 12 | suit-parameter-strict-order | SUIT Manifest | N/M | RW-
 Soft Failure | 13 | suit-parameter-soft-failure | SUIT Manifest | N/M | RW-
-Image Size | 14 | suit-parameter-image-size | SUIT Manifest | N/M | RW?
+Image Size | 14 | suit-parameter-image-size | SUIT Manifest | N/M | RWX
 Content | 18 | suit-parameter-content | SUIT Manifest | N/M | ---
 Encryption Info | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | ---
 URI | 21 | suit-parameter-uri | SUIT Manifest | N/M | RWX
-Source Component | 22 | suit-parameter-source-component | SUIT Manifest | N/M | RW-
-Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RW?
-Device ID | 24 | suit-parameter-device-identifier | SUIT Manifest | N/M | RW?
+Source Component | 22 | suit-parameter-source-component | SUIT Manifest | N/M | RWX
+Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RWX
+Device ID | 24 | suit-parameter-device-identifier | SUIT Manifest | N/M | RW-
 Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management | N/M | RW-
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RW-
 Version | 28 | suit-parameter-version | SUIT Update Management | N/M | ---
