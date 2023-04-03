@@ -1,7 +1,8 @@
 #include "suit_examples_common.h"
 
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
-suit_err_t suit_create_es_key(suit_key_t *key) {
+suit_err_t suit_create_es_key(suit_key_t *key)
+{
     psa_key_attributes_t key_attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_handle_t     key_handle = 0;
     psa_status_t         result;
@@ -56,8 +57,7 @@ suit_err_t suit_create_es_key(suit_key_t *key) {
         return SUIT_ERR_FAILED_TO_VERIFY;
     }
 
-    key->cose_key.k.key_handle  = key_handle;
-    key->cose_key.crypto_lib    = T_COSE_CRYPTO_LIB_PSA;
+    key->cose_key.key.ptr       = key_handle;
 
     return SUIT_SUCCESS;
 }
@@ -73,7 +73,8 @@ suit_err_t suit_create_es_key(suit_key_t *key) {
 
     \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
  */
-suit_err_t suit_create_es_key(suit_key_t *key) {
+suit_err_t suit_create_es_key(suit_key_t *key)
+{
     suit_err_t      result = SUIT_SUCCESS;
     EVP_PKEY        *pkey = NULL;
     EVP_PKEY_CTX    *ctx = NULL;
@@ -146,7 +147,8 @@ out:
     return result;
 }
 #else /* OPENSSL_VERSION_NUMBER < OPENSSL_VERSION_300 */
-suit_err_t suit_create_es_key(suit_key_t *key) {
+suit_err_t suit_create_es_key(suit_key_t *key)
+{
     /* ****************************************** */
     /* cose algorithm enum -> openssl group name  */
     /* ****************************************** */
@@ -200,8 +202,7 @@ suit_err_t suit_create_es_key(suit_key_t *key) {
     if (!EVP_PKEY_set1_EC_KEY(pkey, pEC)) {
         goto err;
     } else {
-        key->cose_key.k.key_ptr  = pkey;
-        key->cose_key.crypto_lib = T_COSE_CRYPTO_LIB_OPENSSL;
+        key->cose_key.key.ptr   = pkey;
         EC_KEY_free(pEC);
         return SUIT_SUCCESS;
     }
@@ -212,7 +213,10 @@ err:
 #endif /* OPENSSL_VERSION_NUMBER */
 #endif /* LIBCSUIT_PSA_CRYPTO_C */
 
-suit_err_t suit_key_init_es256_key_pair(const unsigned char *private_key, const unsigned char *public_key, suit_key_t *cose_key_pair) {
+suit_err_t suit_key_init_es256_key_pair(const unsigned char *private_key,
+                                        const unsigned char *public_key,
+                                        suit_key_t *cose_key_pair)
+{
     cose_key_pair->private_key = private_key;
     cose_key_pair->private_key_len = PRIME256V1_PRIVATE_KEY_LENGTH;
     cose_key_pair->public_key = public_key;
@@ -221,7 +225,10 @@ suit_err_t suit_key_init_es256_key_pair(const unsigned char *private_key, const 
     return suit_create_es_key(cose_key_pair);
 }
 
-suit_err_t suit_key_init_es384_key_pair(const unsigned char *private_key, const unsigned char *public_key, suit_key_t *cose_key_pair) {
+suit_err_t suit_key_init_es384_key_pair(const unsigned char *private_key,
+                                        const unsigned char *public_key,
+                                        suit_key_t *cose_key_pair)
+{
     cose_key_pair->private_key = private_key;
     cose_key_pair->private_key_len = SECP384R1_PRIVATE_KEY_LENGTH;
     cose_key_pair->public_key = public_key;
@@ -230,7 +237,10 @@ suit_err_t suit_key_init_es384_key_pair(const unsigned char *private_key, const 
     return suit_create_es_key(cose_key_pair);
 }
 
-suit_err_t suit_key_init_es521_key_pair(const unsigned char *private_key, const unsigned char *public_key, suit_key_t *cose_key_pair) {
+suit_err_t suit_key_init_es521_key_pair(const unsigned char *private_key,
+                                        const unsigned char *public_key,
+                                        suit_key_t *cose_key_pair)
+{
     cose_key_pair->private_key = private_key;
     cose_key_pair->private_key_len = SECP521R1_PRIVATE_KEY_LENGTH;
     cose_key_pair->public_key = public_key;
@@ -239,7 +249,9 @@ suit_err_t suit_key_init_es521_key_pair(const unsigned char *private_key, const 
     return suit_create_es_key(cose_key_pair);
 }
 
-suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key, suit_key_t *cose_public_key) {
+suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key,
+                                          suit_key_t *cose_public_key)
+{
     cose_public_key->private_key = NULL;
     cose_public_key->private_key_len = 0;
     cose_public_key->public_key = public_key;
@@ -248,7 +260,9 @@ suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key, suit_
     return suit_create_es_key(cose_public_key);
 }
 
-suit_err_t suit_key_init_es384_public_key(const unsigned char *public_key, suit_key_t *cose_public_key) {
+suit_err_t suit_key_init_es384_public_key(const unsigned char *public_key,
+                                          suit_key_t *cose_public_key)
+{
     cose_public_key->private_key = NULL;
     cose_public_key->private_key_len = 0;
     cose_public_key->public_key = public_key;
@@ -257,7 +271,9 @@ suit_err_t suit_key_init_es384_public_key(const unsigned char *public_key, suit_
     return suit_create_es_key(cose_public_key);
 }
 
-suit_err_t suit_key_init_es521_public_key(const unsigned char *public_key, suit_key_t *cose_public_key) {
+suit_err_t suit_key_init_es521_public_key(const unsigned char *public_key,
+                                          suit_key_t *cose_public_key)
+{
     cose_public_key->private_key = NULL;
     cose_public_key->private_key_len = 0;
     cose_public_key->public_key = public_key;
@@ -266,11 +282,33 @@ suit_err_t suit_key_init_es521_public_key(const unsigned char *public_key, suit_
     return suit_create_es_key(cose_public_key);
 }
 
-suit_err_t suit_free_key(const suit_key_t *key) {
+suit_err_t suit_create_aes_key(suit_key_t *cose_secret_key)
+{
+    UsefulBufC symmetric_key = (UsefulBufC) {.ptr = cose_secret_key->private_key, .len = cose_secret_key->private_key_len};
+    enum t_cose_err_t err = t_cose_key_init_symmetric(cose_secret_key->cose_algorithm_id, symmetric_key, &cose_secret_key->cose_key);
+    if (err != T_COSE_SUCCESS) {
+        return SUIT_ERR_FATAL;
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key,
+                                         suit_key_t *cose_secret_key)
+{
+    cose_secret_key->private_key = secret_key;
+    cose_secret_key->private_key_len = A128GCM_KEY_CHAR_LENGTH;
+    cose_secret_key->public_key = NULL;
+    cose_secret_key->public_key_len = 0;
+    cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
+    return suit_create_aes_key(cose_secret_key);
+}
+
+suit_err_t suit_free_key(const suit_key_t *key)
+{
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
-    psa_destroy_key(key->cose_key.k.key_handle );
+    psa_destroy_key(key->cose_key.key_handle);
 #else
-    EVP_PKEY_free(key->cose_key.k.key_ptr);
+    EVP_PKEY_free(key->cose_key.key.ptr);
 #endif
     return SUIT_SUCCESS;
 }

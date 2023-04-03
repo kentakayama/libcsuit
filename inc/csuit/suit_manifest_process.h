@@ -103,10 +103,11 @@ typedef struct suit_store_args {
     suit_rep_policy_t report;
 
     suit_component_identifier_t dst;
-    suit_component_identifier_t src;
+    suit_component_identifier_t src; // used by SUIT_COPY and SUIT_SWAP
     UsefulBufC src_buf;
 
-    suit_info_key_t info_key;
+    UsefulBufC encryption_info;
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 
     /* store, copy, swap, unlink */
     suit_store_key_t operation;

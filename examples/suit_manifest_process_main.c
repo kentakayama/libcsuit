@@ -16,12 +16,16 @@
 #include <sys/types.h> // pid_t
 #include <sys/wait.h> // waitpid
 #include <unistd.h> // fork
+#include <fcntl.h> // AT_FDCWD
 #include "qcbor/qcbor.h"
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_print.h"
 #include "suit_examples_common.h"
 #include "trust_anchor_prime256v1_pub.h"
+#include "trust_anchor_a128_secret_key.h"
 #include "t_cose/t_cose_sign1_verify.h"
+#include "t_cose/t_cose_encrypt_dec.h"
+#include "t_cose/t_cose_recipient_dec_keywrap.h"
 #include "t_cose/q_useful_buf.h"
 
 bool is_available_char_for_filename(const char c)
@@ -68,6 +72,11 @@ suit_err_t suit_component_identifier_to_filename(suit_component_identifier_t com
 /* TC signer's public_key */
 const unsigned char *public_keys[NUM_PUBLIC_KEYS] = {
     trust_anchor_prime256v1_public_key,
+};
+#define NUM_SECRET_KEYS                 1
+/* TC signer's secret_key */
+const unsigned char *secret_keys[NUM_SECRET_KEYS] = {
+    trust_anchor_a128_secret_key,
 };
 
 const uint8_t tc_uri[] = {
@@ -168,7 +177,21 @@ const uint8_t dependent_data[] = {
     0x12, 0x4B, 0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x77, 0x6F,
     0x72, 0x6C, 0x64, 0x12, 0x0F, 0x17, 0x4D, 0x84, 0x14, 0xA1,
     0x17, 0x46, 0x63, 0x61, 0x74, 0x20, 0x30, 0x30, 0x17, 0x0F
-};// suit_manifest_expD00.suit
+}; // suit_manifest_expD00.suit
+const uint8_t encrypted_firmware_uri[] = {
+    0x68, 0x74, 0x74, 0x70, 0x73, 0x3A, 0x2F, 0x2F, 0x61, 0x75,
+    0x74, 0x68, 0x6F, 0x72, 0x2E, 0x65, 0x78, 0x61, 0x6D, 0x70,
+    0x6C, 0x65, 0x2E, 0x63, 0x6F, 0x6D, 0x2F, 0x65, 0x6E, 0x63,
+    0x72, 0x79, 0x70, 0x74, 0x65, 0x64, 0x2D, 0x66, 0x69, 0x72,
+    0x6D, 0x77, 0x61, 0x72, 0x65, 0x2E, 0x62, 0x69, 0x6E
+}; // "https://author.example.com/encrypted-firmware.bin"
+const uint8_t encrypted_firmware_data[] = {
+    0x7F, 0x9C, 0x0B, 0x7B, 0x36, 0x43, 0xE8, 0x76, 0x0A, 0x34,
+    0x3A, 0x6F, 0x62, 0x0A, 0x3E, 0x32, 0xE2, 0xDB, 0x68, 0x56,
+    0xD2, 0xE0, 0x94, 0x1E, 0xAA, 0x3B, 0xF3, 0xB1, 0xB2, 0xBB,
+    0xED, 0x67, 0x9F, 0x66, 0xAA, 0x6B, 0xC3, 0x6B, 0xFD, 0x85,
+    0x46, 0x9B, 0xE2, 0x17, 0x81, 0x55
+};
 
 struct name_data {
     const uint8_t *name;
@@ -176,12 +199,13 @@ struct name_data {
     const uint8_t *data;
     size_t data_len;
 };
-#define SUIT_NAME_DATA_LEN 4
+#define SUIT_NAME_DATA_LEN 5
 const struct name_data name_data[] = {
     {.name = tc_uri, .name_len = sizeof(tc_uri), .data = tc_data, .data_len = sizeof(tc_data)},
     {.name = depend_uri, .name_len = sizeof(depend_uri), .data = depend_suit, .data_len = sizeof(depend_suit)},
     {.name = config_uri, .name_len = sizeof(config_uri), .data = config_data, .data_len = sizeof(config_data)},
     {.name = dependent_uri, .name_len = sizeof(dependent_uri), .data = dependent_data, .data_len = sizeof(dependent_data)},
+    {.name = encrypted_firmware_uri, .name_len = sizeof(encrypted_firmware_uri), .data = encrypted_firmware_data, .data_len = sizeof(encrypted_firmware_data)},
 };
 
 suit_err_t __real_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
@@ -267,6 +291,88 @@ suit_err_t __wrap_suit_invoke_callback(suit_invoke_args_t invoke_args)
     return SUIT_ERR_FATAL;
 }
 
+suit_err_t store_component(const char *dst,
+                           UsefulBufC src,
+                           UsefulBufC encryption_info,
+                           suit_mechanism_t mechanisms[])
+{
+    suit_err_t result = SUIT_ERR_FATAL;
+    UsefulBuf decrypted_payload_buf;
+    decrypted_payload_buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
+    if (decrypted_payload_buf.ptr == NULL) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    decrypted_payload_buf.len = SUIT_MAX_DATA_SIZE;
+    UsefulBufC decrypted_payload;
+    struct t_cose_recipient_dec_keywrap kw_unwrap_recipient;
+    struct t_cose_encrypt_dec_ctx decrypt_context;
+
+    if (!UsefulBuf_IsNULLOrEmptyC(encryption_info)) {
+        for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
+            if (!mechanisms[i].use) {
+                continue;
+            }
+            if (mechanisms[i].cose_tag != CBOR_TAG_COSE_ENCRYPT0 &&
+                mechanisms[i].cose_tag != CBOR_TAG_COSE_ENCRYPT) {
+                continue;
+            }
+            t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT);
+            t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
+            t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanisms[i].key.cose_key, NULL_Q_USEFUL_BUF_C);
+            t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
+            enum t_cose_err_t err = t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, src, decrypted_payload_buf, &decrypted_payload, NULL);
+            if (err == T_COSE_SUCCESS) {
+                size_t len = write_to_file(dst, decrypted_payload.ptr, decrypted_payload.len);
+                if (len != decrypted_payload.len) {
+                    result = SUIT_ERR_FATAL;
+                }
+                else {
+                    result = SUIT_SUCCESS;
+                }
+                goto out;
+            }
+        }
+    }
+out:
+    free(decrypted_payload_buf.ptr);
+    return result;
+}
+
+suit_err_t copy_component(const char *dst,
+                          const char *src,
+                          UsefulBufC encryption_info,
+                          suit_mechanism_t mechanisms[])
+{
+    UsefulBuf buf;
+    buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
+    if (buf.ptr == NULL) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    buf.len = SUIT_MAX_DATA_SIZE;
+    size_t len = read_from_file(src, buf.ptr, buf.len);
+    if (len >= buf.len) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    buf.len = len;
+    suit_err_t result = store_component(dst, UsefulBuf_Const(buf), encryption_info, mechanisms);
+    free(buf.ptr);
+    return result;
+}
+
+suit_err_t swap_component(const char *dst,
+                          const char *src)
+{
+    char tmp[SUIT_MAX_NAME_LENGTH];
+    size_t len = snprintf(tmp, SUIT_MAX_NAME_LENGTH, "%s.tmp", dst);
+    if (len == SUIT_MAX_NAME_LENGTH) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    if (rename(tmp, dst) != 0 || rename(dst, src) != 0 || rename(src, tmp)) {
+        return SUIT_ERR_FATAL;
+    }
+    return SUIT_SUCCESS;
+}
+
 suit_err_t __real_suit_store_callback(suit_store_args_t store_args);
 suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
 {
@@ -275,13 +381,34 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
         return result;
     }
 
-    char filename[SUIT_MAX_NAME_LENGTH];
-    result = suit_component_identifier_to_filename(store_args.dst, SUIT_MAX_NAME_LENGTH, filename);
+    char dst[SUIT_MAX_NAME_LENGTH];
+    char src[SUIT_MAX_NAME_LENGTH];
+    result = suit_component_identifier_to_filename(store_args.dst, SUIT_MAX_NAME_LENGTH, dst);
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    write_to_file(filename, store_args.src_buf.ptr, store_args.src_buf.len);
-    return SUIT_SUCCESS;
+    switch (store_args.operation) {
+    case SUIT_STORE:
+        result = store_component(dst, store_args.src_buf, store_args.encryption_info, store_args.mechanisms);
+        break;
+    case SUIT_COPY:
+        result = suit_component_identifier_to_filename(store_args.src, SUIT_MAX_NAME_LENGTH, src);
+        if (result == SUIT_SUCCESS) {
+            result = copy_component(dst, src, store_args.encryption_info, store_args.mechanisms);
+        }
+        break;
+    case SUIT_SWAP:
+        result = suit_component_identifier_to_filename(store_args.src, SUIT_MAX_NAME_LENGTH, src);
+        if (result == SUIT_SUCCESS) {
+            result = swap_component(dst, src);
+            //result = (renameat2(AT_FDCWD, dst, AT_FDCWD, src, RENAME_EXCHANGE) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
+        }
+        break;
+    case SUIT_UNLINK:
+        result = (unlink(dst) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
+        break;
+    }
+    return result;
 }
 
 int main(int argc, char *argv[])
@@ -305,7 +432,7 @@ int main(int argc, char *argv[])
 
     // Read key from der file.
     // This code is only available for openssl prime256v1.
-    printf("\nmain : Read public key from DER file.\n");
+    printf("\nmain : Read public keys.\n");
     for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
         result = suit_key_init_es256_public_key(public_keys[i], &suit_inputs->mechanisms[i].key);
         if (result != SUIT_SUCCESS) {
@@ -315,6 +442,17 @@ int main(int argc, char *argv[])
         suit_inputs->mechanisms[i].use = true;
         suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
     }
+
+    for (size_t j = 0; j < NUM_SECRET_KEYS; j++) {
+        result = suit_key_init_a128kw_secret_key(secret_keys[j], &suit_inputs->mechanisms[i + j].key);
+        if (result != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(result), result);
+            return EXIT_FAILURE;
+        }
+        suit_inputs->mechanisms[i].use = true;
+        suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_ENCRYPT;
+    }
+
     // Read manifest file.
     printf("\nmain : Read Manifest file.\n");
     suit_inputs->manifest.ptr = suit_inputs->buf;

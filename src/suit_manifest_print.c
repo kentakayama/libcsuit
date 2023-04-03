@@ -397,8 +397,10 @@ suit_err_t suit_print_hex_string(const uint8_t *array,
     if (array == NULL) {
         return SUIT_ERR_FATAL;
     }
-    printf("'");
-    printf("%.*s", size, array);
+    printf("h'");
+    for (size_t i = 0; i < size; i++) {
+        printf("%02x", (unsigned char)array[i]);
+    }
     printf("'");
     return SUIT_SUCCESS;
 }
@@ -1459,6 +1461,11 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
     printf("  src-component-identifier : ");
     suit_print_component_identifier(&store_args.src);
     printf("\n");
+    if (!UsefulBuf_IsNULLOrEmptyC(store_args.encryption_info)) {
+        printf("  encryption-info : ");
+        suit_print_hex_string(store_args.encryption_info.ptr, store_args.encryption_info.len);
+        printf("\n");
+    }
 
     printf("  ptr : %p (%ld)\n", store_args.src_buf.ptr, store_args.src_buf.len);
     printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", store_args.report.record_on_success, store_args.report.record_on_failure, store_args.report.sysinfo_success, store_args.report.sysinfo_failure);

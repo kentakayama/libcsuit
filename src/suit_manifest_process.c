@@ -200,6 +200,8 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                 }
             }
             break;
+
+        /* .bstr COSE_Encrypt0 // .bstr COSE_Encrypt */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
@@ -646,16 +648,16 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 
                 args.store = (suit_store_args_t){0};
                 if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT) {
-                    args.store.info_key = SUIT_INFO_DEFAULT;
                     args.store.src_buf = parameters[tmp_index].content;
                 }
-                else if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
-                    args.store.info_key = SUIT_INFO_ENCRYPTION;
-                    args.store.src_buf = parameters[tmp_index].encryption_info;
-                }
-                else {
-                    result = SUIT_ERR_NOT_FOUND;
-                    break;
+                if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
+                    args.store.encryption_info = parameters[tmp_index].encryption_info;
+                    for (size_t k = 0; k < SUIT_MAX_KEY_NUM; k++) {
+                        if (suit_inputs->mechanisms[k].cose_tag == CBOR_TAG_COSE_ENCRYPT ||
+                            suit_inputs->mechanisms[k].cose_tag == CBOR_TAG_COSE_ENCRYPT0) {
+                            args.store.mechanisms[k] = suit_inputs->mechanisms[k];
+                        }
+                    }
                 }
                 args.store.report.val = val.u64;
                 suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
@@ -674,7 +676,6 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                 const uint8_t tmp_index = suit_index.index[j];
 
                 args.store = (suit_store_args_t){0};
-                args.store.info_key = SUIT_INFO_DEFAULT;
                 args.store.report.val = val.u64;
 
                 suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
@@ -692,8 +693,17 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                 const uint8_t tmp_index = suit_index.index[j];
 
                 args.store = (suit_store_args_t){0};
-                args.store.info_key = SUIT_INFO_DEFAULT;
                 args.store.report.val = val.u64;
+
+                if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
+                    args.store.encryption_info = parameters[tmp_index].encryption_info;
+                    for (size_t k = 0; k < SUIT_MAX_KEY_NUM; k++) {
+                        if (suit_inputs->mechanisms[k].cose_tag == CBOR_TAG_COSE_ENCRYPT ||
+                            suit_inputs->mechanisms[k].cose_tag == CBOR_TAG_COSE_ENCRYPT0) {
+                            args.store.mechanisms[k] = suit_inputs->mechanisms[k];
+                        }
+                    }
+                }
 
                 args.store.src = *suit_index_to_component_identifier(extracted, parameters[tmp_index].source_component);
                 args.store.dst = *suit_index_to_component_identifier(extracted, tmp_index);
@@ -707,7 +717,6 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                 const uint8_t tmp_index = suit_index.index[j];
 
                 args.store = (suit_store_args_t){0};
-                args.store.info_key = SUIT_INFO_DEFAULT;
                 args.store.report.val = val.u64;
 
                 args.store.src = *suit_index_to_component_identifier(extracted, parameters[tmp_index].source_component);

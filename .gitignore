@@ -4,6 +4,9 @@ html/
 # Build directory
 build/
 
+# parser output directory
+tmp/
+
 # Prerequisites
 *.d
 
