@@ -159,6 +159,8 @@ typedef struct suit_parameter_args {
 
     UsefulBufC                  vendor_id;
     UsefulBufC                  class_id;
+    UsefulBufC                  device_id;
+
     suit_digest_t               image_digest;
     uint64_t                    use_before;
     uint64_t                    component_slot;
@@ -172,7 +174,7 @@ typedef struct suit_parameter_args {
 
     uint64_t                    image_size;
 
-    suit_encryption_info_t      encryption_info;
+    UsefulBufC                  encryption_info;
 
     /* uri is combined in uri-list */
     //suit_buf_t                uri;

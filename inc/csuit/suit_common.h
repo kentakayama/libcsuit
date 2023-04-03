@@ -75,6 +75,8 @@ typedef enum {
 #define SUIT_MAX_DEPENDENCY_NUM         1
 #endif
 
+#define SUIT_MAX_INDEX_NUM (SUIT_MAX_COMPONENT_NUM + SUIT_MAX_DEPENDENCY_NUM)
+
 #ifndef SUIT_MAX_ARGS_LENGTH
 #define SUIT_MAX_ARGS_LENGTH            64
 #endif
@@ -356,7 +358,7 @@ typedef struct suit_dependency {
  */
 typedef struct suit_dependencies {
     size_t              len;
-    suit_dependency_t   dependency[SUIT_MAX_ARRAY_LENGTH];
+    suit_dependency_t   dependency[SUIT_MAX_DEPENDENCY_NUM];
 } suit_dependencies_t;
 
 /*
@@ -515,12 +517,8 @@ typedef struct suit_manifest {
 } suit_manifest_t;
 
 typedef struct suit_index {
-    uint8_t is_dependency : 1; // 0: component, 1: dependency
-    uint8_t _padding : 3;
-    uint8_t len : 4;
-    struct {
-        uint8_t val;
-    } index[7];
+    uint8_t len;
+    uint8_t index[SUIT_MAX_COMPONENT_NUM + SUIT_MAX_DEPENDENCY_NUM];
 } suit_index_t;
 
 typedef struct suit_payload {
