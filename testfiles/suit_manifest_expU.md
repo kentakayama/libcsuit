@@ -6,20 +6,19 @@
 {: numbered='no'}
 
 ~~~~
-/ SUIT_Envelope = / 107({
+/ SUIT_Envelope / {
   / authentication-wrapper / 2: << [
-    / digest: / << [
-      / algorithm-id: / -16 / SHA-256 /,
-      / digest-bytes: / h'549b1bf2e6f662167342a91e2cd16a695be2ecfb7c325639189d0ea8eba57d0a'
+    << [
+      / digest-algorithm-id: / -16 / cose-alg-sha256 /,
+      / digest-bytes: / h'B892B75B262B728EC2C16C2774A730DC804BC87252DAFC57A0098284C3E73587'
     ] >>,
-    / signatures: / << 18([
+    << / COSE_Sign1_Tagged / 18([
       / protected: / << {
-        / alg / 1: -7 / ES256 /
+        / algorithm-id / 1: -7 / ES256 /
       } >>,
-      / unprotected: / {
-      },
+      / unprotected: / {},
       / payload: / null,
-      / signature: / h'478c87a8abb1f0388c8541c8396b268c72dbc8dff7aa34357e2a022741287d16df92be53e135a2daecf95800a623801705034d8187bb15de36a7d1dde37b5b7c'
+      / signature: / h'E9F3FDF01FA0896C3CB29D166A6183C660A5DCEB8FFB9AC7E272C9EF7A9BD5D7651C4C426717A95408B13F56BAEF778BD463DA33D9483FFD88CCB548FE29D850'
     ]) >>
   ] >>,
   / manifest / 3: << {
@@ -27,31 +26,42 @@
     / manifest-sequence-number / 2: 3,
     / common / 3: << {
       / components / 2: [
-        [h'544545502d446576696365', h'5365637572654653', h'8d82573a926d4754935332dc29997f74', h'7461']
+        [
+          'TEEP-Device',
+          'SecureFS',
+          h'8D82573A926D4754935332DC29997F74', / tc-uuid /
+          'ta'
+        ]
       ],
-      / common-sequence / 4: << [
+      / shared-sequence / 4: << [
         / directive-override-parameters / 20, {
-          / vendor-id / 1: h'c0ddd5f15243566087db4f5b0aa26c2f' / c0ddd5f1-5243-5660-87db-4f5b0aa26c2f /,
-          / class-id / 2: h'db42f7093d8c55baa8c5265fc5820f4e' / db42f709-3d8c-55ba-a8c5-265fc5820f4e /,
-          / image-digest / 3: << [
-            / algorithm-id: / -16 / SHA-256 /,
-            / digest-bytes: / h'8cf71ac86af31be184ec7a05a411a8c3a14fd9b77a30d046397481469468ece8'
+          / parameter-vendor-identifier / 1: h'C0DDD5F15243566087DB4F5B0AA26C2F',
+          / parameter-class-identifier / 2: h'DB42F7093D8C55BAA8C5265FC5820F4E',
+          / parameter-image-digest / 3: << [
+            / digest-algorithm-id: / -16 / cose-alg-sha256 /,
+            / digest-bytes: / h'8CF71AC86AF31BE184EC7A05A411A8C3A14FD9B77A30D046397481469468ECE8'
           ] >>,
-          / image-size / 14: 20
+          / parameter-image-size / 14: 20
         },
         / condition-vendor-identifier / 1, 15,
         / condition-class-identifier / 2, 15
       ] >>
     } >>,
+    / manifest-component-id / 5: [
+      'TEEP-Device',
+      'SecureFS',
+      h'8D82573A926D4754935332DC29997F74',  / tc-uuid /
+      'suit'
+    ],
     / install / 17: << [
       / directive-override-parameters / 20, {
-        / uri / 21: "https://example.org/8d82573a-926d-4754-9353-32dc29997f74.ta"
+        / parameter-uri / 21: "https://example.org/8d82573a-926d-4754-9353-32dc29997f74.ta"
       },
       / directive-fetch / 21, 15,
       / condition-image-match / 3, 15
     ] >>
   } >>
-})
+}
 ~~~~
 
 
@@ -59,16 +69,17 @@
 {: numbered='no'}
 
 ~~~~
-d86ba2025873825824822f5820549b1bf2e6f662167342a91e2cd16a695b
-e2ecfb7c325639189d0ea8eba57d0a584ad28443a10126a0f65840478c87
-a8abb1f0388c8541c8396b268c72dbc8dff7aa34357e2a022741287d16df
-92be53e135a2daecf95800a623801705034d8187bb15de36a7d1dde37b5b
-7c0358d4a401010203035884a20281844b544545502d4465766963654853
-65637572654653508d82573a926d4754935332dc29997f74427461045854
-8614a40150c0ddd5f15243566087db4f5b0aa26c2f0250db42f7093d8c55
-baa8c5265fc5820f4e035824822f58208cf71ac86af31be184ec7a05a411
-a8c3a14fd9b77a30d046397481469468ece80e14010f020f1158458614a1
-15783b68747470733a2f2f6578616d706c652e6f72672f38643832353733
-612d393236642d343735342d393335332d3332646332393939376637342e
-7461150f030f
+A2025873825824822F5820B892B75B262B728EC2C16C2774A730DC804BC8
+7252DAFC57A0098284C3E73587584AD28443A10126A0F65840B1C64B76EB
+3F7293498E230187F14643F43C3F1DC27B22E7891E01495E1465E072B6FA
+5F130FC68B6453B321D7EBBFD2C321C59152F52263ECD57663880B6E9D03
+590101A501010203035884A20281844B544545502D446576696365485365
+637572654653508D82573A926D4754935332DC29997F7442746104585486
+14A40150C0DDD5F15243566087DB4F5B0AA26C2F0250DB42F7093D8C55BA
+A8C5265FC5820F4E035824822F58208CF71AC86AF31BE184EC7A05A411A8
+C3A14FD9B77A30D046397481469468ECE80E14010F020F05844B54454550
+2D446576696365485365637572654653508D82573A926D4754935332DC29
+997F7444737569741158458614A115783B68747470733A2F2F6578616D70
+6C652E6F72672F38643832353733612D393236642D343735342D39333533
+2D3332646332393939376637342E7461150F030F
 ~~~~
