@@ -1,4 +1,4 @@
-# [libcsuit](https://github.com/yuichitk/libcsuit/)
+# [libcsuit](https://github.com/kentakayama/libcsuit/)
 **libcsuit** is a C library for encoding and decoding [IETF SUIT manifests](https://tools.ietf.org/html/draft-ietf-suit-manifest).
 The manifest contains meta-data about the firmware image. The manifest is protected against modification and provides information
 about the software/firmware author.
@@ -32,7 +32,7 @@ If you download their latest and stable version of source code and build it, you
 Preventing this, we recommend you to build libcsuit examples with docker.
 
 ```bash
-git clone https://github.com/yuichitk/libcsuit
+git clone https://github.com/kentakayama/libcsuit
 cd ./libcsuit
 ```
 
@@ -57,7 +57,7 @@ docker run -t libcsuit_enc
 ### Using Makefiles
 
 ```bash
-git clone --recurse-submodules https://github.com/yuichitk/libcsuit
+git clone --recurse-submodules https://github.com/kentakayama/libcsuit
 cd ./libcsuit/QCBOR
 make install
 cd ../t_cose
@@ -113,7 +113,7 @@ Here are the commands:
 git clone https://github.com/laurencelundblade/QCBOR.git
 git clone https://github.com/laurencelundblade/t_cose.git
 git clone https://github.com/ARMmbed/mbedtls.git
-git clone https://github.com/yuichitk/libcsuit.git
+git clone https://github.com/kentakayama/libcsuit.git
 cd libcsuit
 ```
 
@@ -132,23 +132,23 @@ If you want to build the code for OpenSSL then omit the '-DMBEDTLS=1' parameter 
 ## SUIT Protocol Message Examples
 The following description Markdown and CBOR files are compliant with [draft-ietf-suit-manifest-19](https://tools.ietf.org/html/draft-ietf-suit-manifest-19).
 - Example 0
-  - [suit_manifest_exp0.md](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp0.md)
-  - [suit_manifest_exp0.cbor](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp0.cbor)
+  - [suit_manifest_exp0.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.md)
+  - [suit_manifest_exp0.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.cbor)
 - Example 1
-  - [suit_manifest_exp1.md](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp1.md)
-  - [suit_manifest_exp1.cbor](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp1.cbor)
+  - [suit_manifest_exp1.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.md)
+  - [suit_manifest_exp1.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.cbor)
 - Example 2
-  - [suit_manifest_exp2.md](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp2.md)
-  - [suit_manifest_exp2.cbor](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp2.cbor)
+  - [suit_manifest_exp2.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.md)
+  - [suit_manifest_exp2.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.cbor)
 - Example 3
-  - [suit_manifest_exp3.md](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp3.md)
-  - [suit_manifest_exp3.cbor](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp3.cbor)
+  - [suit_manifest_exp3.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.md)
+  - [suit_manifest_exp3.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.cbor)
 - Example 4
-  - [suit_manifest_exp4.md](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp4.md)
-  - [suit_manifest_exp4.cbor](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp4.cbor)
+  - [suit_manifest_exp4.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.md)
+  - [suit_manifest_exp4.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.cbor)
 - Example 5
-  - [suit_manifest_exp5.md](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp5.md)
-  - [suit_manifest_exp5.cbor](https://github.com/yuichitk/libcsuit/blob/master/testfiles/suit_manifest_exp5.cbor)
+  - [suit_manifest_exp5.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.md)
+  - [suit_manifest_exp5.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.cbor)
 
 ## License and Copyright
 BSD 2-Clause License
