@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     // Read manifest file.
     printf("main : Read Manifest file.\n");
     uint8_t manifest_buf[MAX_FILE_BUFFER_SIZE];
-    size_t manifest_len = read_from_file(manifest_file, MAX_FILE_BUFFER_SIZE, manifest_buf);
+    size_t manifest_len = read_from_file(manifest_file, manifest_buf, MAX_FILE_BUFFER_SIZE);
     if (!manifest_len) {
         printf("main : Failed to read Manifest file.\n");
         return EXIT_FAILURE;

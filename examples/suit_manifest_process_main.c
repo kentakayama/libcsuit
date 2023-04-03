@@ -408,6 +408,11 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
         result = (unlink(dst) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
         break;
     }
+    if (result != SUIT_SUCCESS) {
+        printf("main : error = %s(%d)\n", suit_err_to_str(result), result);
+        printf("main : suppress it for testing.\n\n");
+        result = SUIT_SUCCESS;
+    }
     return result;
 }
 

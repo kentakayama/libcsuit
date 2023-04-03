@@ -45,9 +45,9 @@ int main(int argc, char *argv[]) {
 
     uint8_t component_id[] = {0x00};
     suit_common_t *common = &manifest->common;
-    common->components.len = 1;
-    common->components.comp_id[0].len = 1;
-    common->components.comp_id[0].identifier[0] = (suit_buf_t){.ptr = component_id, .len = sizeof(component_id)};
+    common->components_len = 1;
+    common->components[0].component.len = 1;
+    common->components[0].component.identifier[0] = (suit_buf_t){.ptr = component_id, .len = sizeof(component_id)};
 
     uint8_t vendor_id[] = {0xFA, 0x6B, 0x4A, 0x53, 0xD5, 0xAD, 0x5F, 0xDF, 0xBE, 0x9D, 0xE6, 0x63, 0xE4, 0xD4, 0x1F, 0xFE};
     uint8_t class_id[] = {0x14, 0x92, 0xAF, 0x14, 0x25, 0x69, 0x5E, 0x48, 0xBF, 0x42, 0x9B, 0x2D, 0x51, 0xF2, 0xAB, 0x45};
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     }
     printf("main : Total buffer memory usage was %ld/%ld bytes\n", ret_pos + encode_len - encode_buf, sizeof(encode_buf));
 
-    size_t w_len = write_to_file(manifest_file, encode_len, ret_pos);
+    size_t w_len = write_to_file(manifest_file, ret_pos, encode_len);
     if (w_len != encode_len) {
         printf("main : Failed to write to %s\n", manifest_file);
     }
