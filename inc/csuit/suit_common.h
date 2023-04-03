@@ -37,6 +37,7 @@ typedef enum {
     SUIT_ERR_INVALID_VALUE              = 16, /*! the input value is invalid */
     SUIT_ERR_FAILED_TO_SIGN             = 17,
     SUIT_ERR_NOT_A_SUIT_MANIFEST        = 18, /*! the input data is tagged but not SUIT_Manifest_Tagged */
+    SUIT_ERR_CONDITION_MISMATCH         = 19, /*! suit-condition-* failed */
     SUIT_ERR_ABORT                      = 31, /*! abort to execute, mainly for libcsuit internal */
 } suit_err_t;
 
@@ -82,7 +83,7 @@ typedef enum {
 #endif
 
 #ifndef SUIT_MAX_DATA_SIZE
-#define SUIT_MAX_DATA_SIZE              (128 * 1024)
+#define SUIT_MAX_DATA_SIZE              (8 * 1024 * 1024)
 #endif
 
 #define SUIT_ENVELOPE_CBOR_TAG               107
@@ -329,13 +330,10 @@ typedef struct suit_component_identifier {
     suit_buf_t                      identifier[SUIT_MAX_ARRAY_LENGTH];
 } suit_component_identifier_t;
 
-/*
- * SUIT_Components
- */
-typedef struct suit_components {
-    size_t                          len;
-    suit_component_identifier_t     comp_id[SUIT_MAX_COMPONENT_NUM];
-} suit_components_t;
+typedef struct suit_component_with_index {
+    uint8_t                         index;
+    suit_component_identifier_t     component;
+} suit_component_with_index_t;
 
 /*
  * SUIT_Dependency
@@ -497,7 +495,9 @@ typedef struct suit_unseverable_members {
  */
 typedef struct suit_common {
     suit_dependencies_t             dependencies;
-    suit_components_t               components;
+
+    uint8_t                         components_len;
+    suit_component_with_index_t     components[SUIT_MAX_INDEX_NUM];
     suit_command_sequence_t         shared_seq;
 } suit_common_t;
 
@@ -523,7 +523,7 @@ typedef struct suit_index {
 
 typedef struct suit_payload {
     UsefulBufC key;
-    suit_index_t index; // only 1 index should be stored
+    uint8_t index;
     UsefulBufC bytes;
 } suit_payload_t;
 

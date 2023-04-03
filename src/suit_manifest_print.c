@@ -58,6 +58,8 @@ char* suit_err_to_str(suit_err_t error)
         return "SUIT_ERR_FAILED_TO_SIGN";
     case SUIT_ERR_NOT_A_SUIT_MANIFEST:
         return "SUIT_ERR_NOT_A_SUIT_MANIFEST";
+    case SUIT_ERR_CONDITION_MISMATCH:
+        return "SUIT_ERR_CONDITION_MISMATCH";
     case SUIT_ERR_ABORT:
         return "SUIT_ERR_ABORT";
     default:
@@ -1084,18 +1086,18 @@ suit_err_t suit_print_manifest(const uint8_t mode,
         comma = true;
     }
 
-    if (manifest->common.components.len > 0) {
+    if (manifest->common.components_len > 0) {
         if (comma) {
             printf(",\n");
         }
         printf("%*s/ components / 2: [", indent_space + 2 * indent_delta, "");
-        for (size_t i = 0; i < manifest->common.components.len; i++) {
+        for (size_t i = 0; i < manifest->common.components_len; i++) {
             printf("\n%*s", indent_space + 3 * indent_delta, "");
-            result = suit_print_component_identifier(&manifest->common.components.comp_id[i]);
+            result = suit_print_component_identifier(&manifest->common.components[i].component);
             if (result != SUIT_SUCCESS) {
                 return result;
             }
-            if (i + 1 != manifest->common.components.len) {
+            if (i + 1 != manifest->common.components_len) {
                 printf(",");
             }
         }
@@ -1435,46 +1437,30 @@ suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args)
     return suit_print_invoke(invoke_args);
 }
 
-suit_err_t suit_print_copy(suit_copy_args_t copy_args)
+char* suit_store_key_to_str(suit_store_key_t operation)
 {
-    printf("copy args : {\n");
-    printf("  src-component-identifier : ");
-    suit_print_component_identifier(&copy_args.src);
-    printf("\n");
-    printf("  dst-component-identifier : ");
-    suit_print_component_identifier(&copy_args.dst);
-    printf("\n");
-
-    printf("  copy-info : %s", suit_info_key_to_str(copy_args.info_key));
-    switch (copy_args.info_key) {
-    case SUIT_INFO_DEFAULT:
-        /* nothing to be printed */
-        break;
-    case SUIT_INFO_ENCRYPTION:
-        /* TODO: nothing to be printed */
-        break;
+    switch (operation) {
+    case SUIT_STORE: return "store";
+    case SUIT_COPY: return "copy";
+    case SUIT_SWAP: return "swap";
+    case SUIT_UNLINK: return "unlink";
+    default: return NULL;
     }
-    printf("\n");
-
-    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", copy_args.report.record_on_success, copy_args.report.record_on_failure, copy_args.report.sysinfo_success, copy_args.report.sysinfo_failure);
-    printf("}\n\n");
-    return SUIT_SUCCESS;
-}
-
-suit_err_t suit_copy_callback(suit_copy_args_t copy_args)
-{
-    return suit_print_copy(copy_args);
 }
 
 suit_err_t suit_print_store(suit_store_args_t store_args)
 {
     suit_err_t ret = SUIT_SUCCESS;
     printf("store callback : {\n");
+    printf("  operation : %s\n", suit_store_key_to_str(store_args.operation));
     printf("  dst-component-identifier : ");
-    suit_print_component_identifier(&store_args.dst_component_identifier);
+    suit_print_component_identifier(&store_args.dst);
+    printf("\n");
+    printf("  src-component-identifier : ");
+    suit_print_component_identifier(&store_args.src);
     printf("\n");
 
-    printf("  ptr : %p (%ld)\n", store_args.ptr, store_args.buf_len);
+    printf("  ptr : %p (%ld)\n", store_args.src_buf.ptr, store_args.src_buf.len);
     printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", store_args.report.record_on_success, store_args.report.record_on_failure, store_args.report.sysinfo_success, store_args.report.sysinfo_failure);
     printf("}\n\n");
     return ret;
@@ -1494,7 +1480,7 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
     suit_print_tstr_in_max(fetch_args.uri, fetch_args.uri_len, SUIT_MAX_PRINT_URI_COUNT);
     printf(" (%ld)\n", fetch_args.uri_len);
     printf("  dst-component-identifier : ");
-    suit_print_component_identifier(&fetch_args.dst_component_identifier);
+    suit_print_component_identifier(&fetch_args.dst);
     printf("\n");
 
     printf("  fetch buf : %p(%ld)\n", fetch_args.ptr, fetch_args.buf_len);
@@ -1508,6 +1494,66 @@ suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args,
                                suit_fetch_ret_t *fetch_ret)
 {
     return suit_print_fetch(fetch_args, fetch_ret);
+}
+
+suit_err_t suit_print_condition(suit_condition_args_t condition_args)
+{
+    suit_err_t result = SUIT_SUCCESS;
+
+    printf("condition callback : {\n");
+    printf("  operation : %s\n", suit_command_sequence_key_to_str(condition_args.condition));
+    printf("  dst-component-identifier : ");
+    suit_print_component_identifier(&condition_args.dst);
+    printf("\n");
+
+    printf("  expected : ");
+    switch (condition_args.condition) {
+    /* uint64 */
+    case SUIT_CONDITION_COMPONENT_SLOT:
+    case SUIT_CONDITION_USE_BEFORE:
+    case SUIT_CONDITION_MINIMUM_BATTERY:
+    case SUIT_CONDITION_UPDATE_AUTHORIZED:
+        printf("%lu\n", condition_args.expected.u64);
+        break;
+
+    /* bstr */
+    case SUIT_CONDITION_VENDOR_IDENTIFIER:
+    case SUIT_CONDITION_CLASS_IDENTIFIER:
+    case SUIT_CONDITION_DEVICE_IDENTIFIER:
+    case SUIT_CONDITION_CHECK_CONTENT:
+        suit_print_hex(condition_args.expected.str.ptr, condition_args.expected.str.len);
+        printf("\n");
+        break;
+
+    /* suit-digest */
+    case SUIT_CONDITION_IMAGE_MATCH:
+    case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        suit_print_digest(&condition_args.expected.image_digest, 2, 2);
+        printf("\n");
+        break;
+
+
+    /* must be handled in the library */
+    case SUIT_CONDITION_IS_DEPENDENCY:
+    case SUIT_CONDITION_ABORT:
+        result = SUIT_ERR_INVALID_KEY;
+
+    /* not implemented */
+    case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+    case SUIT_CONDITION_VERSION:
+    default:
+        result = SUIT_ERR_NOT_IMPLEMENTED;
+    }
+
+    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", condition_args.report.record_on_success, condition_args.report.record_on_failure, condition_args.report.sysinfo_success, condition_args.report.sysinfo_failure);
+    printf("}\n\n");
+
+    return result;
+}
+
+suit_err_t suit_condition_callback(suit_condition_args_t condition_args)
+{
+    return suit_print_condition(condition_args);
 }
 
 suit_err_t suit_print_report(suit_report_args_t report_args)

@@ -399,10 +399,10 @@ suit_err_t suit_encode_common(const suit_common_t *suit_common,
     }
 
     // suit-components
-    if (suit_common->components.len > 0) {
+    if (suit_common->components_len > 0) {
         QCBOREncode_OpenArrayInMapN(&context, SUIT_COMPONENTS);
-        for (size_t i = 0; i < suit_common->components.len; i++) {
-            suit_encode_append_component_identifier(&suit_common->components.comp_id[i], 0, &context);
+        for (size_t i = 0; i < suit_common->components_len; i++) {
+            suit_encode_append_component_identifier(&suit_common->components[i].component, 0, &context);
         }
         QCBOREncode_CloseArray(&context);
     }

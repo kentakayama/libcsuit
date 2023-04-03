@@ -12,6 +12,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h> // chmod
+#include <sys/types.h> // pid_t
+#include <sys/wait.h> // waitpid
+#include <unistd.h> // fork
 #include "qcbor/qcbor.h"
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_print.h"
@@ -20,7 +24,45 @@
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/q_useful_buf.h"
 
-#define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
+bool is_available_char_for_filename(const char c)
+{
+    return (('a' <= c && c <= 'z') ||
+            ('A' <= c && c <= 'Z') ||
+            ('0' <= c && c <= '9') ||
+            ('_' == c) ||
+            ('.' == c) ||
+            ('-' == c));
+}
+
+suit_err_t suit_component_identifier_to_filename(suit_component_identifier_t comp_id,
+                                                 const size_t max_filename_len,
+                                                 char filename[])
+{
+    size_t pos = 0;
+
+    pos += sprintf(&filename[pos], "./tmp");
+    for (size_t i = 0; i < comp_id.len; i++) {
+        if (pos + 1 + 1 > max_filename_len) {
+            return SUIT_ERR_NO_MEMORY;
+        }
+        pos += sprintf(&filename[pos], "/");
+
+        if (pos + comp_id.identifier[i].len + 1 > max_filename_len) {
+            return SUIT_ERR_NO_MEMORY;
+        }
+        for (size_t j = 0; j < comp_id.identifier[i].len; j++) {
+            if (is_available_char_for_filename(comp_id.identifier[i].ptr[j])) {
+                filename[pos++] = comp_id.identifier[i].ptr[j];
+            }
+            else {
+                pos += sprintf(&filename[pos], "%02x", comp_id.identifier[i].ptr[j]);
+            }
+        }
+    }
+    filename[pos] = '\0';
+
+    return SUIT_SUCCESS;
+}
 
 #define NUM_PUBLIC_KEYS                 1
 /* TC signer's public_key */
@@ -100,6 +142,33 @@ const uint8_t config_data[] = {
     0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x61, 0x62, 0x63,
     0x64, 0x65, 0x22, 0x7D
 };// "{\"name\": \"FOO Bar\", \"token\": \"0123456789abfcdef0123456789abcde\"}";
+const uint8_t dependent_uri[] = {
+    0x68, 0x74, 0x74, 0x70, 0x3A, 0x2F, 0x2F, 0x65, 0x78, 0x61,
+    0x6D, 0x70, 0x6C, 0x65, 0x2E, 0x63, 0x6F, 0x6D, 0x2F, 0x64,
+    0x65, 0x70, 0x65, 0x6E, 0x64, 0x65, 0x6E, 0x74, 0x2E, 0x73,
+    0x75, 0x69, 0x74
+}; // "http://example.com/dependent.suit
+const uint8_t dependent_data[] = {
+    0xD8, 0x6B, 0xA2, 0x02, 0x58, 0x73, 0x82, 0x58, 0x24, 0x82,
+    0x2F, 0x58, 0x20, 0xF5, 0xCC, 0x80, 0x9E, 0xDF, 0x46, 0x61,
+    0xA5, 0x2C, 0xD0, 0x40, 0x25, 0xB1, 0xDF, 0x06, 0xA8, 0x03,
+    0xF7, 0x5E, 0xB6, 0x19, 0xDE, 0x7A, 0x7C, 0x54, 0x72, 0x0B,
+    0xFB, 0xA6, 0x82, 0x8C, 0x63, 0x58, 0x4A, 0xD2, 0x84, 0x43,
+    0xA1, 0x01, 0x26, 0xA0, 0xF6, 0x58, 0x40, 0x33, 0xF2, 0x11,
+    0x43, 0xF9, 0x78, 0x9B, 0xD4, 0xAD, 0x61, 0xCA, 0x79, 0x28,
+    0xDD, 0xC0, 0xCB, 0x94, 0x85, 0x52, 0x79, 0x0A, 0x64, 0x1F,
+    0x5E, 0xFD, 0xD4, 0x5E, 0xAE, 0x5A, 0x4A, 0x61, 0x1A, 0xD4,
+    0xBB, 0x7D, 0x58, 0x3F, 0xFD, 0x43, 0xBC, 0x2F, 0xF6, 0x3B,
+    0x45, 0x8B, 0xD0, 0x92, 0xEE, 0xB3, 0xBA, 0x36, 0x1C, 0xFE,
+    0x19, 0x32, 0xDC, 0xA7, 0x45, 0x38, 0xB3, 0x96, 0x01, 0xEB,
+    0x82, 0x03, 0x58, 0x42, 0xA6, 0x01, 0x01, 0x02, 0x00, 0x03,
+    0x47, 0xA1, 0x02, 0x81, 0x81, 0x42, 0x30, 0x30, 0x05, 0x81,
+    0x4E, 0x64, 0x65, 0x70, 0x65, 0x6E, 0x64, 0x65, 0x6E, 0x74,
+    0x2E, 0x73, 0x75, 0x69, 0x74, 0x11, 0x52, 0x84, 0x14, 0xA1,
+    0x12, 0x4B, 0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x77, 0x6F,
+    0x72, 0x6C, 0x64, 0x12, 0x0F, 0x17, 0x4D, 0x84, 0x14, 0xA1,
+    0x17, 0x46, 0x63, 0x61, 0x74, 0x20, 0x30, 0x30, 0x17, 0x0F
+};// suit_manifest_expD00.suit
 
 struct name_data {
     const uint8_t *name;
@@ -107,17 +176,24 @@ struct name_data {
     const uint8_t *data;
     size_t data_len;
 };
-#define SUIT_NAME_DATA_LEN 3
+#define SUIT_NAME_DATA_LEN 4
 const struct name_data name_data[] = {
     {.name = tc_uri, .name_len = sizeof(tc_uri), .data = tc_data, .data_len = sizeof(tc_data)},
     {.name = depend_uri, .name_len = sizeof(depend_uri), .data = depend_suit, .data_len = sizeof(depend_suit)},
     {.name = config_uri, .name_len = sizeof(config_uri), .data = config_data, .data_len = sizeof(config_data)},
+    {.name = dependent_uri, .name_len = sizeof(dependent_uri), .data = dependent_data, .data_len = sizeof(dependent_data)},
 };
 
 suit_err_t __real_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
 suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret)
 {
     suit_err_t result = __real_suit_fetch_callback(fetch_args, fetch_ret);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+
+    char filename[SUIT_MAX_NAME_LENGTH];
+    result = suit_component_identifier_to_filename(fetch_args.dst, SUIT_MAX_NAME_LENGTH, filename);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -129,8 +205,11 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
             if (fetch_args.buf_len < name_data[i].data_len) {
                 return SUIT_ERR_NO_MEMORY;
             }
-            memcpy(fetch_args.ptr, name_data[i].data, name_data[i].data_len);
-            fetch_ret->buf_len = name_data[i].data_len;
+            if (fetch_args.ptr != NULL) {
+                memcpy(fetch_args.ptr, name_data[i].data, name_data[i].data_len);
+                fetch_ret->buf_len = name_data[i].data_len;
+            }
+            write_to_file(filename, fetch_args.ptr, name_data[i].data_len);
             printf("fetched %s\n\n", name_data[i].name);
             break;
         }
@@ -144,7 +223,69 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
     return SUIT_SUCCESS;
 }
 
-int main(int argc, char *argv[]) {
+suit_err_t __real_suit_invoke_callback(suit_invoke_args_t invoke_args);
+suit_err_t __wrap_suit_invoke_callback(suit_invoke_args_t invoke_args)
+{
+    suit_err_t result = __real_suit_invoke_callback(invoke_args);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+
+    char cd[] = "./tmp";
+    char command[SUIT_MAX_NAME_LENGTH];
+    snprintf(command, invoke_args.args_len + 1, "%s", (char *)invoke_args.args);
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        /* child */
+        int ret;
+        ret = chdir(cd);
+        if (ret != 0) {
+            printf("(sub) Failed to set working directory at \"%s\"\n", cd);
+            return SUIT_ERR_FATAL;
+        }
+        printf("<sub>$ cd %s\n", cd);
+        printf("<sub>$ %s\n", command);
+        ret = system(command);
+        printf("\n");
+        fflush(stdout);
+        exit(ret);
+    }
+    else if (pid > 0) {
+        int status;
+        waitpid(pid, &status, 0);
+        if (WIFEXITED(status)) {
+            printf("<sub> Command exited with %d\n", WEXITSTATUS(status));
+            return SUIT_SUCCESS;
+        }
+        else {
+            printf("<sub> Command terminated %u\n", status);
+            return SUIT_ERR_FATAL;
+        }
+    }
+    /* XXX: DO NOT REACH HERE */
+    return SUIT_ERR_FATAL;
+}
+
+suit_err_t __real_suit_store_callback(suit_store_args_t store_args);
+suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
+{
+    suit_err_t result = __real_suit_store_callback(store_args);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+
+    char filename[SUIT_MAX_NAME_LENGTH];
+    result = suit_component_identifier_to_filename(store_args.dst, SUIT_MAX_NAME_LENGTH, filename);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    write_to_file(filename, store_args.src_buf.ptr, store_args.src_buf.len);
+    return SUIT_SUCCESS;
+}
+
+int main(int argc, char *argv[])
+{
     // check arguments.
     if (argc < 2) {
         printf("%s <manifest file path>", argv[0]);
@@ -153,47 +294,47 @@ int main(int argc, char *argv[]) {
     int32_t result = 0;
     int i;
 
-    uint8_t *manifest_buf = malloc(MAX_FILE_BUFFER_SIZE);
-    if (manifest_buf == NULL) {
-        printf("main : Failed to allocate memory for manifest_buf.\n");
+    suit_inputs_t *suit_inputs = malloc(sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
+    if (suit_inputs == NULL) {
+        printf("main : Failed to allocate memory for suit_inputs\n");
         return EXIT_FAILURE;
     }
-    suit_inputs_t suit_inputs = {0};
-    suit_inputs.left_len = SUIT_MAX_DATA_SIZE;
-    suit_inputs.ptr = suit_inputs.buf;
-    suit_inputs.key_len = NUM_PUBLIC_KEYS;
+    suit_inputs->left_len = SUIT_MAX_DATA_SIZE;
+    suit_inputs->ptr = suit_inputs->buf;
+    suit_inputs->key_len = NUM_PUBLIC_KEYS;
 
     // Read key from der file.
     // This code is only available for openssl prime256v1.
     printf("\nmain : Read public key from DER file.\n");
     for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
-        result = suit_key_init_es256_public_key(public_keys[i], &suit_inputs.mechanisms[i].key);
+        result = suit_key_init_es256_public_key(public_keys[i], &suit_inputs->mechanisms[i].key);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
         }
-        suit_inputs.mechanisms[i].use = true;
-        suit_inputs.mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
+        suit_inputs->mechanisms[i].use = true;
+        suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
     }
     // Read manifest file.
     printf("\nmain : Read Manifest file.\n");
-    suit_inputs.manifest.ptr = manifest_buf;
-    suit_inputs.manifest.len = read_from_file(argv[1], MAX_FILE_BUFFER_SIZE, manifest_buf);
-    if (suit_inputs.manifest.len <= 0) {
+    suit_inputs->manifest.ptr = suit_inputs->buf;
+    suit_inputs->manifest.len = read_from_file(argv[1], suit_inputs->buf, SUIT_MAX_DATA_SIZE);
+    if (suit_inputs->manifest.len <= 0) {
         printf("main : Failed to read Manifest file.\n");
         return EXIT_FAILURE;
     }
+    suit_inputs->left_len -= suit_inputs->manifest.len;
 
     // Process manifest file.
     printf("\nmain : Process Manifest file.\n");
-    suit_inputs.all = 0;
-    suit_inputs.install = 1;
-    suit_inputs.invoke = 1;
-    result = suit_process_envelope(&suit_inputs);
+    suit_inputs->process_flags.all = UINT16_MAX;
+    result = suit_process_envelope(suit_inputs);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to install and invoke a Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
+
+    free(suit_inputs);
 
     return EXIT_SUCCESS;
 }

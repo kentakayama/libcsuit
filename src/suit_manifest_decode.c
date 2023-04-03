@@ -525,41 +525,37 @@ suit_err_t suit_decode_components_from_item(const uint8_t mode,
                                             QCBORDecodeContext *context,
                                             QCBORItem *item,
                                             bool next,
-                                            suit_components_t *components)
+                                            suit_component_with_index_t *components,
+                                            uint8_t *num)
 {
-    components->len = 0;
-
     suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_ARRAY);
     if (result != SUIT_SUCCESS) {
         return result;
     }
     size_t len = item->val.uCount;
+    if (len > SUIT_MAX_INDEX_NUM) {
+        return SUIT_ERR_NO_MEMORY;
+    }
     for (size_t i = 0; i < len; i++) {
         result = suit_qcbor_get(context, item, true, QCBOR_TYPE_ARRAY);
         if (!suit_continue(mode, result)) {
             break;
         }
         if (result == SUIT_SUCCESS) {
-            if (components->len >= SUIT_MAX_COMPONENT_NUM) {
-                result = SUIT_ERR_NO_MEMORY;
-                break;
-            }
-            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &components->comp_id[components->len]);
-            if (result == SUIT_SUCCESS) {
-                components->len++;
-            }
-            else if (result == SUIT_ERR_INVALID_TYPE_OF_ARGUMENT) {
+            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &components[i].component);
+            if (result == SUIT_ERR_INVALID_TYPE_OF_ARGUMENT) {
                 if (!suit_qcbor_skip_any(context, item)) {
                     result = SUIT_ERR_FATAL;
                 }
             }
+            components[i].index = i;
         }
         if (!suit_continue(mode, result)) {
-            if (!(mode & SUIT_DECODE_MODE_PRESERVE_ON_ERROR)) {
-                components->len = 0;
-            }
             break;
         }
+    }
+    if (num != NULL) {
+        *num = len;
     }
     return result;
 }
@@ -568,7 +564,7 @@ suit_err_t suit_decode_dependency_metadata_from_item(const uint8_t mode,
                                                      QCBORDecodeContext *context,
                                                      QCBORItem *item,
                                                      bool next,
-                                                     suit_dependency_t *dependency)
+                                                     suit_dependency_metadata_t *dependency_metadata)
 {
     suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_MAP);
     if (result != SUIT_SUCCESS) {
@@ -584,7 +580,7 @@ suit_err_t suit_decode_dependency_metadata_from_item(const uint8_t mode,
 
         switch (item->label.uint64) {
         case SUIT_DEPENDENCY_PREFIX:
-            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &dependency->dependency_metadata.prefix);
+            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &dependency_metadata->prefix);
             break;
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -622,7 +618,7 @@ suit_err_t suit_decode_dependencies_from_item(const uint8_t mode,
             }
             suit_dependency_t *dependency = &dependencies->dependency[dependencies->len];
             dependency->index = item->label.uint64;
-            result = suit_decode_dependency_metadata_from_item(mode, context, item, false, dependency);
+            result = suit_decode_dependency_metadata_from_item(mode, context, item, false, &dependency->dependency_metadata);
             if (result == SUIT_SUCCESS) {
                 dependencies->len++;
             }
@@ -678,7 +674,7 @@ suit_err_t suit_decode_common_from_item(const uint8_t mode,
                 result = suit_decode_dependencies_from_item(mode, context, item, false, &common->dependencies);
                 break;
             case SUIT_COMPONENTS:
-                result = suit_decode_components_from_item(mode, context, item, false, &common->components);
+                result = suit_decode_components_from_item(mode, context, item, false, common->components, &common->components_len);
                 break;
             case SUIT_SHARED_SEQUENCE:
                 result = suit_decode_shared_sequence_from_bstr(mode, context, item, false, &common->shared_seq);

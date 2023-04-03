@@ -6,15 +6,15 @@
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
+decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
 decode | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::green_square::green_square: |  | 
 encode | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::green_square::green_square: |  | 
-process | :green_square::green_square::black_large_square: | :black_large_square::black_large_square: | :green_square::black_large_square::black_large_square: |  | 
+process | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::black_large_square::black_large_square: |  | 
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -77,7 +77,7 @@ Name | Label | CDDL Structure | IN | IS | Supported?
 Encoding Version | 1 | suit-manifest-version | SUIT Manifest | REQUIRED | RWX
 Sequence Number | 2 | suit-manifest-sequence-number | SUIT Manifest | REQUIRED | RWX
 Common Data | 3 | suit-common | SUIT Manifest | REQUIRED | RWX
-Reference URI | 4 | suit-reference-uri | SUIT Manifest | N/M | RW?
+Reference URI | 4 | suit-reference-uri | SUIT Manifest | N/M | RW-
 Manifest Component ID | 5 | suit-manifest-component-id | SUIT Multiple Trust Domains | N/M | RWX
 Image Validation | 7 | suit-validate | SUIT Manifest | REQUIRED | RWX
 Image Loading | 8 | suit-load | SUIT Manifest | OPTIONAL | RWX
@@ -87,13 +87,13 @@ Dependency Resolution | 15 | suit-dependency-resolution | SUIT Multiple Trust Do
 Payload Fetch | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
 Payload Installation | 17 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
-Uninstall | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RW-
+Uninstall | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RWX
 
 ### SUIT Common
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
-Dependencies | 1 | suit-dependencies | SUIT Multiple Trust Domains | N/M | RW-
+Dependencies | 1 | suit-dependencies | SUIT Multiple Trust Domains | N/M | RWX
 Components | 2 | suit-components | SUIT Manifest | REQUIRED | RWX
 Shared Sequence | 4 | suit-shared-sequence | SUIT Manifest | RECOMMENDED/REQUIRED | RWX
 

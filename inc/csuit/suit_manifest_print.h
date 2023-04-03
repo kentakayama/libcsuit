@@ -59,19 +59,18 @@ suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *f
 suit_err_t suit_store_callback(suit_store_args_t store_args);
 
 /*!
-    \brief Print SUIT copy callback
-    \param[in]      copy_args       Copy and suit-report arguments. See \ref suit_copy_args_t.
-    Triggered on \ref SUIT_DIRECTIVE_COPY.
-    \return         This returns one of the error codes defined by \ref suit_err_t.
-*/
-suit_err_t suit_copy_callback(suit_copy_args_t copy_args);
-
-/*!
     \brief Print SUIT invoke callback
-    \param[in]      invoke_args        Run and suit-report arguments. See \ref suit_invoke_args_t.
+    \param[in]      invoke_args        Invoke and suit-report arguments. See \ref suit_invoke_args_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
 suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
+
+/*!
+    \brief Print SUIT report callback
+    \param[in]      condition_args     Condition and suit-report arguments. See \ref suit_condition_args_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+*/
+suit_err_t suit_condition_callback(suit_condition_args_t condition_args);
 
 /*!
     \brief Print SUIT report callback

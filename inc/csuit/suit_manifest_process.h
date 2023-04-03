@@ -17,26 +17,30 @@
  */
 
 #define BIT(nr) (1UL << (nr))
+/* draft-suit-manifest */
 #define SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER BIT(SUIT_PARAMETER_VENDOR_IDENTIFIER)
 #define SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER BIT(SUIT_PARAMETER_CLASS_IDENTIFIER)
 #define SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST BIT(SUIT_PARAMETER_IMAGE_DIGEST)
-#define SUIT_PARAMETER_CONTAINS_USE_BEFORE BIT(SUIT_PARAMETER_USE_BEFORE)
 #define SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT BIT(SUIT_PARAMETER_COMPONENT_SLOT)
 #define SUIT_PARAMETER_CONTAINS_STRICT_ORDER BIT(SUIT_PARAMETER_STRICT_ORDER)
 #define SUIT_PARAMETER_CONTAINS_SOFT_FAILURE BIT(SUIT_PARAMETER_SOFT_FAILURE)
 #define SUIT_PARAMETER_CONTAINS_IMAGE_SIZE BIT(SUIT_PARAMETER_IMAGE_SIZE)
-#define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
-#define SUIT_PARAMETER_CONTAINS_COMPRESSION_INFO BIT(SUIT_PARAMETER_COMPRESSION_INFO)
-#define SUIT_PARAMETER_CONTAINS_UNPACK_INFO BIT(SUIT_PARAMETER_UNPACK_INFO)
+#define SUIT_PARAMETER_CONTAINS_CONTENT BIT(SUIT_PARAMETER_CONTENT)
 #define SUIT_PARAMETER_CONTAINS_URI BIT(SUIT_PARAMETER_URI)
 #define SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT BIT(SUIT_PARAMETER_SOURCE_COMPONENT)
 #define SUIT_PARAMETER_CONTAINS_INVOKE_ARGS BIT(SUIT_PARAMETER_INVOKE_ARGS)
 #define SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER BIT(SUIT_PARAMETER_DEVICE_IDENTIFIER)
+
+/* draft-suit-update-management */
+#define SUIT_PARAMETER_CONTAINS_USE_BEFORE BIT(SUIT_PARAMETER_USE_BEFORE)
 #define SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY BIT(SUIT_PARAMETER_MINIMUM_BATTERY)
 #define SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY BIT(SUIT_PARAMETER_UPDATE_PRIORITY)
 #define SUIT_PARAMETER_CONTAINS_VERSION BIT(SUIT_PARAMETER_VERSION)
 #define SUIT_PARAMETER_CONTAINS_WAIT_INFO BIT(SUIT_PARAMETER_WAIT_INFO)
-#define SUIT_PARAMETER_CONTAINS_URI_LIST BIT(SUIT_PARAMETER_URI_LIST)
+
+/* draft-suit-trust-domains */
+#define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
+
 
 typedef union suit_rep_policy {
     uint64_t val;
@@ -83,17 +87,12 @@ typedef struct suit_invoke_args {
     suit_rep_policy_t report;
 } suit_invoke_args_t;
 
-typedef struct suit_copy_args {
-    suit_component_identifier_t src;
-    suit_component_identifier_t dst;
-
-    suit_info_key_t info_key;
-    union {
-        suit_encryption_info_t encryption;
-    } info;
-
-    suit_rep_policy_t report;
-} suit_copy_args_t;
+typedef enum suit_store_key {
+    SUIT_STORE  = 0,
+    SUIT_COPY   = 1,
+    SUIT_SWAP   = 2,
+    SUIT_UNLINK = 3,
+} suit_store_key_t;
 
 /**
  * Request to store data as component identifier.
@@ -101,24 +100,25 @@ typedef struct suit_copy_args {
  * The memory object is integrated into the manifest, so there is no need to fetch actually.
  */
 typedef struct suit_store_args {
-    suit_component_identifier_t dst_component_identifier;
-
-    /**
-        Pointer to source memory object in the caller.
-     */
-    const void *ptr;
-    size_t buf_len;
-
     suit_rep_policy_t report;
+
+    suit_component_identifier_t dst;
+    suit_component_identifier_t src;
+    UsefulBufC src_buf;
+
+    suit_info_key_t info_key;
+
+    /* store, copy, swap, unlink */
+    suit_store_key_t operation;
 } suit_store_args_t;
 
 /**
  * Request to fetch and store data as component identifier.
  */
 typedef struct suit_fetch_args {
+    suit_component_identifier_t dst;
     size_t uri_len;
     char uri[SUIT_MAX_URI_LENGTH];
-    suit_component_identifier_t dst_component_identifier;
 
     /**
      *  Pointer to allocated memory in the caller.
@@ -133,6 +133,8 @@ typedef struct suit_fetch_args {
     size_t buf_len;
 
     suit_rep_policy_t report;
+
+    UsefulBufC args;
 } suit_fetch_args_t;
 
 typedef struct suit_fetch_ret {
@@ -147,12 +149,18 @@ typedef struct suit_fetch_ret {
     size_t buf_len;
 } suit_fetch_ret_t;
 
-typedef struct suit_validate_args {
-    const size_t name_len;
-    char name[SUIT_MAX_NAME_LENGTH];
+typedef struct suit_condition_args {
+    suit_rep_policy_t report;
 
-    suit_digest_t image_digest;
-} suit_validate_args_t;
+    suit_component_identifier_t dst;
+    suit_con_dir_key_t condition;
+
+    union {
+        uint64_t        u64;
+        UsefulBufC      str;
+        suit_digest_t   image_digest;
+    } expected;
+} suit_condition_args_t;
 
 typedef struct suit_parameter_args {
     uint64_t                    exists;
@@ -174,102 +182,73 @@ typedef struct suit_parameter_args {
 
     uint64_t                    image_size;
 
-    UsefulBufC                  encryption_info;
-
-    /* uri is combined in uri-list */
-    //suit_buf_t                uri;
+    UsefulBufC                  content;
+    UsefulBufC                  uri;
 
     uint64_t                    source_component;
+
+    /* used in suit-directive-fetch */
+    UsefulBufC                  fetch_arguments;
 
     /* used in suit-directive-invoke */
     UsefulBufC                  invoke_args;
 
+
+    /* in draft-ietf-suit-update-management */
     /* positive minimum battery level in mWh */
-    int64_t                     minimum_battery;
+    uint64_t                     minimum_battery;
 
     /* the value is not defined, though 0 means "NOT GIVEN" here */
-    int64_t                     update_priority;
+    uint64_t                     update_priority;
 
     /* processed if suit-condition-version is specified */
     UsefulBufC                  version;
 
     //??                        wait_info;
 
-    /* decoded from both suit-parameter-uri and suit-parameter-uri-list,
-       and will be used one-by-one with its array order */
-    UsefulBufC                  uri_list[SUIT_MAX_ARRAY_LENGTH];
-    size_t                      uri_list_len;
+    /* in draft-ietf-suit-trust-domains */
 
-    //??                        fetch_arguments;
+
+    /* in draft-ietf-suit-firmware-encryption */
+    UsefulBufC                  encryption_info;
 } suit_parameter_args_t;
 
-/**
- * common command arguments for a specific component
- */
-typedef struct suit_common_args {
-    uint64_t                    manifest_sequence_number;
-
-    /* SUIT_Dependencies */
-    //??
-
-    /* SUIT_Components */
-    suit_components_t           components;
-
-    /* SUIT_Parameters */
-    suit_parameter_args_t parameters;
-
-    /* SUIT_Digest of severed members */
+typedef union {
+    uint16_t all;
     struct {
-        suit_digest_t dependency_resolution;
-        suit_digest_t payload_fetch;
-        suit_digest_t install;
-        suit_digest_t text;
-        suit_digest_t coswid;
-    } signatures;
-} suit_common_args_t;
+        uint16_t reference_uri          : 1;
+        uint16_t dependency_resolution  : 1;
+        uint16_t payload_fetch          : 1;
+        uint16_t install                : 1;
+        uint16_t uninstall              : 1;
 
+        uint16_t validate               : 1;
+        uint16_t load                   : 1;
+        uint16_t invoke                 : 1;
 
-typedef uint16_t suit_process_flag_t;
+        uint16_t text                   : 1;
+        uint16_t coswid                 : 1;
+    };
+} suit_process_flag_t;
 
 typedef struct suit_inputs {
     UsefulBufC manifest;
-    uint8_t *ptr;
-    uint8_t buf[SUIT_MAX_DATA_SIZE];
     size_t left_len;
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+    suit_process_flag_t process_flags;
+    uint8_t dependency_depth;
 
-/*
-    int dependency_resolution;
-    int payload_fetch;
-    int install;
-    int validate;
-    int load;
-    int invoke;
-*/
-    union {
-        suit_process_flag_t all;
-        struct {
-            suit_process_flag_t reference_uri          : 1;
-            suit_process_flag_t dependency_resolution  : 1;
-            suit_process_flag_t payload_fetch          : 1;
-            suit_process_flag_t install                : 1;
-            suit_process_flag_t uninstall              : 1;
-
-            suit_process_flag_t validate               : 1;
-            suit_process_flag_t load                   : 1;
-            suit_process_flag_t invoke                 : 1;
-
-            suit_process_flag_t text                   : 1;
-            suit_process_flag_t coswid                 : 1;
-        };
-    };
+    uint8_t *ptr;
+    uint8_t buf[0];
 } suit_inputs_t;
 
 typedef struct suit_extracted {
     suit_dependencies_t dependencies;
     suit_component_identifier_t manifest_component_id;
-    suit_components_t components;
+
+    uint8_t components_len;
+    suit_component_with_index_t components[SUIT_MAX_INDEX_NUM];
     suit_payloads_t payloads;
 
     UsefulBufC manifest;
@@ -281,6 +260,8 @@ typedef struct suit_extracted {
     suit_digest_t payload_fetch_digest;
     UsefulBufC install;
     suit_digest_t install_digest;
+    UsefulBufC uninstall;
+    suit_digest_t uninstall_digest;
     UsefulBufC validate;
     UsefulBufC load;
     UsefulBufC invoke;

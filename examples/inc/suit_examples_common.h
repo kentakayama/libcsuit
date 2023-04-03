@@ -36,8 +36,8 @@
 #define SECP521R1_PUBLIC_KEY_LENGTH         133
 #define SECP521R1_PUBLIC_KEY_CHAR_LENGTH    266
 
-size_t read_from_file(const char *file_path, const size_t buf_len, uint8_t *buf);
-size_t write_to_file(const char *file_path, const size_t buf_len, const void *buf);
+size_t read_from_file(const char *file_path, uint8_t *buf, const size_t buf_len);
+size_t write_to_file(const char *file_path, const void *buf, const size_t buf_len);
 
 /*!
     \brief  Create ES256 public key

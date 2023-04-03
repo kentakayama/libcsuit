@@ -21,7 +21,7 @@
 
 suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                                const suit_con_dir_key_t directive,
-                               const suit_index_t index,
+                               const suit_index_t *suit_index,
                                suit_parameter_args_t parameters[])
 {
     suit_err_t result = SUIT_SUCCESS;
@@ -52,83 +52,22 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
         parameter = item.label.int64;
 
         switch (parameter) {
-        case SUIT_PARAMETER_URI:
-            QCBORDecode_GetTextString(context, &val.str);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_URI) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
-                    parameters[tmp_index].uri_list_len = 1;
-                    parameters[tmp_index].uri_list[0] = val.str;
-                }
-            }
-            break;
-        case SUIT_PARAMETER_IMAGE_DIGEST:
-            QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
-            result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, context, &item, true, &val.digest);
-            QCBORDecode_ExitBstrWrapped(context);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
-                    parameters[tmp_index].image_digest = val.digest;
-                }
-            }
-            break;
+        /* int64 */
+        /* uint64 */
         case SUIT_PARAMETER_IMAGE_SIZE:
             QCBORDecode_GetUInt64(context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_SIZE;
                     parameters[tmp_index].image_size = val.u64;
                 }
             }
             break;
-        case SUIT_PARAMETER_VENDOR_IDENTIFIER:
-            QCBORDecode_GetByteString(context, &val.str);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER;
-                    parameters[tmp_index].vendor_id = val.str;
-                }
-            }
-            break;
-        case SUIT_PARAMETER_CLASS_IDENTIFIER:
-            QCBORDecode_GetByteString(context, &val.str);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER;
-                    parameters[tmp_index].class_id = val.str;
-                }
-            }
-            break;
-        case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-            QCBORDecode_GetByteString(context, &val.str);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER;
-                    parameters[tmp_index].device_id = val.str;
-                }
-            }
-            break;
-        case SUIT_PARAMETER_SOFT_FAILURE:
-            QCBORDecode_GetBool(context, &val.b);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_SOFT_FAILURE) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_SOFT_FAILURE;
-                    parameters[tmp_index].soft_failure = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
-                }
-            }
-            break;
         case SUIT_PARAMETER_SOURCE_COMPONENT:
             QCBORDecode_GetUInt64(context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT;
                     parameters[tmp_index].source_component = val.u64;
@@ -137,58 +76,28 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
             break;
         case SUIT_PARAMETER_COMPONENT_SLOT:
             QCBORDecode_GetUInt64(context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT;
                     parameters[tmp_index].component_slot = val.u64;
                 }
             }
             break;
-        case SUIT_PARAMETER_INVOKE_ARGS:
-            QCBORDecode_GetByteString(context, &val.str);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
-                    parameters[tmp_index].invoke_args = val.str;
-                }
-            }
-            break;
         case SUIT_PARAMETER_USE_BEFORE:
             QCBORDecode_GetUInt64(context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_USE_BEFORE) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_USE_BEFORE;
                     parameters[tmp_index].use_before = val.u64;
                 }
             }
             break;
-        case SUIT_PARAMETER_STRICT_ORDER:
-            QCBORDecode_GetBool(context, &val.b);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_STRICT_ORDER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_STRICT_ORDER;
-                    parameters[tmp_index].strict_order = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
-                }
-            }
-            break;
-        case SUIT_PARAMETER_ENCRYPTION_INFO:
-            QCBORDecode_GetByteString(context, &val.str);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO;
-                    parameters[tmp_index].encryption_info = val.str;
-                }
-            }
-            break;
         case SUIT_PARAMETER_MINIMUM_BATTERY:
              QCBORDecode_GetUInt64(context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY;
                     parameters[tmp_index].minimum_battery = val.u64;
@@ -197,14 +106,125 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
             break;
         case SUIT_PARAMETER_UPDATE_PRIORITY:
              QCBORDecode_GetUInt64(context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY;
                     parameters[tmp_index].update_priority = val.u64;
                 }
             }
             break;
+
+        /* bool */
+        case SUIT_PARAMETER_SOFT_FAILURE:
+            QCBORDecode_GetBool(context, &val.b);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_SOFT_FAILURE) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_SOFT_FAILURE;
+                    parameters[tmp_index].soft_failure = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
+                }
+            }
+            break;
+        case SUIT_PARAMETER_STRICT_ORDER:
+            QCBORDecode_GetBool(context, &val.b);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_STRICT_ORDER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_STRICT_ORDER;
+                    parameters[tmp_index].strict_order = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
+                }
+            }
+            break;
+
+        /* tstr */
+        case SUIT_PARAMETER_URI:
+            QCBORDecode_GetTextString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_URI) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
+                    parameters[tmp_index].uri = val.str;
+                }
+            }
+            break;
+
+        /* bstr */
+        case SUIT_PARAMETER_VENDOR_IDENTIFIER:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER;
+                    parameters[tmp_index].vendor_id = val.str;
+                }
+            }
+            break;
+        case SUIT_PARAMETER_CLASS_IDENTIFIER:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER;
+                    parameters[tmp_index].class_id = val.str;
+                }
+            }
+            break;
+        case SUIT_PARAMETER_DEVICE_IDENTIFIER:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER;
+                    parameters[tmp_index].device_id = val.str;
+                }
+            }
+            break;
+        case SUIT_PARAMETER_CONTENT:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_CONTENT;
+                    parameters[tmp_index].content = val.str;
+                }
+            }
+            break;
+        case SUIT_PARAMETER_INVOKE_ARGS:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
+                    parameters[tmp_index].invoke_args = val.str;
+                }
+            }
+            break;
+        case SUIT_PARAMETER_ENCRYPTION_INFO:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO;
+                    parameters[tmp_index].encryption_info = val.str;
+                }
+            }
+            break;
+
+        /* .bstr suit-diget */
+        case SUIT_PARAMETER_IMAGE_DIGEST:
+            QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+            result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, context, &item, true, &val.digest);
+            QCBORDecode_ExitBstrWrapped(context);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
+                    parameters[tmp_index].image_digest = val.digest;
+                }
+            }
+            break;
+
         case SUIT_PARAMETER_VERSION:
         case SUIT_PARAMETER_WAIT_INFO:
         default:
@@ -220,6 +240,10 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
     }
 
     QCBORDecode_ExitMap(context);
+    error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        goto error;
+    }
     return result;
 
 error:
@@ -240,14 +264,25 @@ error:
     return result;
 }
 
-suit_payload_t* suit_index_to_payload(suit_extracted_t *extracted,
-                                      suit_index_t index)
+suit_component_identifier_t *suit_index_to_component_identifier(suit_extracted_t *extracted,
+                                                                const uint8_t index)
 {
-    if (index.len != 1) {
-        return NULL;
+    for (size_t i = 0; i < extracted->components_len; i++) {
+        if (extracted->components[i].index == index) {
+            if (extracted->components[i].component.len == 0) {
+                return NULL;
+            }
+            return &extracted->components[i].component;
+        }
     }
+    return NULL;
+}
+
+suit_payload_t* suit_index_to_payload(suit_extracted_t *extracted,
+                                      const uint8_t index)
+{
     for (size_t i = 0; i < extracted->payloads.len; i++) {
-        if (memcmp(&extracted->payloads.payload[i].index, &index, sizeof(suit_index_t)) == 0) {
+        if (extracted->payloads.payload[i].index == index) {
             return &extracted->payloads.payload[i];
         }
     }
@@ -271,29 +306,16 @@ suit_payload_t* suit_key_to_payload(suit_extracted_t *extracted,
     return NULL;
 }
 
-suit_err_t suit_process_dependency(suit_extracted_t *extracted,
-                                   suit_index_t dependency_index,
-                                   const suit_inputs_t *suit_inputs)
-{
-    suit_payload_t *payload = suit_index_to_payload(extracted, dependency_index);
-    if (payload == NULL) {
-        return SUIT_ERR_NO_ARGUMENT;
-    }
-    suit_inputs_t tmp_inputs = *suit_inputs;
-    tmp_inputs.manifest = payload->bytes;
-    return suit_process_envelope(&tmp_inputs);
-}
-
 suit_err_t suit_set_index(QCBORDecodeContext *context,
                           const suit_extracted_t *extracted,
-                          suit_index_t *index)
+                          suit_index_t *suit_index)
 {
     union {
         uint64_t u64;
         bool b;
     } val;
 
-    *index = (suit_index_t){0};
+    *suit_index = (suit_index_t) {0};
 
     QCBORItem item;
     QCBORError error;
@@ -305,44 +327,157 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
         if (val.u64 > UINT8_MAX) {
             return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
         }
-        index->len = 1;
-        index->index[0] = (uint8_t)val.u64;
+        suit_index->index[0] = (uint8_t)val.u64;
+        suit_index->len = 1;
         break;
     case QCBOR_TYPE_TRUE:
-        index->len = extracted->components.len;
-        uint8_t i = 0;
-        for (; i < index->len; i++) {
-            index->index[i] = i;
-        }
-        for (uint8_t j = 0; j < extracted->dependencies.len; j++) {
-            index->index[i] = extracted->dependencies.dependency[j].index;
-        }
-        /* fall through */
-    case QCBOR_TYPE_FALSE:
         QCBORDecode_GetBool(context, &val.b);
+        for (size_t i = 0; i < extracted->components_len; i++) {
+            suit_index->index[i] = extracted->components[i].index;
+        }
+        suit_index->len = extracted->components_len;
         break;
     case QCBOR_TYPE_ARRAY:
         QCBORDecode_EnterArray(context, &item);
-        if (item.val.uCount > SUIT_MAX_COMPONENT_NUM) {
+        if (item.val.uCount > SUIT_MAX_INDEX_NUM) {
             return SUIT_ERR_NO_MEMORY;
         }
-        index->len = item.val.uCount;
-        for (size_t i = 0; i < index->len; i++) {
+        suit_index->len = item.val.uCount;
+        for (size_t i = 0; i < suit_index->len; i++) {
             QCBORDecode_GetUInt64(context, &val.u64);
             if (val.u64 > UINT8_MAX) {
                 return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
             }
-            index->index[i] = (uint8_t)val.u64;
+            suit_index->index[i] = (uint8_t)val.u64;
         }
         QCBORDecode_ExitArray(context);
-        error = QCBORDecode_GetError(context);
-        if (error != QCBOR_SUCCESS) {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
-        }
     default:
         return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
     }
+
+    error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+    }
     return SUIT_SUCCESS;
+}
+
+suit_process_flag_t suit_manifest_key_to_process_flag(const suit_manifest_key_t key)
+{
+    suit_process_flag_t result = {0};
+    switch (key) {
+    case SUIT_REFERENCE_URI:
+        result.reference_uri = 1;
+        break;
+    case SUIT_VALIDATE:
+        result.validate = 1;
+        break;
+    case SUIT_LOAD:
+        result.load = 1;
+        break;
+    case SUIT_INVOKE:
+        result.invoke = 1;
+        break;
+    case SUIT_PAYLOAD_FETCH:
+        result.payload_fetch = 1;
+        break;
+    case SUIT_INSTALL:
+        result.install = 1;
+        break;
+    case SUIT_TEXT:
+        result.text = 1;
+        break;
+    case SUIT_DEPENDENCY_RESOLUTION:
+        result.dependency_resolution = 1;
+        break;
+    case SUIT_UNINSTALL:
+        result.uninstall = 1;
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
+suit_err_t suit_process_condition(suit_extracted_t *extracted,
+                                  suit_con_dir_key_t condition,
+                                  suit_parameter_args_t parameters[],
+                                  const suit_index_t *suit_index,
+                                  suit_rep_policy_t report)
+{
+    suit_err_t result = SUIT_SUCCESS;
+    suit_condition_args_t args;
+
+    for (uint8_t i = 0; i < suit_index->len; i++) {
+        uint8_t tmp_index = suit_index->index[i];
+
+        args = (suit_condition_args_t) {0};
+        suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
+        if (dst == NULL) {
+            return SUIT_ERR_NOT_FOUND;
+        }
+        args.dst = *dst;
+        args.condition = condition;
+        switch (condition) {
+        /* uint64 */
+        case SUIT_CONDITION_COMPONENT_SLOT:
+            args.expected.u64 = parameters[tmp_index].component_slot;
+            break;
+        case SUIT_CONDITION_USE_BEFORE:
+            args.expected.u64 = parameters[tmp_index].use_before;
+            break;
+        case SUIT_CONDITION_MINIMUM_BATTERY:
+            args.expected.u64 = parameters[tmp_index].minimum_battery;
+            break;
+        case SUIT_CONDITION_UPDATE_AUTHORIZED:
+            args.expected.u64 = parameters[tmp_index].update_priority;
+            break;
+
+        /* bstr */
+        case SUIT_CONDITION_VENDOR_IDENTIFIER:
+            args.expected.str = parameters[tmp_index].vendor_id;
+            break;
+        case SUIT_CONDITION_CLASS_IDENTIFIER:
+            args.expected.str = parameters[tmp_index].class_id;
+            break;
+        case SUIT_CONDITION_DEVICE_IDENTIFIER:
+            args.expected.str = parameters[tmp_index].device_id;
+            break;
+        case SUIT_CONDITION_CHECK_CONTENT:
+            args.expected.str = parameters[tmp_index].content;
+            break;
+
+        /* suit-digest */
+        case SUIT_CONDITION_IMAGE_MATCH:
+        case SUIT_CONDITION_IMAGE_NOT_MATCH:
+            args.expected.image_digest = parameters[tmp_index].image_digest;
+            break;
+
+        case SUIT_CONDITION_ABORT:
+            break;
+
+        case SUIT_CONDITION_IS_DEPENDENCY:
+            result = (tmp_index > SUIT_MAX_INDEX_NUM) ? SUIT_SUCCESS : SUIT_ERR_ABORT;
+            break;
+
+        /* draft-ietf-suit-trust-domains */
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+
+        case SUIT_CONDITION_VERSION:
+            break;
+        default:
+            return SUIT_ERR_INVALID_KEY;
+        }
+        if (result != SUIT_SUCCESS) {
+            /* already handled without callback */
+            return result;
+        }
+        result = suit_condition_callback(args);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
+    return result;
 }
 
 suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
@@ -352,7 +487,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                                              suit_inputs_t *suit_inputs)
 {
     suit_err_t result = SUIT_SUCCESS;
-    suit_index_t index = {.len = 1, .index[0] = 0};
+    suit_index_t suit_index = {.len = 1, .index[0] = 0};
     suit_con_dir_key_t condition_directive_key = SUIT_CONDITION_INVALID;
     suit_rep_policy_t report;
     union {
@@ -361,7 +496,6 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
             suit_fetch_ret_t fret;
         };
         suit_store_args_t store;
-        suit_copy_args_t copy;
         suit_invoke_args_t invoke;
     } args;
     union {
@@ -391,49 +525,77 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 
         switch (condition_directive_key) {
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
-            result = suit_set_index(&context, extracted, &index);
+            result = suit_set_index(&context, extracted, &suit_index);
             break;
+
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, index, parameters);
+            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, &suit_index, parameters);
             break;
         case SUIT_DIRECTIVE_SET_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, index, parameters);
+            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, &suit_index, parameters);
             break;
-        case SUIT_DIRECTIVE_FETCH:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            for (size_t j = 0; j < index.len; j++) {
-                const uint8_t tmp_index = index.index[j];
-                if (parameters[tmp_index].uri_list_len == 0) {
-                    result = SUIT_ERR_NO_ARGUMENT;
+
+        case SUIT_DIRECTIVE_INVOKE:
+            QCBORDecode_GetUInt64(&context, &val.u64);
+            for (size_t j = 0; j < suit_index.len; j++) {
+                const uint8_t tmp_index = suit_index.index[j];
+
+                suit_component_identifier_t *component = suit_index_to_component_identifier(extracted, tmp_index);
+                if (component == NULL) {
+                    result = SUIT_ERR_NOT_FOUND;
                     goto error;
                 }
-                if (parameters[tmp_index].uri_list[0].len >= SUIT_MAX_NAME_LENGTH) {
+                args.invoke = (suit_invoke_args_t){0};
+                args.invoke.report.val = val.u64;
+
+                args.invoke.component_identifier = *component;
+                args.invoke.args_len = parameters[tmp_index].invoke_args.len;
+                if (args.invoke.args_len > 0) {
+                    memcpy(args.invoke.args, parameters[tmp_index].invoke_args.ptr, args.invoke.args_len);
+                }
+                result = suit_invoke_callback(args.invoke);
+            }
+            break;
+
+        case SUIT_DIRECTIVE_FETCH:
+            QCBORDecode_GetUInt64(&context, &report.val);
+            for (size_t j = 0; j < suit_index.len; j++) {
+                const uint8_t tmp_index = suit_index.index[j];
+                if (parameters[tmp_index].uri.len >= SUIT_MAX_NAME_LENGTH) {
                     result = SUIT_ERR_NO_MEMORY;
                     goto error;
                 }
 
-                suit_payload_t *payload = suit_key_to_payload(extracted, parameters[tmp_index].uri_list[0]);
+                suit_payload_t *payload = suit_key_to_payload(extracted, parameters[tmp_index].uri);
                 if (payload == NULL) {
                     if (extracted->payloads.len >= SUIT_MAX_ARRAY_LENGTH) {
                         result = SUIT_ERR_NO_MEMORY;
                         goto error;
                     }
-
-                    args.fetch = (suit_fetch_args_t){0};
-                    args.fetch.report = report;
-                    args.fetch.dst_component_identifier = extracted->components.comp_id[index.index[j]];
-
-                    memcpy(args.fetch.uri, parameters[tmp_index].uri_list[0].ptr, parameters[tmp_index].uri_list[0].len);
-                    args.fetch.uri[parameters[tmp_index].uri_list[0].len] = '\0';
-                    args.fetch.uri_len = parameters[tmp_index].uri_list[0].len;
                     size_t buf_size = (parameters[tmp_index].image_size > 0) ? parameters[tmp_index].image_size : suit_inputs->left_len;
                     if (buf_size > suit_inputs->left_len) {
                         result = SUIT_ERR_NO_MEMORY;
                         goto error;
                     }
-                    args.fetch.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len); //;
+
+                    args.fetch = (suit_fetch_args_t){0};
+                    suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
+                    if (dst == NULL) {
+                        result = SUIT_ERR_NOT_FOUND;
+                        goto error;
+                    }
+                    args.fetch.dst = *dst;
+
+                    memcpy(args.fetch.uri, parameters[tmp_index].uri.ptr, parameters[tmp_index].uri.len);
+                    args.fetch.uri[parameters[tmp_index].uri.len] = '\0';
+                    args.fetch.uri_len = parameters[tmp_index].uri.len;
+
+                    args.fetch.args = parameters[tmp_index].fetch_arguments;
+
                     args.fetch.buf_len = buf_size;
-                    uint8_t *buf_ptr = &suit_inputs->buf[SUIT_MAX_DATA_SIZE - suit_inputs->left_len];
+                    args.fetch.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len);
+
+                    args.fetch.report = report;
 
                     /* store the fetched payload into args.fetch.ptr */
                     result = suit_fetch_callback(args.fetch, &args.fret);
@@ -445,74 +607,116 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                         goto error;
                     }
                     suit_inputs->left_len -= args.fret.buf_len;
+
                     payload = &extracted->payloads.payload[extracted->payloads.len];
                     extracted->payloads.len++;
-                    payload->bytes.ptr = buf_ptr;
+                    payload->bytes.ptr = args.fetch.ptr;
                     payload->bytes.len = args.fret.buf_len;
 
-                    if (payload->bytes.ptr != args.fetch.ptr) {
-                        /* the buffer is different between the caller and callee */
-                        memcpy(buf_ptr, args.fetch.ptr, payload->bytes.len);
-                    }
-
-                    payload->key = parameters[tmp_index].uri_list[0];
-                    payload->index.len = 1;
-                    payload->index.index[0] = index.index[j];
+                    payload->key = parameters[tmp_index].uri;
+                    payload->index = tmp_index;
                 }
                 else {
                     /* already handled with integrated-payload or integrated-dependency */
                     args.store = (suit_store_args_t){0};
                     args.store.report = report;
-                    args.store.dst_component_identifier = extracted->components.comp_id[index.index[j]];
-                    UsefulBuf buf = UsefulBuf_Unconst(payload->bytes);
-                    args.store.ptr = buf.ptr;
-                    args.store.buf_len = buf.len;
+                    suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
+                    if (dst == NULL) {
+                        result = SUIT_ERR_NOT_FOUND;
+                        goto error;
+                    }
+                    args.store.dst = *dst;
+                    args.store.src_buf = payload->bytes;
+                    args.store.operation = SUIT_STORE;
                     result = suit_store_callback(args.store);
                     if (result != SUIT_SUCCESS) {
                         goto error;
                     }
 
-                    payload->key = parameters[tmp_index].uri_list[0];
-                    payload->index.len = 1;
-                    payload->index.index[0] = index.index[j];
+                    payload->key = parameters[tmp_index].uri;
+                    payload->index = tmp_index;
                 }
+            }
+            break;
+
+        case SUIT_DIRECTIVE_WRITE:
+            QCBORDecode_GetUInt64(&context, &val.u64);
+            for (size_t j = 0; j < suit_index.len; j++) {
+                const uint8_t tmp_index = suit_index.index[j];
+
+                args.store = (suit_store_args_t){0};
+                if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT) {
+                    args.store.info_key = SUIT_INFO_DEFAULT;
+                    args.store.src_buf = parameters[tmp_index].content;
+                }
+                else if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
+                    args.store.info_key = SUIT_INFO_ENCRYPTION;
+                    args.store.src_buf = parameters[tmp_index].encryption_info;
+                }
+                else {
+                    result = SUIT_ERR_NOT_FOUND;
+                    break;
+                }
+                args.store.report.val = val.u64;
+                suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
+                if (dst == NULL) {
+                    result = SUIT_ERR_NOT_FOUND;
+                    break;
+                }
+                args.store.dst = *dst;
+                args.store.operation = SUIT_STORE;
+                result = suit_store_callback(args.store);
+            }
+            break;
+        case SUIT_DIRECTIVE_UNLINK:
+            QCBORDecode_GetUInt64(&context, &val.u64);
+            for (size_t j = 0; j < suit_index.len; j++) {
+                const uint8_t tmp_index = suit_index.index[j];
+
+                args.store = (suit_store_args_t){0};
+                args.store.info_key = SUIT_INFO_DEFAULT;
+                args.store.report.val = val.u64;
+
+                suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
+                if (dst == NULL) {
+                    return SUIT_ERR_NOT_FOUND;
+                }
+                args.store.dst = *dst;
+                args.store.operation = SUIT_UNLINK;
+                result = suit_store_callback(args.store);
             }
             break;
         case SUIT_DIRECTIVE_COPY:
             QCBORDecode_GetUInt64(&context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                const uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index.len; j++) {
+                const uint8_t tmp_index = suit_index.index[j];
 
-                args.copy = (suit_copy_args_t){0};
-                args.copy.info_key = SUIT_INFO_DEFAULT;
-                /* TODO solve SUIT_INFO_ENCRYPTION_INFO */
+                args.store = (suit_store_args_t){0};
+                args.store.info_key = SUIT_INFO_DEFAULT;
+                args.store.report.val = val.u64;
 
-                args.copy.report.val = val.u64;
-                args.copy.src = extracted->components.comp_id[parameters[tmp_index].source_component];
-                args.copy.dst = extracted->components.comp_id[tmp_index];
-                result = suit_copy_callback(args.copy);
+                args.store.src = *suit_index_to_component_identifier(extracted, parameters[tmp_index].source_component);
+                args.store.dst = *suit_index_to_component_identifier(extracted, tmp_index);
+                args.store.operation = SUIT_COPY;
+                result = suit_store_callback(args.store);
             }
             break;
-        case SUIT_DIRECTIVE_INVOKE:
+        case SUIT_DIRECTIVE_SWAP:
             QCBORDecode_GetUInt64(&context, &val.u64);
-            for (size_t j = 0; j < index.len; j++) {
-                const uint8_t tmp_index = index.index[j];
+            for (size_t j = 0; j < suit_index.len; j++) {
+                const uint8_t tmp_index = suit_index.index[j];
 
-                if (extracted->components.len < tmp_index || extracted->components.comp_id[tmp_index].len == 0) {
-                    result = SUIT_ERR_NO_ARGUMENT;
-                    goto error;
-                }
-                args.invoke = (suit_invoke_args_t){0};
-                args.invoke.report.val = val.u64;
+                args.store = (suit_store_args_t){0};
+                args.store.info_key = SUIT_INFO_DEFAULT;
+                args.store.report.val = val.u64;
 
-                args.invoke.component_identifier = extracted->components.comp_id[tmp_index];
-                args.invoke.args_len = parameters[tmp_index].invoke_args.len;
-                if (args.invoke.args_len > 0) {
-                    memcpy(args.invoke.args, parameters[tmp_index].invoke_args.ptr, args.invoke.args_len);
-                }
-                result = suit_invoke_callback(args.invoke);
+                args.store.src = *suit_index_to_component_identifier(extracted, parameters[tmp_index].source_component);
+                args.store.dst = *suit_index_to_component_identifier(extracted, tmp_index);
+                args.store.operation = SUIT_SWAP;
+                result = suit_store_callback(args.store);
             }
             break;
+
         case SUIT_DIRECTIVE_TRY_EACH:
             QCBORDecode_EnterArray(&context, &item);
             if (item.uDataType != QCBOR_TYPE_ARRAY) {
@@ -520,8 +724,8 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                 goto error;
             }
             const size_t try_count = item.val.uCount;
-            bool orig_soft_failures[SUIT_MAX_COMPONENT_NUM];
-            for (size_t j = 0; j < SUIT_MAX_COMPONENT_NUM; j++) {
+            bool orig_soft_failures[SUIT_MAX_INDEX_NUM];
+            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
                 orig_soft_failures[j] = parameters[j].soft_failure;
             }
             bool done = false;
@@ -545,7 +749,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                     goto error;
                 }
             }
-            for (size_t j = 0; j < SUIT_MAX_COMPONENT_NUM; j++) {
+            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
                 parameters[j].soft_failure = orig_soft_failures[j];
             }
             QCBORDecode_ExitArray(&context);
@@ -556,73 +760,41 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
             break;
         case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
             // TODO:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_dependency(extracted, index, suit_inputs);
-            break;
-        case SUIT_DIRECTIVE_UNLINK:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            for (size_t j = 0; j < index.len; j++) {
-                const uint8_t tmp_index = index.index[j];
+            QCBORDecode_GetUInt64(&context, &val.u64);
+            for (size_t j = 0; j < suit_index.len; j++) {
+                const uint8_t tmp_index = suit_index.index[j];
 
-                if (extracted->components.len < tmp_index || extracted->components.comp_id[tmp_index].len == 0) {
-                    result = SUIT_ERR_NO_ARGUMENT;
-                    goto error;
+                suit_inputs_t tmp_inputs = *suit_inputs;
+                tmp_inputs.process_flags = suit_manifest_key_to_process_flag(command_key);
+                tmp_inputs.dependency_depth++;
+                suit_payload_t *payload = suit_index_to_payload(extracted, tmp_index);
+                if (payload == NULL) {
+                    return SUIT_ERR_NO_ARGUMENT;
                 }
-                args.store = (suit_store_args_t){0};
-                args.store.report = report;
-                args.store.dst_component_identifier = extracted->components.comp_id[index.index[j]];
-                args.store.ptr = NULL;
-                args.store.buf_len = 0;
-                result = suit_store_callback(args.store);
+                tmp_inputs.manifest = payload->bytes;
+                result = suit_process_envelope(&tmp_inputs);
+                if (result != SUIT_SUCCESS) {
+                    break;
+                }
             }
             break;
         case SUIT_CONDITION_VENDOR_IDENTIFIER:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_CLASS_IDENTIFIER:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_IMAGE_MATCH:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_USE_BEFORE:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_COMPONENT_SLOT:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_ABORT:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_MINIMUM_BATTERY:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_VERSION:
             QCBORDecode_GetUInt64(&context, &report.val);
+            result = suit_process_condition(extracted, condition_directive_key, parameters, &suit_index, report);
             // TODO: check condition
             break;
 
         case SUIT_DIRECTIVE_WAIT:
-        case SUIT_DIRECTIVE_SWAP:
         case SUIT_DIRECTIVE_RUN_SEQUENCE:
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -649,6 +821,11 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
     default:
         break;
     }
+
+    error = QCBORDecode_GetError(&context);
+    if (error != QCBOR_SUCCESS) {
+        goto error;
+    }
     return result;
 
 error:
@@ -670,6 +847,7 @@ error:
 
 }
 
+suit_index_t suit_index = {.len = 1, .index[0] = 0};
 suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                                         suit_parameter_args_t parameters[])
 {
@@ -681,7 +859,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
     QCBORItem item;
     QCBORError error = QCBOR_SUCCESS;
     suit_con_dir_key_t condition_directive_key;
-    suit_index_t index = {.len = 1, .index[0] = 0};
+    suit_index_t suit_index = (suit_index_t) {.len = 1, .index[0] = 0};
     suit_rep_policy_t report;
     union {
         uint64_t u64;
@@ -711,7 +889,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
             // TODO: support also bool or [ + uint ] index
             QCBORDecode_GetUInt64(&context, &val.u64);
-            if (val.u64 >= extracted->components.len) {
+            if (val.u64 >= extracted->components_len) {
                 result = SUIT_ERR_NO_MEMORY;
                 goto error;
             }
@@ -719,61 +897,30 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                 result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
                 goto error;
             }
-            index.len = 1;
-            index.index[0] = (uint8_t)val.u64;
+            suit_index.len = 1;
+            suit_index.index[0] = (uint8_t)val.u64;
             break;
 
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-            // TODO: support also bool or [ + uint ] index
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, index, parameters);
+            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, &suit_index, parameters);
             break;
         case SUIT_DIRECTIVE_SET_PARAMETERS:
-            // TODO: support also bool or [ + uint ] index
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, index, parameters);
+            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, &suit_index, parameters);
             break;
+
         case SUIT_CONDITION_VENDOR_IDENTIFIER:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_CLASS_IDENTIFIER:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_IMAGE_MATCH:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_USE_BEFORE:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_COMPONENT_SLOT:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_ABORT:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_MINIMUM_BATTERY:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
-            break;
         case SUIT_CONDITION_VERSION:
             QCBORDecode_GetUInt64(&context, &report.val);
-            // TODO: check condition
+            suit_process_condition(extracted, condition_directive_key, parameters, &suit_index, report);
             break;
         case SUIT_DIRECTIVE_TRY_EACH:
             QCBORDecode_EnterArray(&context, &item);
@@ -782,8 +929,8 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                 goto error;
             }
             const size_t try_count = item.val.uCount;
-            bool orig_soft_failures[SUIT_MAX_COMPONENT_NUM];
-            for (size_t j = 0; j < SUIT_MAX_COMPONENT_NUM; j++) {
+            bool orig_soft_failures[SUIT_MAX_INDEX_NUM];
+            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
                 orig_soft_failures[j] = parameters[j].soft_failure;
             }
             bool done = false;
@@ -807,7 +954,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                     goto error;
                 }
             }
-            for (size_t j = 0; j < SUIT_MAX_COMPONENT_NUM; j++) {
+            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
                 parameters[j].soft_failure = orig_soft_failures[j];
             }
             QCBORDecode_ExitArray(&context);
@@ -858,7 +1005,7 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
                                                     suit_inputs_t *suit_inputs)
 {
     suit_err_t result = SUIT_SUCCESS;
-    suit_parameter_args_t parameters[SUIT_MAX_COMPONENT_NUM + SUIT_MAX_DEPENDENCY_NUM];
+    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
 
     UsefulBufC command_buf;
     switch (command_key) {
@@ -871,6 +1018,8 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
     case SUIT_INSTALL:
         command_buf = extracted->install;
         break;
+    case SUIT_UNINSTALL:
+        command_buf = extracted->uninstall;
     case SUIT_VALIDATE:
         command_buf = extracted->validate;
         break;
@@ -883,7 +1032,7 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
     default:
         return SUIT_ERR_INVALID_KEY;
     }
-    if (command_buf.len == 0 || command_buf.ptr == NULL) {
+    if (UsefulBuf_IsNULLOrEmptyC(command_buf)) {
         /* no need to execute shared_sequence */
         return SUIT_SUCCESS;
     }
@@ -894,7 +1043,11 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
         goto error;
     }
 
-    return suit_process_command_sequence_buf(extracted, command_key, command_buf, parameters, suit_inputs);
+    result = suit_process_command_sequence_buf(extracted, command_key, command_buf, parameters, suit_inputs);
+    if (result != SUIT_SUCCESS) {
+        goto error;
+    }
+    return result;
 
 error:
     if (result != SUIT_ERR_ABORT) {
@@ -975,6 +1128,7 @@ suit_err_t suit_extract_common(QCBORDecodeContext *context,
         goto error;
     }
     size_t length = item.val.uCount;
+    uint8_t tmp_len = 0;
     for (size_t i = 0; i < length; i++) {
         error = QCBORDecode_PeekNext(context, &item);
         if (error != QCBOR_SUCCESS) {
@@ -987,9 +1141,24 @@ suit_err_t suit_extract_common(QCBORDecodeContext *context,
         switch (common_key) {
         case SUIT_DEPENDENCIES:
             result = suit_decode_dependencies_from_item(SUIT_DECODE_MODE_STRICT, context, &item, true, &extracted->dependencies);
+            for (size_t j = 0; j < extracted->dependencies.len; j++) {
+                uint8_t index = extracted->dependencies.dependency[j].index;
+                if (index > SUIT_MAX_INDEX_NUM) {
+                    result = SUIT_ERR_NO_MEMORY;
+                    goto error;
+                }
+                extracted->components[index].component = extracted->dependencies.dependency[j].dependency_metadata.prefix;
+                extracted->components[index].index = index;
+                if (extracted->components_len < index + 1) {
+                    extracted->components_len = index + 1;
+                }
+            }
             break;
         case SUIT_COMPONENTS:
-            result = suit_decode_components_from_item(SUIT_DECODE_MODE_STRICT, context, &item, true, &extracted->components);
+            result = suit_decode_components_from_item(SUIT_DECODE_MODE_STRICT, context, &item, true, extracted->components, &tmp_len);
+            if (extracted->components_len < tmp_len) {
+                extracted->components_len = tmp_len;
+            }
             break;
         case SUIT_SHARED_SEQUENCE:
             QCBORDecode_GetByteString(context, &extracted->shared_sequence);
@@ -1004,6 +1173,10 @@ suit_err_t suit_extract_common(QCBORDecodeContext *context,
     QCBORDecode_ExitMap(context);
     QCBORDecode_ExitBstrWrapped(context);
 
+    error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        goto error;
+    }
     return result;
 
 error:
@@ -1109,7 +1282,6 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
             }
             break;
-
         case SUIT_PAYLOAD_FETCH:
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->payload_fetch);
@@ -1127,6 +1299,14 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
             }
             else if (item.uDataType == QCBOR_TYPE_ARRAY) {
                 result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, &context, &item, true, &extracted->install_digest);
+            }
+            else {
+                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+            }
+            break;
+        case SUIT_UNINSTALL:
+            if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+                QCBORDecode_GetByteString(&context, &extracted->uninstall);
             }
             else {
                 result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
@@ -1178,6 +1358,10 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 
     }
 
+    error = QCBORDecode_GetError(&context);
+    if (error != QCBOR_SUCCESS) {
+        goto error;
+    }
     return result;
 
 error:
@@ -1322,12 +1506,13 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
 
     /* TODO: check digests */
 
-    if (extracted.manifest_component_id.len > 0) {
+    if (suit_inputs->dependency_depth == 0 &&
+        extracted.manifest_component_id.len > 0) {
         suit_store_args_t store = {0};
         store.report.val = 0;
-        store.dst_component_identifier = extracted.manifest_component_id;
-        store.ptr = suit_inputs->manifest.ptr;
-        store.buf_len = suit_inputs->manifest.len;
+        store.dst = extracted.manifest_component_id;
+        store.src_buf = suit_inputs->manifest;
+        store.operation = SUIT_STORE;
         result = suit_store_callback(store);
         if (result != SUIT_SUCCESS) {
             goto error;
@@ -1335,7 +1520,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     /* dependency-resolution */
-    if (suit_inputs->dependency_resolution) {
+    if (suit_inputs->process_flags.dependency_resolution) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_DEPENDENCY_RESOLUTION, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
@@ -1343,7 +1528,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     /* payload-fetch */
-    if (suit_inputs->payload_fetch) {
+    if (suit_inputs->process_flags.payload_fetch) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_PAYLOAD_FETCH, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
@@ -1351,7 +1536,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     /* install */
-    if (suit_inputs->install) {
+    if (suit_inputs->process_flags.install) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
@@ -1359,7 +1544,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     /* uninstall */
-    if (suit_inputs->uninstall) {
+    if (suit_inputs->process_flags.uninstall) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_UNINSTALL, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
@@ -1367,7 +1552,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     /* validate */
-    if (suit_inputs->validate) {
+    if (suit_inputs->process_flags.validate) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
@@ -1375,7 +1560,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     /* load */
-    if (suit_inputs->load) {
+    if (suit_inputs->process_flags.load) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
@@ -1383,11 +1568,16 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     /* invoke */
-    if (suit_inputs->invoke) {
+    if (suit_inputs->process_flags.invoke) {
         result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
         if (result != SUIT_SUCCESS) {
             goto error;
         }
+    }
+
+    error = QCBORDecode_GetError(&context);
+    if (error != QCBOR_SUCCESS) {
+        goto error;
     }
 
 out:

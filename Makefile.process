@@ -27,7 +27,7 @@ all: $(TARGET)
 
 $(TARGET):	$(OBJS)
 	mkdir -p ./bin
-	$(CC) -Xlinker --wrap=suit_fetch_callback -o $@ $^ $(LDFLAGS)
+	$(CC) -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -o $@ $^ $(LDFLAGS)
 
 $(OBJDIR)/%.o:	%.c
 	mkdir -p $(dir $@)
@@ -36,7 +36,7 @@ $(OBJDIR)/%.o:	%.c
 TEST_NUM	:= 0 1 2A 2B 3 4 5 U I R D # TODO: D and ID
 
 define test-one
-	$(TARGET) ./testfiles/suit_manifest_exp$(1).cbor
+	$(TARGET) ./testfiles/suit_manifest_exp$(1).cbor || exit 1
 
 endef
 
