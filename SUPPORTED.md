@@ -24,9 +24,9 @@ process | :green_square: | :green_square::green_square::green_square::green_squa
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode |  |  |  | :green_square: | 
-encode |  |  |  | :green_square: | 
-process |  |  |  | :green_square: | 
+decode |  |  |  | :green_square::green_square: | 
+encode |  |  |  | :green_square::green_square: | 
+process |  |  |  | :black_large_square::black_large_square: | 
 ### SUIT Report
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -150,7 +150,9 @@ Strict Order | 12 | suit-parameter-strict-order | SUIT Manifest | N/M | RWX
 Soft Failure | 13 | suit-parameter-soft-failure | SUIT Manifest | N/M | RWX
 Image Size | 14 | suit-parameter-image-size | SUIT Manifest | N/M | RWX
 Content | 18 | suit-parameter-content | SUIT Manifest | N/M | RWX
-Encryption Info | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
+Encryption Info (AES-KW) | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
+Encryption Info (ECDH) | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RW-
+Encryption Info (HPKE) | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RW-
 URI | 21 | suit-parameter-uri | SUIT Manifest | N/M | RWX
 Source Component | 22 | suit-parameter-source-component | SUIT Manifest | N/M | RWX
 Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RWX
