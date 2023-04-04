@@ -328,11 +328,11 @@ char* suit_cose_alg_to_str(int64_t id)
         */
 
     case -3:
-        return "A128";
+        return "A128KW";
     case -4:
-        return "A192";
+        return "A192KW";
     case -5:
-        return "A256";
+        return "A256KW";
 
 /*
     case :
@@ -380,14 +380,19 @@ char* suit_cose_alg_to_str(int64_t id)
     }
 }
 
-char* suit_cose_protected_key_and_value_to_str(int64_t key,
-                                               int64_t value)
+void suit_print_cose_header_value(QCBORItem *item)
 {
-    switch (key) {
-    case 1:
-        return suit_cose_alg_to_str(value);
+    switch (item->label.uint64) {
+    case 1: /* alg */
+        printf("%ld / %s /", item->val.int64, suit_cose_alg_to_str(item->val.int64));
+        break;
+    case 4: /* kid */
+    case 5: /* IV */
+        suit_print_hex(item->val.string.ptr, item->val.string.len);
+        break;
     default:
-        return NULL;
+        printf("(UNKNOWN)");
+        break;
     }
 }
 
@@ -523,6 +528,226 @@ suit_err_t suit_print_uuid(const suit_buf_t *buf)
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_print_cose_header(QCBORDecodeContext *context,
+                                  const uint8_t indent_space,
+                                  const uint8_t indent_delta)
+{
+    suit_err_t result = SUIT_SUCCESS;
+    QCBORItem item;
+    QCBORDecode_EnterMap(context, &item);
+    printf("{");
+    size_t len = item.val.uCount;
+    for (size_t i = 0; i < len; i++) {
+        result = suit_qcbor_get_next(context, &item, QCBOR_TYPE_ANY);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        printf("\n%*s/ %s / %ld: ", indent_space + indent_delta, "", suit_cose_protected_key_to_str(item.label.int64), item.label.int64);
+        suit_print_cose_header_value(&item);
+        if (i + 1 != len) {
+            printf(",");
+        }
+    }
+    printf("\n%*s}", indent_space, "");
+    QCBORDecode_ExitMap(context);
+    return result;
+}
+
+suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
+                                      const uint32_t indent_space,
+                                      const uint32_t indent_delta)
+{
+    if (encryption_info == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    printf("<< ");
+    suit_err_t result = SUIT_SUCCESS;
+    if (encryption_info->ptr != NULL && encryption_info->len > 0) {
+        QCBORDecodeContext context;
+        QCBORItem item;
+        QCBORDecode_Init(&context, (UsefulBufC){encryption_info->ptr, encryption_info->len}, QCBOR_DECODE_MODE_NORMAL);
+
+        uint64_t puTags[3];
+        QCBORTagListOut Out = {0, 3, puTags};
+        QCBORDecode_GetNextWithTags(&context, &item, &Out);
+        if (item.uDataType != QCBOR_TYPE_ARRAY) {
+            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        }
+        for (size_t i = 0; i < Out.uNumUsed; i++) {
+            printf("%ld(\n", puTags[i]);
+        }
+        size_t cose_struct_len = item.val.uCount;
+
+        printf("%*s/ protected: / << ", indent_space + indent_delta, "");
+        QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+        suit_print_cose_header(&context, indent_space + indent_delta, indent_delta);
+        QCBORDecode_ExitBstrWrapped(&context);
+        printf(" >>,\n");
+
+        printf("%*s/ unprotected: / ", indent_space + indent_delta, "");
+        suit_print_cose_header(&context, indent_space + indent_delta, indent_delta);
+
+        result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_ANY);
+        if (result != SUIT_SUCCESS) {
+            printf("val = %u\n", item.uDataType);
+            return result;
+        }
+        printf(",\n%*s/ payload: / ", indent_space + indent_delta, "");
+        if (item.uDataType == QCBOR_TYPE_NULL) {
+            printf("null");
+        }
+        else if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+            suit_print_hex(item.val.string.ptr, item.val.string.len);
+        }
+        else {
+            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        }
+
+        if (cose_struct_len > 3) {
+            result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_ARRAY);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            printf(",\n%*s/ recipients: / [\n", indent_space + indent_delta, "");
+            size_t num_recipients = item.val.uCount;
+            for (size_t i = 0; i < num_recipients; i++) {
+                result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_ARRAY);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                size_t len = item.val.uCount;
+                if (len < 3) {
+                    return SUIT_ERR_FATAL;
+                }
+                printf("%*s[\n", indent_space + 2 * indent_delta, "");
+                printf("%*s/ protected: / << ", indent_space + 3 * indent_delta, "");
+                QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+                suit_print_cose_header(&context, indent_space + 3 * indent_delta, indent_delta);
+                QCBORDecode_ExitBstrWrapped(&context);
+                printf(" >>,\n");
+
+                printf("%*s/ unprotected: / ", indent_space + 3 * indent_delta, "");
+                suit_print_cose_header(&context, indent_space + 3 * indent_delta, indent_delta);
+                printf(",\n");
+
+                result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_ANY);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                printf("%*s/ CEK: / ", indent_space + 3 * indent_delta, "");
+                if (item.uDataType == QCBOR_TYPE_NULL) {
+                    printf("null\n");
+                }
+                else if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+                    suit_print_hex(item.val.string.ptr, item.val.string.len);
+                    printf("\n");
+                }
+                else {
+                    return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                }
+                printf("%*s]", indent_space + 2 * indent_delta, "");
+                if (i + 1 < num_recipients) {
+                    printf(",");
+                }
+                printf("\n");
+            }
+        }
+        printf("%*s]", indent_space + indent_delta, "");
+        QCBORError error = QCBORDecode_Finish(&context);
+        if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+            result = suit_error_from_qcbor_error(error);
+        }
+        printf("\n%*s]", indent_space, "");
+        for (size_t i = 0; i < Out.uNumUsed; i++) {
+            printf(")");
+        }
+    }
+    printf(">>");
+    return result;
+}
+
+suit_err_t suit_print_signature(const suit_buf_t *signature,
+                                const uint32_t indent_space,
+                                const uint32_t indent_delta)
+{
+    if (signature == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    suit_err_t result = SUIT_SUCCESS;
+    if (signature->ptr != NULL && signature->len > 0) {
+        QCBORDecodeContext context;
+        QCBORItem item;
+        QCBORDecode_Init(&context, (UsefulBufC){signature->ptr, signature->len}, QCBOR_DECODE_MODE_NORMAL);
+
+        uint64_t puTags[1];
+        QCBORTagListOut Out = {0, 1, puTags};
+        QCBORDecode_GetNextWithTags(&context, &item, &Out);
+        if (item.uDataType != QCBOR_TYPE_ARRAY) {
+            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        }
+        printf("%ld([\n", puTags[0]);
+
+        printf("%*s/ protected: / << ", indent_space + indent_delta, "");
+        QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+        suit_print_cose_header(&context, indent_space + indent_delta, indent_delta);
+        QCBORDecode_ExitBstrWrapped(&context);
+        printf(" >>,\n");
+
+        printf("%*s/ unprotected: / ", indent_space + indent_delta, "");
+        suit_print_cose_header(&context, indent_space + indent_delta, indent_delta);
+        printf(",\n");
+
+        result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_ANY);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        printf("%*s/ payload: / ", indent_space + indent_delta, "");
+        if (item.uDataType == QCBOR_TYPE_NULL) {
+            printf("null,\n");
+        }
+        else if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+            suit_print_hex(item.val.string.ptr, item.val.string.len);
+            printf("\n");
+        }
+        else {
+            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        }
+
+        result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_BYTE_STRING);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        printf("%*s/ signature: / ", indent_space + indent_delta, "");
+        suit_print_hex(item.val.string.ptr, item.val.string.len);
+
+        QCBORError error = QCBORDecode_Finish(&context);
+        if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+            result = suit_error_from_qcbor_error(error);
+        }
+        printf("\n%*s])", indent_space, "");
+    }
+    return result;
+}
+
+suit_err_t suit_print_digest(const suit_digest_t *digest,
+                             const uint32_t indent_space,
+                             const uint32_t indent_delta)
+{
+    if (digest == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    suit_err_t result = SUIT_SUCCESS;
+    if (digest->algorithm_id != SUIT_ALGORITHM_ID_INVALID
+        && digest->bytes.len > 0) {
+        printf("[\n");
+        printf("%*s/ algorithm-id: / %d / %s /,\n", indent_space + indent_delta, "", digest->algorithm_id, suit_cose_alg_to_str(digest->algorithm_id));
+        printf("%*s/ digest-bytes: / ", indent_space + indent_delta, "");
+        result = suit_print_hex(digest->bytes.ptr, digest->bytes.len);
+        printf("\n%*s]", indent_space, "");
+    }
+    return result;
+}
+
 suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_list,
                                            const uint32_t indent_space,
                                            const uint32_t indent_delta)
@@ -531,8 +756,30 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
     for (size_t i = 0; i < params_list->len; i++) {
         printf("%*s/ %s / %ld: ", indent_space, "", suit_parameter_key_to_str(params_list->params[i].label), params_list->params[i].label);
         switch (params_list->params[i].label) {
+            /* uint64 */
+            case SUIT_PARAMETER_COMPONENT_SLOT:
+            case SUIT_PARAMETER_IMAGE_SIZE:
+            case SUIT_PARAMETER_SOURCE_COMPONENT:
+            case SUIT_PARAMETER_USE_BEFORE:
+            case SUIT_PARAMETER_MINIMUM_BATTERY:
+            case SUIT_PARAMETER_UPDATE_PRIORITY:
+                printf("%lu", params_list->params[i].value.uint64);
+                break;
+
+            /* tstr */
+            case SUIT_PARAMETER_URI:
+                if (params_list->params[i].value.string.len > 0) {
+                    result = suit_print_string(&params_list->params[i].value.string);
+                }
+                else {
+                    printf("NULL");
+                }
+                break;
+
+            /* bstr // UUID */
             case SUIT_PARAMETER_VENDOR_IDENTIFIER:
             case SUIT_PARAMETER_CLASS_IDENTIFIER:
+            case SUIT_PARAMETER_DEVICE_IDENTIFIER:
                 result = suit_print_hex(params_list->params[i].value.string.ptr,
                                         params_list->params[i].value.string.len);
                 if (params_list->params[i].value.string.len == 16) {
@@ -545,48 +792,35 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
                     printf(" /");
                 }
                 break;
+            case SUIT_PARAMETER_INVOKE_ARGS:
+                result = suit_print_hex(params_list->params[i].value.string.ptr,
+                                        params_list->params[i].value.string.len);
+                break;
+
+            /* SUIT_Encryption_Info */
+            case SUIT_PARAMETER_ENCRYPTION_INFO:
+                if (params_list->params[i].value.string.len > 0) {
+                    suit_print_encryption_info(&params_list->params[i].value.string, indent_space, indent_delta);
+                }
+                break;
+
+            /* bool */
+            case SUIT_PARAMETER_STRICT_ORDER:
+            case SUIT_PARAMETER_SOFT_FAILURE:
+                printf("%s", (params_list->params[i].value.boolean) ? "true" : "false");
+                break;
+
+            /* SUIT_Digest */
             case SUIT_PARAMETER_IMAGE_DIGEST:
                 printf("<< ");
                 result = suit_print_digest(&params_list->params[i].value.digest, indent_space, indent_delta);
                 printf(" >>");
                 break;
-            case SUIT_PARAMETER_COMPONENT_SLOT:
-            case SUIT_PARAMETER_IMAGE_SIZE:
-            case SUIT_PARAMETER_SOURCE_COMPONENT:
-                printf("%lu", params_list->params[i].value.uint64);
-                break;
-            case SUIT_PARAMETER_URI:
-                if (params_list->params[i].value.string.len > 0) {
-                    result = suit_print_string(&params_list->params[i].value.string);
-                }
-                else {
-                    printf("NULL");
-                }
-                break;
-            case SUIT_PARAMETER_ENCRYPTION_INFO:
-                printf("SUIT_Encryption_Info\n");
-                if (params_list->params[i].value.string.len > 0) {
-                    printf("%*s", indent_space + 2, "");
-                    suit_print_hex_in_max(params_list->params[i].value.string.ptr, params_list->params[i].value.string.len, SUIT_MAX_PRINT_BYTE_COUNT);
-                    printf("\n");
-                }
-                break;
-            case SUIT_PARAMETER_USE_BEFORE:
 
-            case SUIT_PARAMETER_STRICT_ORDER:
-            case SUIT_PARAMETER_SOFT_FAILURE:
-
-            case SUIT_PARAMETER_INVOKE_ARGS:
-
-            case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-            case SUIT_PARAMETER_MINIMUM_BATTERY:
-            case SUIT_PARAMETER_UPDATE_PRIORITY:
             case SUIT_PARAMETER_VERSION:
             case SUIT_PARAMETER_WAIT_INFO:
-
             default:
-                result = SUIT_ERR_FATAL;
-                printf("?\n");
+                result = SUIT_ERR_NOT_IMPLEMENTED;
                 break;
         }
         if (result != SUIT_SUCCESS) {
@@ -724,112 +958,6 @@ suit_err_t suit_print_component_identifier(const suit_component_identifier_t *id
     }
     printf("]");
     return SUIT_SUCCESS;
-}
-
-suit_err_t suit_print_signature(const suit_buf_t *signature,
-                                const uint32_t indent_space,
-                                const uint32_t indent_delta)
-{
-    if (signature == NULL) {
-        return SUIT_ERR_FATAL;
-    }
-    suit_err_t result = SUIT_SUCCESS;
-    if (signature->ptr != NULL && signature->len > 0) {
-        QCBORDecodeContext auth_context;
-        QCBORItem item;
-        QCBORDecode_Init(&auth_context, (UsefulBufC){signature->ptr, signature->len}, QCBOR_DECODE_MODE_NORMAL);
-
-        uint64_t puTags[1];
-        QCBORTagListOut Out = {0, 1, puTags};
-        QCBORDecode_GetNextWithTags(&auth_context, &item, &Out);
-        if (item.uDataType != QCBOR_TYPE_ARRAY) {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
-        }
-        printf("%ld([\n", puTags[0]);
-
-        printf("%*s/ protected: / << {", indent_space + indent_delta, "");
-        QCBORDecode_EnterBstrWrapped(&auth_context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
-        QCBORDecode_EnterMap(&auth_context, &item);
-        size_t len = item.val.uCount;
-        for (size_t i = 0; i < len; i++) {
-            result = suit_qcbor_get_next(&auth_context, &item, QCBOR_TYPE_INT64);
-            if (result != SUIT_SUCCESS) {
-                return result;
-            }
-            printf("\n%*s/ %s / %ld: %ld / %s /", indent_space + 2 * indent_delta, "", suit_cose_protected_key_to_str(item.label.int64), item.label.int64, item.val.int64, suit_cose_protected_key_and_value_to_str(item.label.int64, item.val.int64));
-            if (i + 1 != len) {
-                printf(",");
-            }
-        }
-        printf("\n%*s} >>,\n", indent_space + indent_delta, "");
-        QCBORDecode_ExitMap(&auth_context);
-        QCBORDecode_ExitBstrWrapped(&auth_context);
-
-        printf("%*s/ unprotected: / {", indent_space + indent_delta, "");
-        QCBORDecode_EnterMap(&auth_context, &item);
-        len = item.val.uCount;
-        for (size_t i = 0; i < len; i++) {
-            result = suit_qcbor_get_next(&auth_context, &item, QCBOR_TYPE_INT64);
-            if (result != SUIT_SUCCESS) {
-                return result;
-            }
-            printf("\n%*s/ %s / %ld: %ld / %s /", indent_space + 2 * indent_delta, "", suit_cose_protected_key_to_str(item.label.int64), item.label.int64, item.val.int64, suit_cose_protected_key_and_value_to_str(item.label.int64, item.val.int64));
-            if (i + 1 != len) {
-                printf(",");
-            }
-        }
-        printf("\n%*s},\n", indent_space + indent_delta, "");
-        QCBORDecode_ExitMap(&auth_context);
-
-        result = suit_qcbor_get_next(&auth_context, &item, QCBOR_TYPE_ANY);
-        if (result != SUIT_SUCCESS) {
-            return result;
-        }
-        printf("%*s/ payload: / ", indent_space + indent_delta, "");
-        if (item.uDataType == QCBOR_TYPE_NULL) {
-            printf("null,\n");
-        }
-        else if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
-            suit_print_hex(item.val.string.ptr, item.val.string.len);
-            printf("\n");
-        }
-        else {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
-        }
-
-        result = suit_qcbor_get_next(&auth_context, &item, QCBOR_TYPE_BYTE_STRING);
-        if (result != SUIT_SUCCESS) {
-            return result;
-        }
-        printf("%*s/ signature: / ", indent_space + indent_delta, "");
-        suit_print_hex(item.val.string.ptr, item.val.string.len);
-
-        QCBORError error = QCBORDecode_Finish(&auth_context);
-        if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
-            result = suit_error_from_qcbor_error(error);
-        }
-        printf("\n%*s])", indent_space, "");
-    }
-    return result;
-}
-
-suit_err_t suit_print_digest(const suit_digest_t *digest,
-                             const uint32_t indent_space,
-                             const uint32_t indent_delta)
-{
-    if (digest == NULL) {
-        return SUIT_ERR_FATAL;
-    }
-    suit_err_t result = SUIT_SUCCESS;
-    if (digest->algorithm_id != SUIT_ALGORITHM_ID_INVALID
-        && digest->bytes.len > 0) {
-        printf("[\n");
-        printf("%*s/ algorithm-id: / %d / %s /,\n", indent_space + indent_delta, "", digest->algorithm_id, suit_cose_alg_to_str(digest->algorithm_id));
-        printf("%*s/ digest-bytes: / ", indent_space + indent_delta, "");
-        result = suit_print_hex(digest->bytes.ptr, digest->bytes.len);
-        printf("\n%*s]", indent_space, "");
-    }
-    return result;
 }
 
 int32_t suit_print_dependency(const suit_dependency_t *dependency,

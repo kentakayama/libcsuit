@@ -293,7 +293,7 @@ suit_err_t suit_create_aes_key(suit_key_t *cose_secret_key)
 }
 
 suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key,
-                                         suit_key_t *cose_secret_key)
+                                           suit_key_t *cose_secret_key)
 {
     cose_secret_key->private_key = secret_key;
     cose_secret_key->private_key_len = A128GCM_KEY_CHAR_LENGTH;

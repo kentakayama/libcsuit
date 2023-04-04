@@ -435,8 +435,6 @@ int main(int argc, char *argv[])
     suit_inputs->ptr = suit_inputs->buf;
     suit_inputs->key_len = NUM_PUBLIC_KEYS;
 
-    // Read key from der file.
-    // This code is only available for openssl prime256v1.
     printf("\nmain : Read public keys.\n");
     for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
         result = suit_key_init_es256_public_key(public_keys[i], &suit_inputs->mechanisms[i].key);
@@ -448,6 +446,7 @@ int main(int argc, char *argv[])
         suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
     }
 
+    printf("\nmain : Read secret keys.\n");
     for (size_t j = 0; j < NUM_SECRET_KEYS; j++) {
         result = suit_key_init_a128kw_secret_key(secret_keys[j], &suit_inputs->mechanisms[i + j].key);
         if (result != SUIT_SUCCESS) {

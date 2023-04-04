@@ -29,13 +29,14 @@ $(OBJDIR)/%.o:	%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
-.PHONY: all test clean
-
+.PHONY: all
 all: $(TARGET)
 
-OUTPUT		:= ./testfiles/suit_manifest_expE.cbor
-test: all
-	$(TARGET) $(OUTPUT)
+.PHONY: run
+run: all
+	$(TARGET) ./testfiles/raw_image.bin ./testfiles/encrypted_image.bin ./testfiles/encryption_info.cose
 
+.PHONY: clean
 clean:
-	rm -f $(OBJS) $(TARGET)
+	$(RM) $(OBJS) $(TARGET) ./testfiles/encrypted_image.bin ./testfiles/encryption_info.cose
+

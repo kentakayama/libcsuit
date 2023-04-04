@@ -209,6 +209,8 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             case SUIT_PARAMETER_VENDOR_IDENTIFIER:
             case SUIT_PARAMETER_CLASS_IDENTIFIER:
             case SUIT_PARAMETER_INVOKE_ARGS:
+            /* draft-ietf-suit-firmware-encryption */
+            case SUIT_PARAMETER_ENCRYPTION_INFO:
                 QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
                 break;
 
@@ -223,10 +225,6 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
                 QCBOREncode_BstrWrapInMapN(context, param->label);
                 result = suit_encode_append_digest(&param->value.digest, 0, context);
                 QCBOREncode_CloseBstrWrap(context, NULL);
-                break;
-
-            case SUIT_PARAMETER_ENCRYPTION_INFO:
-                // TODO
                 break;
 
 

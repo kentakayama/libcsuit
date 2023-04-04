@@ -142,6 +142,8 @@ suit_err_t suit_decode_parameters_list_from_item(const uint8_t mode,
             case SUIT_PARAMETER_VENDOR_IDENTIFIER:
             case SUIT_PARAMETER_CLASS_IDENTIFIER:
             case SUIT_PARAMETER_INVOKE_ARGS:
+            /* draft-ietf-suit-firmware-encryption */
+            case SUIT_PARAMETER_ENCRYPTION_INFO:
                 if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                     result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
                     break;
@@ -177,9 +179,6 @@ suit_err_t suit_decode_parameters_list_from_item(const uint8_t mode,
 
             /* bstr wrapped SUIT_Wait_Event */
             case SUIT_PARAMETER_WAIT_INFO:
-
-            /* draft-ietf-suit-firmware-encryption */
-            case SUIT_PARAMETER_ENCRYPTION_INFO:
 
             default:
                 result = SUIT_ERR_NOT_IMPLEMENTED;
