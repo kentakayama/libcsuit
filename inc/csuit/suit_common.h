@@ -18,27 +18,34 @@
     \brief  libcsuit SUCCESS/ERROR result
  */
 typedef enum {
-    SUIT_SUCCESS                        = 0, /*! success */
-    SUIT_ERR_FATAL                      = 1, /*! unknown error, e.g. occurred out of SUIT */
-    SUIT_ERR_NO_MEMORY                  = 2, /*! exceed the allocated memory */
-    SUIT_ERR_INVALID_TYPE_OF_ARGUMENT   = 3, /*! type of an item is not expected */
-    SUIT_ERR_NO_MORE_ITEMS              = 4, /*! mandatory items in array did not appeare */
-    SUIT_ERR_NOT_IMPLEMENTED            = 5, /*! parser is not implemented */
-    SUIT_ERR_FAILED_TO_VERIFY           = 6, /*! COSE or hash digest verification failure */
-    SUIT_ERR_AUTHENTICATION_POSITION    = 7, /*! suit-authentication-block MUST come before any element, except suit-delegation */
-    SUIT_ERR_REDUNDANT                  = 8, /*! same key appears, e.g. suit-install exists in both suit-manifest and suit-envelope */
-    SUIT_ERR_INVALID_TYPE_OF_KEY        = 9, /*! type of an key is not expected */
-    SUIT_ERR_INVALID_MANIFEST_VERSION   = 10, /*! suit-manifest-version is not supported */
-    SUIT_ERR_INVALID_KEY                = 11, /*! invalid map key */
-    SUIT_ERR_NO_CALLBACK                = 12, /*! callback function to be called does not provided */
-    SUIT_ERR_NO_ARGUMENT                = 13, /*! arguments for callback function did not appear */
-    SUIT_ERR_TRY_OUT                    = 14, /*! all command_sequence in try-each section failed */
-    SUIT_ERR_NOT_FOUND                  = 15, /*! the specified content does not exists or unaccessible */
-    SUIT_ERR_INVALID_VALUE              = 16, /*! the input value is invalid */
-    SUIT_ERR_FAILED_TO_SIGN             = 17,
-    SUIT_ERR_NOT_A_SUIT_MANIFEST        = 18, /*! the input data is tagged but not SUIT_Manifest_Tagged */
-    SUIT_ERR_CONDITION_MISMATCH         = 19, /*! suit-condition-* failed */
-    SUIT_ERR_ABORT                      = 31, /*! abort to execute, mainly for libcsuit internal */
+    SUIT_SUCCESS = 0,                   /*! success */
+
+    SUIT_ERR_FATAL,                     /*! unknown error, e.g. occurred out of SUIT */
+
+    SUIT_ERR_NOT_A_SUIT_MANIFEST,       /*! the input data is tagged but not SUIT_Manifest_Tagged */
+
+    SUIT_ERR_NO_MEMORY,                 /*! exceed the allocated memory */
+    SUIT_ERR_NOT_FOUND,                 /*! the specified content does not exist or unaccessible */
+    SUIT_ERR_AUTHENTICATION_NOT_FOUND,  /*! suit-authentication-wrapper does not exist */
+
+    SUIT_ERR_INVALID_TYPE_OF_ARGUMENT,  /*! type of an item is not expected */
+    SUIT_ERR_INVALID_VALUE,             /*! the input value is invalid */
+    SUIT_ERR_INVALID_TYPE_OF_KEY,       /*! type of a key is not expected */
+    SUIT_ERR_NO_MORE_ITEMS,             /*! mandatory items in array did not appeare */
+    SUIT_ERR_NOT_IMPLEMENTED,           /*! parser is not implemented */
+    SUIT_ERR_FAILED_TO_VERIFY,          /*! COSE or hash digest verification failure */
+    SUIT_ERR_FAILED_TO_SIGN,            /*! COSE signing failure */
+    SUIT_ERR_FAILED_TO_DECRYPT,         /*! COSE decryption failure */
+    SUIT_ERR_FAILED_TO_ENCRYPT,         /*! COSE encryption failure */
+    SUIT_ERR_CONDITION_MISMATCH,        /*! suit-condition-* failed */
+
+    //SUIT_ERR_AUTHENTICATION_POSITION    = 7, /*! suit-authentication-block MUST come before any element, except suit-delegation */
+    SUIT_ERR_REDUNDANT,                 /*! same key appears, e.g. suit-install exists in both suit-manifest and suit-envelope */
+    SUIT_ERR_INVALID_MANIFEST_VERSION,  /*! does not support SUIT Manifest version specified by suit-manifest-version */
+    SUIT_ERR_INVALID_KEY,               /*! invalid map key */
+    //SUIT_ERR_NO_ARGUMENT                = 13, /*! arguments for callback function did not appear */
+    SUIT_ERR_TRY_OUT,                   /*! all command_sequence in try-each section failed */
+    SUIT_ERR_ABORT,                     /*! abort to execute, mainly for libcsuit internal */
 } suit_err_t;
 
 /*! \brief abort immediately on any error */

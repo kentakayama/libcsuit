@@ -20,7 +20,9 @@
 
 #define MAX_FILE_BUFFER_SIZE            4096
 
-int main(int argc, char *argv[]) {
+int main(int argc,
+         char *argv[])
+{
     // check arguments.
     if (argc < 1) {
         printf("%s <manifest file path> [tabstop 2] [indent 4]\n", argv[0]);

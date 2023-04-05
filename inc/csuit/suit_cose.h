@@ -11,6 +11,12 @@
 #include "csuit/suit_common.h"
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/t_cose_sign1_sign.h"
+
+#ifndef LIBCSUIT_DISABLE_ENCRYPTION
+#include "t_cose/t_cose_encrypt_dec.h"
+#include "t_cose/t_cose_recipient_dec_keywrap.h"
+#endif
+
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
 #include "psa/crypto.h"
 #else
@@ -83,20 +89,25 @@ typedef struct suit_mechanism {
 
     \return     This returns SUIT_SUCCESS, SUIT_ERR_FAILED_TO_VERIFY or SUIT_ERR_FATAL.
  */
-suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor, const suit_key_t *key_pair, UsefulBuf *returned_payload);
+suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
+                                const suit_key_t *key_pair,
+                                UsefulBuf *returned_payload);
 
 /*!
     \brief  Verify COSE_Sign signed payload.
 
-    \param[in]  signed_cose         Pointer and length of the target signed payload.
-    \param[in]  public_key          Pointer of public key.
-    \param[in]  returned_payload    Pointer and length of the COSE_Sign signed target payload.
+    \param[in]  signed_cose             Pointer and length of the target signed payload.
+    \param[in]  public_key              Pointer of public key.
+    \param[in]  returned_payload        Pointer and length for verified payload.
+                                        You can pass detached payload here.
 
     \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_cose_sign(const UsefulBufC signed_cose, const suit_key_t *public_key, UsefulBufC returned_payload);
+suit_err_t suit_verify_cose_sign(const UsefulBufC signed_cose,
+                                 const suit_key_t *public_key,
+                                 UsefulBufC returned_payload);
 
 /*!
     \brief  Verify COSE_Sign1 signed payload.
@@ -119,30 +130,53 @@ suit_err_t suit_verify_cose_sign(const UsefulBufC signed_cose, const suit_key_t 
     This function verifies whether the payload correspond to the signature,
     and then extracts payload to returned_payload if success.
  */
-suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose, const suit_key_t *public_key, UsefulBufC returned_payload);
+suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
+                                  const suit_key_t *public_key,
+                                  UsefulBufC returned_payload);
 
 /*!
     \brief  Verify COSE_Mac signed payload.
 
     \param[in]  signed_cose         Pointer and length of the target signed payload.
     \param[in]  public_key          Pointer of public key.
-    \param[in]  returned_payload    Pointer and length of the COSE_Mac signed target payload.
+    \param[in]  returned_payload    Pointer and length for verified payload.
+                                    You can pass detached payload here.
 
     \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
  */
-
-suit_err_t suit_verify_cose_mac(const UsefulBufC signed_cose, const suit_key_t *public_key, UsefulBufC *returned_payload);
+suit_err_t suit_verify_cose_mac(const UsefulBufC signed_cose,
+                                const suit_key_t *public_key,
+                                UsefulBufC *returned_payload);
 
 /*!
     \brief  Verify COSE_Mac0 signed payload.
 
     \param[in]  signed_cose         Pointer and length of the target signed payload.
     \param[in]  public_key          Pointer of public key.
-    \param[in]  returned_payload    Pointer and length of the COSE_Mac0 signed target payload.
+    \param[out]  returned_payload    Pointer and length of the COSE_Mac0 signed target payload.
 
     \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
  */
-suit_err_t suit_verify_cose_mac0(const UsefulBufC signed_cose, const suit_key_t *public_key, UsefulBufC *returned_payload);
+suit_err_t suit_verify_cose_mac0(const UsefulBufC signed_cose,
+                                 const suit_key_t *public_key,
+                                 UsefulBufC *returned_payload);
+
+/*!
+    \brief  Decrypt COSE_Encrypt or COSE_Encrypt0 encrypted payload.
+
+    \param[in]  encrypted_payload   Pointer and length of the target encrypted payload.
+    \param[in]  encryption_info     Pointer and length of the COSE_Encrypt or COSE_Encrypt0.
+    \param[in]  working_buf         Pointer and length of the working buffer for decryption.
+    \param[in]  secret_key          Pointer of secret key.
+    \param[out] returned_payload    Pointer and length of the plaintext payload.
+
+    \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_DECRYPT.
+ */
+suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
+                                     const UsefulBufC encryption_info,
+                                     UsefulBuf working_buf,
+                                     const suit_mechanism_t *mechanism,
+                                     UsefulBufC *retuned_payload);
 
 #endif  /* SUIT_COSE_H */
 

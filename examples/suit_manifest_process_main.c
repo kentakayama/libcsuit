@@ -20,13 +20,10 @@
 #include "qcbor/qcbor.h"
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_print.h"
+#include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
 #include "trust_anchor_prime256v1_pub.h"
 #include "trust_anchor_a128_secret_key.h"
-#include "t_cose/t_cose_sign1_verify.h"
-#include "t_cose/t_cose_encrypt_dec.h"
-#include "t_cose/t_cose_recipient_dec_keywrap.h"
-#include "t_cose/q_useful_buf.h"
 
 bool is_available_char_for_filename(const char c)
 {
@@ -296,45 +293,35 @@ suit_err_t store_component(const char *dst,
                            UsefulBufC encryption_info,
                            suit_mechanism_t mechanisms[])
 {
-    suit_err_t result = SUIT_ERR_FATAL;
-    UsefulBuf decrypted_payload_buf;
-    decrypted_payload_buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
-    if (decrypted_payload_buf.ptr == NULL) {
-        return SUIT_ERR_NO_MEMORY;
-    }
-    decrypted_payload_buf.len = SUIT_MAX_DATA_SIZE;
-    UsefulBufC decrypted_payload;
-    struct t_cose_recipient_dec_keywrap kw_unwrap_recipient;
-    struct t_cose_encrypt_dec_ctx decrypt_context;
+    suit_err_t result = SUIT_SUCCESS;
+    UsefulBuf decrypted_payload_buf = NULLUsefulBuf;
 
     if (!UsefulBuf_IsNULLOrEmptyC(encryption_info)) {
+        decrypted_payload_buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
+        decrypted_payload_buf.len = SUIT_MAX_DATA_SIZE;
+        UsefulBufC tmp = NULLUsefulBufC;
         for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
-            if (!mechanisms[i].use) {
-                continue;
-            }
-            if (mechanisms[i].cose_tag != CBOR_TAG_COSE_ENCRYPT0 &&
-                mechanisms[i].cose_tag != CBOR_TAG_COSE_ENCRYPT) {
-                continue;
-            }
-            t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT);
-            t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
-            t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanisms[i].key.cose_key, NULL_Q_USEFUL_BUF_C);
-            t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
-            enum t_cose_err_t err = t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, src, decrypted_payload_buf, &decrypted_payload, NULL);
-            if (err == T_COSE_SUCCESS) {
-                size_t len = write_to_file(dst, decrypted_payload.ptr, decrypted_payload.len);
-                if (len != decrypted_payload.len) {
-                    result = SUIT_ERR_FATAL;
-                }
-                else {
-                    result = SUIT_SUCCESS;
-                }
-                goto out;
+            result = suit_decrypt_cose_encrypt(src, encryption_info, decrypted_payload_buf, &mechanisms[i], &tmp);
+            if (result == SUIT_SUCCESS) {
+                break;
             }
         }
+        if (result != SUIT_SUCCESS || !UsefulBuf_IsNULLOrEmptyC(tmp)) {
+            result = SUIT_ERR_FAILED_TO_DECRYPT;
+            goto out;
+        }
+        src = tmp;
     }
+
+    size_t len = write_to_file(dst, src.ptr, src.len);
+    if (len != src.len) {
+        result = SUIT_ERR_FATAL;
+    }
+
 out:
-    free(decrypted_payload_buf.ptr);
+    if (decrypted_payload_buf.ptr != NULL) {
+        free(decrypted_payload_buf.ptr);
+    }
     return result;
 }
 

@@ -16,7 +16,8 @@
 /*
     Public function. See suit_cose.h
  */
-cose_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose) {
+cose_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose)
+{
     /* judge authentication object
      * [ COSE_Sign_Tagged, COSE_Sign1_Tagged, COSE_Mac_Tagged, COSE_Mac0_Tagged ]
      */
@@ -46,7 +47,10 @@ cose_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose) {
     return result;
 }
 
-suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose, const suit_key_t *public_key, UsefulBufC returned_payload) {
+suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
+                                  const suit_key_t *public_key,
+                                  UsefulBufC returned_payload)
+{
     suit_err_t result = SUIT_SUCCESS;
     struct t_cose_sign1_verify_ctx verify_ctx;
     struct t_cose_parameters parameters;
@@ -69,81 +73,14 @@ suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose, const suit_key_t
     return result;
 }
 
-/*!
-    \brief  Distinguish algorithm id from t_cose_key.
-
-    \param[in]  key                 Pointer of the key.
-    \param[out] cose_algorithm_id   Pointer of the resulting algorithm id.
-
-    \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
-
-    COSE supports ES256, ES384 and ES512 as alrogithm of signature,
-    so T_COSE_ALGORITHM_ES256, T_COSE_ALGORITHM_ES384 or T_COSE_ALGORITHM_ES512 will be set to cose_algorithm_id argument if success.
- */
-#if 0
-suit_err_t suit_get_algorithm_from_cose_key(const suit_key_t *key, int32_t *cose_algorithm_id) {
-#if defined(LIBCSUIT_PSA_CRYPTO_C)
-    if (key->crypto_lib != T_COSE_CRYPTO_LIB_PSA) {
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-    psa_key_handle_t *key_handle = key->k.key_ptr;
-    psa_key_attributes_t key_attributes;
-    psa_status_t status = psa_get_key_attributes(*key_handle, &key_attributes);
-    if (status != PSA_SUCCESS) {
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-    psa_algorithm_t key_alg = psa_get_key_algorithm(&key_attributes);
-    switch (key_alg) {
-    case PSA_ALG_ECDSA(PSA_ALG_SHA_256):
-        *cose_algorithm_id = T_COSE_ALGORITHM_ES256;
-        break;
-    case PSA_ALG_ECDSA(PSA_ALG_SHA_384):
-        *cose_algorithm_id = T_COSE_ALGORITHM_ES384;
-        break;
-    case PSA_ALG_ECDSA(PSA_ALG_SHA_512):
-        *cose_algorithm_id = T_COSE_ALGORITHM_ES512;
-        break;
-    default:
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-#else /* !LIBCSUIT_PSA_CRYPTO_C */
-    if (key->crypto_lib != T_COSE_CRYPTO_LIB_OPENSSL) {
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-    const EVP_PKEY *key_ptr = key->k.key_ptr;
-    if (key_ptr == NULL) {
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-    OSSL_PARAM    *params;
-    const EC_GROUP *ec_group = EC_KEY_get0_group(key_ptr);
-    if (ec_group == NULL) {
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-    int nid = EC_GROUP_get_curve_name(ec_group);
-    switch (nid) {
-    case NID_X9_62_prime256v1:
-        *cose_algorithm_id = T_COSE_ALGORITHM_ES256;
-        break;
-    case NID_secp384r1:
-        *cose_algorithm_id = T_COSE_ALGORITHM_ES384;
-        break;
-    case NID_secp521r1:
-        *cose_algorithm_id = T_COSE_ALGORITHM_ES512;
-        break;
-    default:
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-#endif
-    return SUIT_SUCCESS;
-}
-#endif
-
-suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor, const suit_key_t *key_pair, UsefulBuf *returned_payload) {
+suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
+                                const suit_key_t *key_pair,
+                                UsefulBuf *returned_payload)
+{
     // Create cose signed buffer.
     struct t_cose_sign1_sign_ctx sign_ctx;
     enum t_cose_err_t cose_result;
     UsefulBufC tmp_signed_cose;
-    //UsefulBuf_MAKE_STACK_UB(signed_cose_buffer, 1024);
 
     t_cose_sign1_sign_init(&sign_ctx, 0, key_pair->cose_algorithm_id);
     t_cose_sign1_set_signing_key(&sign_ctx, key_pair->cose_key, NULL_Q_USEFUL_BUF_C);
@@ -152,8 +89,35 @@ suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor, const suit_key_t *key
         returned_payload->len = 0;
         return SUIT_ERR_FAILED_TO_SIGN;
     }
-    //memcpy(returned_payload->ptr, tmp_signed_cose.ptr, tmp_signed_cose.len);
     returned_payload->len = tmp_signed_cose.len;
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
+                                     const UsefulBufC encryption_info,
+                                     UsefulBuf working_buf,
+                                     const suit_mechanism_t *mechanism,
+                                     UsefulBufC *returned_payload)
+{
+    if (!mechanism->use ||
+        (mechanism->cose_tag != CBOR_TAG_COSE_ENCRYPT0 &&
+         mechanism->cose_tag != CBOR_TAG_COSE_ENCRYPT)) {
+        return SUIT_ERR_FAILED_TO_DECRYPT;
+    }
+
+    struct t_cose_recipient_dec_keywrap kw_unwrap_recipient;
+    struct t_cose_encrypt_dec_ctx decrypt_context;
+
+    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT);
+    t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
+    t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
+    t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
+    UsefulBufC tmp;
+    enum t_cose_err_t err = t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, encrypted_payload, working_buf, &tmp, NULL);
+    if (err != T_COSE_SUCCESS) {
+        return SUIT_ERR_FAILED_TO_DECRYPT;
+    }
+    *returned_payload = tmp;
     return SUIT_SUCCESS;
 }
 

@@ -24,42 +24,43 @@ char* suit_err_to_str(suit_err_t error)
         return "SUIT_SUCCESS";
     case SUIT_ERR_FATAL:
         return "SUIT_ERR_FATAL";
+    case SUIT_ERR_NOT_A_SUIT_MANIFEST:
+        return "SUIT_ERR_NOT_A_SUIT_MANIFEST";
+
     case SUIT_ERR_NO_MEMORY:
         return "SUIT_ERR_NO_MEMORY";
+    case SUIT_ERR_NOT_FOUND:
+        return "SUIT_ERR_NOT_FOUND";
+    case SUIT_ERR_AUTHENTICATION_NOT_FOUND:
+        return "SUIT_ERR_AUTHENTICATION_NOT_FOUND";
+
     case SUIT_ERR_INVALID_TYPE_OF_ARGUMENT:
         return "SUIT_INVALID_TYPE_OF_ARGUMENT";
+    case SUIT_ERR_INVALID_VALUE:
+        return "SUIT_ERR_INVALID_VALUE";
+    case SUIT_ERR_INVALID_KEY:
+        return "SUIT_ERR_INVALID_KEY";
     case SUIT_ERR_NO_MORE_ITEMS:
         return "SUIT_ERR_NO_MORE_ITEMS";
     case SUIT_ERR_NOT_IMPLEMENTED:
         return "SUIT_ERR_NOT_IMPLEMENTED";
     case SUIT_ERR_FAILED_TO_VERIFY:
         return "SUIT_ERR_FAILED_TO_VERIFY";
-    case SUIT_ERR_AUTHENTICATION_POSITION:
-        return "SUIT_ERR_AUTHENTICATION_POSITION";
-    case SUIT_ERR_REDUNDANT:
-        return "SUIT_ERR_REDUNDANT";
-    case SUIT_ERR_INVALID_TYPE_OF_KEY:
-        return "SUIT_ERR_INVALID_TYPE_OF_KEY";
-    case SUIT_ERR_INVALID_MANIFEST_VERSION:
-        return "SUIT_ERR_INVALID_MANIFEST_VERSION";
-    case SUIT_ERR_INVALID_KEY:
-        return "SUIT_ERR_INVALID_KEY";
-    case SUIT_ERR_NO_CALLBACK:
-        return "SUIT_ERR_NO_CALLBACK";
-    case SUIT_ERR_NO_ARGUMENT:
-        return "SUIT_ERR_NO_ARGUMENT";
-    case SUIT_ERR_TRY_OUT:
-        return "SUIT_ERR_TRY_OUT";
-    case SUIT_ERR_NOT_FOUND:
-        return "SUIT_ERR_NOT_FOUND";
-    case SUIT_ERR_INVALID_VALUE:
-        return "SUIT_ERR_INVALID_VALUE";
     case SUIT_ERR_FAILED_TO_SIGN:
         return "SUIT_ERR_FAILED_TO_SIGN";
-    case SUIT_ERR_NOT_A_SUIT_MANIFEST:
-        return "SUIT_ERR_NOT_A_SUIT_MANIFEST";
+    case SUIT_ERR_FAILED_TO_DECRYPT:
+        return "SUIT_ERR_FAILED_TO_DECRYPT";
+    case SUIT_ERR_FAILED_TO_ENCRYPT:
+        return "SUIT_ERR_FAILED_TO_ENCRYPT";
     case SUIT_ERR_CONDITION_MISMATCH:
         return "SUIT_ERR_CONDITION_MISMATCH";
+
+    case SUIT_ERR_REDUNDANT:
+        return "SUIT_ERR_REDUNDANT";
+    case SUIT_ERR_INVALID_MANIFEST_VERSION:
+        return "SUIT_ERR_INVALID_MANIFEST_VERSION";
+    case SUIT_ERR_TRY_OUT:
+        return "SUIT_ERR_TRY_OUT";
     case SUIT_ERR_ABORT:
         return "SUIT_ERR_ABORT";
     default:
