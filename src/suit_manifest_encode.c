@@ -115,7 +115,8 @@ suit_err_t suit_generate_digest_include_header(const uint8_t *ptr,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    return suit_generate_digest(t_buf.ptr, t_buf.len, suit_encode, digest);
+    digest->algorithm_id = SUIT_ALGORITHM_ID_SHA256;
+    return suit_generate_digest_using_encode_buf(t_buf.ptr, t_buf.len, suit_encode, digest);
 }
 
 suit_err_t suit_generate_encoded_digest(const uint8_t *ptr,

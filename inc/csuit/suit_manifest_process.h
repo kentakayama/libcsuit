@@ -136,6 +136,9 @@ typedef struct suit_fetch_args {
     suit_rep_policy_t report;
 
     UsefulBufC args;
+    /* in draft-ietf-suit-firmware-encryption */
+    UsefulBufC                  encryption_info;
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 } suit_fetch_args_t;
 
 typedef struct suit_fetch_ret {
@@ -159,7 +162,10 @@ typedef struct suit_condition_args {
     union {
         uint64_t        u64;
         UsefulBufC      str;
-        suit_digest_t   image_digest;
+        struct {
+            uint64_t        image_size;
+            suit_digest_t   image_digest;
+        };
     } expected;
 } suit_condition_args_t;
 

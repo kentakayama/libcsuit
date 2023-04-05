@@ -21,6 +21,7 @@
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
+#include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
 #include "trust_anchor_prime256v1_pub.h"
 #include "trust_anchor_a128_secret_key.h"
@@ -35,28 +36,28 @@ bool is_available_char_for_filename(const char c)
             ('-' == c));
 }
 
-suit_err_t suit_component_identifier_to_filename(suit_component_identifier_t comp_id,
+suit_err_t suit_component_identifier_to_filename(const suit_component_identifier_t *comp_id,
                                                  const size_t max_filename_len,
                                                  char filename[])
 {
     size_t pos = 0;
 
     pos += sprintf(&filename[pos], "./tmp");
-    for (size_t i = 0; i < comp_id.len; i++) {
+    for (size_t i = 0; i < comp_id->len; i++) {
         if (pos + 1 + 1 > max_filename_len) {
             return SUIT_ERR_NO_MEMORY;
         }
         pos += sprintf(&filename[pos], "/");
 
-        if (pos + comp_id.identifier[i].len + 1 > max_filename_len) {
+        if (pos + comp_id->identifier[i].len + 1 > max_filename_len) {
             return SUIT_ERR_NO_MEMORY;
         }
-        for (size_t j = 0; j < comp_id.identifier[i].len; j++) {
-            if (is_available_char_for_filename(comp_id.identifier[i].ptr[j])) {
-                filename[pos++] = comp_id.identifier[i].ptr[j];
+        for (size_t j = 0; j < comp_id->identifier[i].len; j++) {
+            if (is_available_char_for_filename(comp_id->identifier[i].ptr[j])) {
+                filename[pos++] = comp_id->identifier[i].ptr[j];
             }
             else {
-                pos += sprintf(&filename[pos], "%02x", comp_id.identifier[i].ptr[j]);
+                pos += sprintf(&filename[pos], "%02x", comp_id->identifier[i].ptr[j]);
             }
         }
     }
@@ -183,11 +184,11 @@ const uint8_t encrypted_firmware_uri[] = {
     0x6D, 0x77, 0x61, 0x72, 0x65, 0x2E, 0x62, 0x69, 0x6E
 }; // "https://author.example.com/encrypted-firmware.bin"
 const uint8_t encrypted_firmware_data[] = {
-    0x7F, 0x9C, 0x0B, 0x7B, 0x36, 0x43, 0xE8, 0x76, 0x0A, 0x34,
-    0x3A, 0x6F, 0x62, 0x0A, 0x3E, 0x32, 0xE2, 0xDB, 0x68, 0x56,
-    0xD2, 0xE0, 0x94, 0x1E, 0xAA, 0x3B, 0xF3, 0xB1, 0xB2, 0xBB,
-    0xED, 0x67, 0x9F, 0x66, 0xAA, 0x6B, 0xC3, 0x6B, 0xFD, 0x85,
-    0x46, 0x9B, 0xE2, 0x17, 0x81, 0x55
+    0x42, 0x98, 0xCC, 0xB3, 0x20, 0xD1, 0x2C, 0x0A, 0xE2, 0xA8,
+    0x52, 0x4E, 0x34, 0xC9, 0x26, 0xCA, 0x17, 0xFD, 0x33, 0xE5,
+    0x62, 0x77, 0xC0, 0x8F, 0xE8, 0x82, 0x82, 0x0B, 0x8A, 0xCF,
+    0x52, 0xED, 0x4C, 0x52, 0x9A, 0xD1, 0xBB, 0xF8, 0x7B, 0xBD,
+    0xF8, 0xA2, 0x89, 0x70, 0x43, 0xE8, 0xAF
 };
 
 struct name_data {
@@ -214,7 +215,7 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
     }
 
     char filename[SUIT_MAX_NAME_LENGTH];
-    result = suit_component_identifier_to_filename(fetch_args.dst, SUIT_MAX_NAME_LENGTH, filename);
+    result = suit_component_identifier_to_filename(&fetch_args.dst, SUIT_MAX_NAME_LENGTH, filename);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -242,6 +243,113 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
         fetch_ret->buf_len = fetch_args.buf_len;
     }
     return SUIT_SUCCESS;
+}
+
+suit_err_t suit_condition_check_content(const suit_component_identifier_t *dst,
+                                        UsefulBufC content)
+{
+    char filename[SUIT_MAX_NAME_LENGTH];
+    suit_err_t result = suit_component_identifier_to_filename(dst, SUIT_MAX_NAME_LENGTH, filename);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+
+    UsefulBuf buf;
+    buf.ptr = malloc(content.len + 1);
+    if (buf.ptr == NULL) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    buf.len = read_from_file(filename, buf.ptr, content.len + 1);
+
+    /* see https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest-22#name-suit-condition-check-conten */
+    uint8_t residual = 0;
+    for (size_t i = 0; i < content.len; i++) {
+        residual |= ((uint8_t *)content.ptr)[i] ^ ((uint8_t *)buf.ptr)[i];
+    }
+    return (residual == 0) ? SUIT_SUCCESS : SUIT_ERR_CONDITION_MISMATCH;
+}
+
+suit_err_t suit_condition_image_match(const suit_component_identifier_t *dst,
+                                      const suit_digest_t *image_digest,
+                                      const uint64_t image_size,
+                                      bool condition_match)
+{
+    char filename[SUIT_MAX_NAME_LENGTH];
+    suit_err_t result = suit_component_identifier_to_filename(dst, SUIT_MAX_NAME_LENGTH, filename);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+
+    suit_buf_t buf;
+    if (image_size == 0) {
+        buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
+        if (buf.ptr == NULL) {
+            return SUIT_ERR_NO_MEMORY;
+        }
+        buf.len = read_from_file(filename, buf.ptr, SUIT_MAX_DATA_SIZE);
+    }
+    else {
+        buf.ptr = malloc(image_size + 1);
+        if (buf.ptr == NULL) {
+            return SUIT_ERR_NO_MEMORY;
+        }
+        buf.len = read_from_file(filename, buf.ptr, image_size + 1);
+        if (buf.len != image_size) {
+            return SUIT_ERR_CONDITION_MISMATCH;
+        }
+    }
+    result = suit_verify_digest(&buf, image_digest);
+    free(buf.ptr);
+    if (result == SUIT_ERR_FAILED_TO_VERIFY) {
+        result = SUIT_ERR_CONDITION_MISMATCH;
+    }
+    return result;
+}
+
+suit_err_t __real_suit_condition_callback(suit_condition_args_t condition_args);
+suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args)
+{
+    suit_err_t result = __real_suit_condition_callback(condition_args);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+
+    bool match = true;
+    switch (condition_args.condition) {
+    /* bstr */
+    case SUIT_CONDITION_VENDOR_IDENTIFIER:
+    case SUIT_CONDITION_CLASS_IDENTIFIER:
+    case SUIT_CONDITION_DEVICE_IDENTIFIER:
+        result = SUIT_ERR_NOT_IMPLEMENTED;
+    case SUIT_CONDITION_CHECK_CONTENT:
+        result = suit_condition_check_content(&condition_args.dst, condition_args.expected.str);
+        break;
+
+    /* SUIT_Digest */
+    case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        match = false;
+    case SUIT_CONDITION_IMAGE_MATCH:
+        result = suit_condition_image_match(&condition_args.dst, &condition_args.expected.image_digest, condition_args.expected.image_size, match);
+        break;
+
+    case SUIT_CONDITION_COMPONENT_SLOT:
+    case SUIT_CONDITION_ABORT:
+    case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+    case SUIT_CONDITION_IS_DEPENDENCY:
+    case SUIT_CONDITION_USE_BEFORE:
+    case SUIT_CONDITION_MINIMUM_BATTERY:
+    case SUIT_CONDITION_UPDATE_AUTHORIZED:
+    case SUIT_CONDITION_VERSION:
+    default:
+        result = SUIT_ERR_NOT_IMPLEMENTED;
+    }
+
+    if (result != SUIT_SUCCESS) {
+        printf("main : error = %s(%d)\n", suit_err_to_str(result), result);
+        printf("main : suppress it for testing.\n\n");
+        result = SUIT_SUCCESS;
+    }
+    return result;
 }
 
 suit_err_t __real_suit_invoke_callback(suit_invoke_args_t invoke_args);
@@ -306,7 +414,7 @@ suit_err_t store_component(const char *dst,
                 break;
             }
         }
-        if (result != SUIT_SUCCESS || !UsefulBuf_IsNULLOrEmptyC(tmp)) {
+        if (result != SUIT_SUCCESS || UsefulBuf_IsNULLOrEmptyC(tmp)) {
             result = SUIT_ERR_FAILED_TO_DECRYPT;
             goto out;
         }
@@ -370,7 +478,7 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
 
     char dst[SUIT_MAX_NAME_LENGTH];
     char src[SUIT_MAX_NAME_LENGTH];
-    result = suit_component_identifier_to_filename(store_args.dst, SUIT_MAX_NAME_LENGTH, dst);
+    result = suit_component_identifier_to_filename(&store_args.dst, SUIT_MAX_NAME_LENGTH, dst);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -379,13 +487,13 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
         result = store_component(dst, store_args.src_buf, store_args.encryption_info, store_args.mechanisms);
         break;
     case SUIT_COPY:
-        result = suit_component_identifier_to_filename(store_args.src, SUIT_MAX_NAME_LENGTH, src);
+        result = suit_component_identifier_to_filename(&store_args.src, SUIT_MAX_NAME_LENGTH, src);
         if (result == SUIT_SUCCESS) {
             result = copy_component(dst, src, store_args.encryption_info, store_args.mechanisms);
         }
         break;
     case SUIT_SWAP:
-        result = suit_component_identifier_to_filename(store_args.src, SUIT_MAX_NAME_LENGTH, src);
+        result = suit_component_identifier_to_filename(&store_args.src, SUIT_MAX_NAME_LENGTH, src);
         if (result == SUIT_SUCCESS) {
             result = swap_component(dst, src);
             //result = (renameat2(AT_FDCWD, dst, AT_FDCWD, src, RENAME_EXCHANGE) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
@@ -413,7 +521,7 @@ int main(int argc, char *argv[])
     int32_t result = 0;
     int i;
 
-    suit_inputs_t *suit_inputs = malloc(sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
+    suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
     if (suit_inputs == NULL) {
         printf("main : Failed to allocate memory for suit_inputs\n");
         return EXIT_FAILURE;
@@ -433,6 +541,7 @@ int main(int argc, char *argv[])
         suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
     }
 
+#ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys.\n");
     for (size_t j = 0; j < NUM_SECRET_KEYS; j++) {
         result = suit_key_init_a128kw_secret_key(secret_keys[j], &suit_inputs->mechanisms[i + j].key);
@@ -443,6 +552,7 @@ int main(int argc, char *argv[])
         suit_inputs->mechanisms[i].use = true;
         suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_ENCRYPT;
     }
+#endif
 
     // Read manifest file.
     printf("\nmain : Read Manifest file.\n");

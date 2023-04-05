@@ -20,7 +20,7 @@
 
 int main(int argc, char *argv[]) {
     // check arguments.
-    if (argc < 1) {
+    if (argc < 2) {
         printf("%s <output manifest file path>", argv[0]);
         return EXIT_FAILURE;
     }

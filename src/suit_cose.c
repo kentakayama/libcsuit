@@ -121,3 +121,32 @@ suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
+                                     const suit_mechanism_t *mechanism,
+                                     UsefulBuf encrypted_payload_buf,
+                                     UsefulBuf encryption_info_buf,
+                                     UsefulBufC *encrypted_payload,
+                                     UsefulBufC *encryption_info)
+{
+    enum t_cose_err_t t_cose_err;
+    struct t_cose_recipient_enc_keywrap kw_recipient;
+    struct t_cose_encrypt_enc encrypt_context;
+
+    t_cose_recipient_enc_keywrap_init(&kw_recipient, mechanism->key.cose_algorithm_id);
+    t_cose_recipient_enc_keywrap_set_key(&kw_recipient, mechanism->key.cose_key, mechanism->kid);
+
+    t_cose_encrypt_enc_init(&encrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT, T_COSE_ALGORITHM_A128GCM);
+    t_cose_encrypt_add_recipient(&encrypt_context, (struct t_cose_recipient_enc *)&kw_recipient);
+
+    t_cose_err = t_cose_encrypt_enc_detached(&encrypt_context,
+                                             plaintext_payload,
+                                             NULL_Q_USEFUL_BUF_C,
+                                             encrypted_payload_buf,
+                                             encryption_info_buf,
+                                             encrypted_payload,
+                                             encryption_info);
+    if (t_cose_err != T_COSE_SUCCESS) {
+        return SUIT_ERR_FAILED_TO_ENCRYPT;
+    }
+    return SUIT_SUCCESS;
+}

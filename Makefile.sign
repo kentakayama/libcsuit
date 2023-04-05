@@ -7,8 +7,8 @@
 CFLAGS	= -Wall -g
 LDFLAGS	= -lt_cose -lqcbor -lm
 INC		= -I ./inc -I ./examples/inc
-TARGET	= ./bin/suit_manifest_encode
-SRCS =	examples/suit_manifest_encode_main.c \
+TARGET	= ./bin/suit_manifest_sign
+SRCS =	examples/suit_manifest_sign_main.c \
 		examples/suit_examples_common.c \
 		examples/suit_examples_cose.c \
 		src/suit_common.c \
@@ -40,10 +40,6 @@ $(OBJDIR)/%.o:	%.c
 .PHONY: all test clean
 
 all: $(TARGET)
-
-OUTPUT		:= ./testfiles/suit_manifest_expX.cbor
-test: all
-	$(TARGET) $(OUTPUT)
 
 clean:
 	$(RM) $(OBJS) $(TARGET)
