@@ -65,12 +65,12 @@ suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message,
     QCBORError error;
     error = QCBORDecode_GetNext(message, item);
     switch (error) {
-        case QCBOR_SUCCESS:
-            break;
-        case QCBOR_ERR_NO_MORE_ITEMS:
-            return SUIT_ERR_NO_MORE_ITEMS;
-        default:
-            return SUIT_ERR_FATAL;
+    case QCBOR_SUCCESS:
+        break;
+    case QCBOR_ERR_NO_MORE_ITEMS:
+        return SUIT_ERR_NO_MORE_ITEMS;
+    default:
+        return SUIT_ERR_FATAL;
     }
     if (item->uDataType == QCBOR_TYPE_NONE) {
         return SUIT_ERR_NO_MORE_ITEMS;
@@ -104,12 +104,12 @@ suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message,
     QCBORError error;
     error = QCBORDecode_PeekNext(message, item);
     switch (error) {
-        case QCBOR_SUCCESS:
-            break;
-        case QCBOR_ERR_NO_MORE_ITEMS:
-            return SUIT_ERR_NO_MORE_ITEMS;
-        default:
-            return SUIT_ERR_FATAL;
+    case QCBOR_SUCCESS:
+        break;
+    case QCBOR_ERR_NO_MORE_ITEMS:
+        return SUIT_ERR_NO_MORE_ITEMS;
+    default:
+        return SUIT_ERR_FATAL;
     }
     if (item->uDataType == QCBOR_TYPE_NONE) {
         return SUIT_ERR_NO_MORE_ITEMS;
@@ -151,18 +151,18 @@ bool suit_qcbor_value_is_uint64(QCBORItem *item)
 bool suit_qcbor_value_is_uint32(QCBORItem *item)
 {
     switch (item->uDataType) {
-        case QCBOR_TYPE_INT64:
-            if (item->val.int64 < 0 || item->val.int64 > UINT32_MAX) {
-                return false;
-            }
-            break;
-        case QCBOR_TYPE_UINT64:
-            if (item->val.uint64 > UINT32_MAX) {
-                return false;
-            }
-            break;
-        default:
+    case QCBOR_TYPE_INT64:
+        if (item->val.int64 < 0 || item->val.int64 > UINT32_MAX) {
             return false;
+        }
+        break;
+    case QCBOR_TYPE_UINT64:
+        if (item->val.uint64 > UINT32_MAX) {
+            return false;
+        }
+        break;
+    default:
+        return false;
     }
     return true;
 }
@@ -202,19 +202,19 @@ bool suit_qcbor_skip_any(QCBORDecodeContext *message,
                          QCBORItem *item)
 {
     switch (item->uDataType) {
-        case QCBOR_TYPE_ARRAY:
-        case QCBOR_TYPE_MAP:
-            if (!suit_qcbor_skip_array_and_map(message, item)) {
-                return false;
-            }
-            break;
-        case QCBOR_TYPE_INT64:
-        case QCBOR_TYPE_UINT64:
-        case QCBOR_TYPE_BYTE_STRING:
-        case QCBOR_TYPE_TEXT_STRING:
-            break;
-        default:
+    case QCBOR_TYPE_ARRAY:
+    case QCBOR_TYPE_MAP:
+        if (!suit_qcbor_skip_array_and_map(message, item)) {
             return false;
+        }
+        break;
+    case QCBOR_TYPE_INT64:
+    case QCBOR_TYPE_UINT64:
+    case QCBOR_TYPE_BYTE_STRING:
+    case QCBOR_TYPE_TEXT_STRING:
+        break;
+    default:
+        return false;
     }
     return true;
 }
@@ -243,64 +243,64 @@ size_t suit_qcbor_calc_rollback(QCBORItem *item)
     }
 
     switch (type) {
-        case QCBOR_TYPE_UINT64:
-            if (item->val.uint64 <= 23) {
-                return 1;
-            }
-            else if (item->val.uint64 <= UINT8_MAX) {
-                return 2;
-            }
-            else if (item->val.uint64 <= UINT16_MAX) {
-                return 3;
-            }
-            else if (item->val.uint64 <= UINT32_MAX) {
-                return 5;
-            }
-            return 9;
-        case QCBOR_TYPE_INT64:
-            if (item->val.int64 + 1 + 23 >= 0) {
-                return 1;
-            }
-            else if (item->val.int64 + 1 + UINT8_MAX >= 0) {
-                return 2;
-            }
-            else if (item->val.int64 + 1 + UINT16_MAX >= 0) {
-                return 3;
-            }
-            else if (item->val.int64 + 1 + UINT32_MAX >= 0) {
-                return 5;
-            }
-            return 9;
-        case QCBOR_TYPE_BYTE_STRING:
-        case QCBOR_TYPE_TEXT_STRING:
-            if (item->val.string.len < 24) {
-                return 1 + item->val.string.len;
-            }
-            else if (item->val.string.len <= UINT8_MAX) {
-                return 2 + item->val.string.len;
-            }
-            else if (item->val.string.len <= UINT16_MAX) {
-                return 3 + item->val.string.len;
-            }
-            else if (item->val.string.len <= UINT32_MAX) {
-                return 5 + item->val.string.len;
-            }
-            return 9 + item->val.string.len;
-        case QCBOR_TYPE_ARRAY:
-        case QCBOR_TYPE_MAP:
-            if (item->val.uCount < 24) {
-                return 1;
-            }
-            else if (item->val.uCount < UINT8_MAX) {
-                return 2;
-            }
-            else if (item->val.uCount < UINT16_MAX) {
-                return 3;
-            }
-            else if (item->val.uCount < UINT32_MAX) {
-                return 5;
-            }
-            return 9;
+    case QCBOR_TYPE_UINT64:
+        if (item->val.uint64 <= 23) {
+            return 1;
+        }
+        else if (item->val.uint64 <= UINT8_MAX) {
+            return 2;
+        }
+        else if (item->val.uint64 <= UINT16_MAX) {
+            return 3;
+        }
+        else if (item->val.uint64 <= UINT32_MAX) {
+            return 5;
+        }
+        return 9;
+    case QCBOR_TYPE_INT64:
+        if (item->val.int64 + 1 + 23 >= 0) {
+            return 1;
+        }
+        else if (item->val.int64 + 1 + UINT8_MAX >= 0) {
+            return 2;
+        }
+        else if (item->val.int64 + 1 + UINT16_MAX >= 0) {
+            return 3;
+        }
+        else if (item->val.int64 + 1 + UINT32_MAX >= 0) {
+            return 5;
+        }
+        return 9;
+    case QCBOR_TYPE_BYTE_STRING:
+    case QCBOR_TYPE_TEXT_STRING:
+        if (item->val.string.len < 24) {
+            return 1 + item->val.string.len;
+        }
+        else if (item->val.string.len <= UINT8_MAX) {
+            return 2 + item->val.string.len;
+        }
+        else if (item->val.string.len <= UINT16_MAX) {
+            return 3 + item->val.string.len;
+        }
+        else if (item->val.string.len <= UINT32_MAX) {
+            return 5 + item->val.string.len;
+        }
+        return 9 + item->val.string.len;
+    case QCBOR_TYPE_ARRAY:
+    case QCBOR_TYPE_MAP:
+        if (item->val.uCount < 24) {
+            return 1;
+        }
+        else if (item->val.uCount < UINT8_MAX) {
+            return 2;
+        }
+        else if (item->val.uCount < UINT16_MAX) {
+            return 3;
+        }
+        else if (item->val.uCount < UINT32_MAX) {
+            return 5;
+        }
+        return 9;
     }
     return 0;
 }

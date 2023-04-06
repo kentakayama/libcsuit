@@ -205,14 +205,14 @@ bool is_suit_directive_only(uint64_t label)
      * SUIT_Common_Commands is a subset of SUIT_Directive
      */
     switch (label) {
-        /* {SUIT_Directive - SUIT_Common_Commands} should not come */
-        case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
-        case SUIT_DIRECTIVE_FETCH:
-        case SUIT_DIRECTIVE_COPY:
-        case SUIT_DIRECTIVE_SWAP:
-        case SUIT_DIRECTIVE_INVOKE:
-        //case SUIT_DIRECTIVE_FETCH_URI_LIST:
-            return true;
+    /* {SUIT_Directive - SUIT_Common_Commands} should not come */
+    case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+    case SUIT_DIRECTIVE_FETCH:
+    case SUIT_DIRECTIVE_COPY:
+    case SUIT_DIRECTIVE_SWAP:
+    case SUIT_DIRECTIVE_INVOKE:
+    //case SUIT_DIRECTIVE_FETCH_URI_LIST:
+        return true;
     }
     return false;
 }

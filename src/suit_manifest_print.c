@@ -767,73 +767,73 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
     for (size_t i = 0; i < params_list->len; i++) {
         printf("%*s/ %s / %ld: ", indent_space, "", suit_parameter_key_to_str(params_list->params[i].label), params_list->params[i].label);
         switch (params_list->params[i].label) {
-            /* uint64 */
-            case SUIT_PARAMETER_COMPONENT_SLOT:
-            case SUIT_PARAMETER_IMAGE_SIZE:
-            case SUIT_PARAMETER_SOURCE_COMPONENT:
-            case SUIT_PARAMETER_USE_BEFORE:
-            case SUIT_PARAMETER_MINIMUM_BATTERY:
-            case SUIT_PARAMETER_UPDATE_PRIORITY:
-                printf("%lu", params_list->params[i].value.uint64);
-                break;
+        /* uint64 */
+        case SUIT_PARAMETER_COMPONENT_SLOT:
+        case SUIT_PARAMETER_IMAGE_SIZE:
+        case SUIT_PARAMETER_SOURCE_COMPONENT:
+        case SUIT_PARAMETER_USE_BEFORE:
+        case SUIT_PARAMETER_MINIMUM_BATTERY:
+        case SUIT_PARAMETER_UPDATE_PRIORITY:
+            printf("%lu", params_list->params[i].value.uint64);
+            break;
 
-            /* tstr */
-            case SUIT_PARAMETER_URI:
-                if (params_list->params[i].value.string.len > 0) {
-                    result = suit_print_string(&params_list->params[i].value.string);
+        /* tstr */
+        case SUIT_PARAMETER_URI:
+            if (params_list->params[i].value.string.len > 0) {
+                result = suit_print_string(&params_list->params[i].value.string);
+            }
+            else {
+                printf("NULL");
+            }
+            break;
+
+        /* bstr // UUID */
+        case SUIT_PARAMETER_VENDOR_IDENTIFIER:
+        case SUIT_PARAMETER_CLASS_IDENTIFIER:
+        case SUIT_PARAMETER_DEVICE_IDENTIFIER:
+            result = suit_print_hex(params_list->params[i].value.string.ptr,
+                                    params_list->params[i].value.string.len);
+            if (params_list->params[i].value.string.len == 16) {
+                // estimates this value as UUID
+                printf(" / ");
+                result = suit_print_uuid(&params_list->params[i].value.string);
+                if (result != SUIT_SUCCESS) {
+                    return result;
                 }
-                else {
-                    printf("NULL");
-                }
-                break;
+                printf(" /");
+            }
+            break;
+        case SUIT_PARAMETER_CONTENT:
+        case SUIT_PARAMETER_INVOKE_ARGS:
+            result = suit_print_hex(params_list->params[i].value.string.ptr,
+                                    params_list->params[i].value.string.len);
+            break;
 
-            /* bstr // UUID */
-            case SUIT_PARAMETER_VENDOR_IDENTIFIER:
-            case SUIT_PARAMETER_CLASS_IDENTIFIER:
-            case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-                result = suit_print_hex(params_list->params[i].value.string.ptr,
-                                        params_list->params[i].value.string.len);
-                if (params_list->params[i].value.string.len == 16) {
-                    // estimates this value as UUID
-                    printf(" / ");
-                    result = suit_print_uuid(&params_list->params[i].value.string);
-                    if (result != SUIT_SUCCESS) {
-                        return result;
-                    }
-                    printf(" /");
-                }
-                break;
-            case SUIT_PARAMETER_CONTENT:
-            case SUIT_PARAMETER_INVOKE_ARGS:
-                result = suit_print_hex(params_list->params[i].value.string.ptr,
-                                        params_list->params[i].value.string.len);
-                break;
+        /* SUIT_Encryption_Info */
+        case SUIT_PARAMETER_ENCRYPTION_INFO:
+            if (params_list->params[i].value.string.len > 0) {
+                suit_print_encryption_info(&params_list->params[i].value.string, indent_space, indent_delta);
+            }
+            break;
 
-            /* SUIT_Encryption_Info */
-            case SUIT_PARAMETER_ENCRYPTION_INFO:
-                if (params_list->params[i].value.string.len > 0) {
-                    suit_print_encryption_info(&params_list->params[i].value.string, indent_space, indent_delta);
-                }
-                break;
+        /* bool */
+        case SUIT_PARAMETER_STRICT_ORDER:
+        case SUIT_PARAMETER_SOFT_FAILURE:
+            printf("%s", (params_list->params[i].value.boolean) ? "true" : "false");
+            break;
 
-            /* bool */
-            case SUIT_PARAMETER_STRICT_ORDER:
-            case SUIT_PARAMETER_SOFT_FAILURE:
-                printf("%s", (params_list->params[i].value.boolean) ? "true" : "false");
-                break;
+        /* SUIT_Digest */
+        case SUIT_PARAMETER_IMAGE_DIGEST:
+            printf("<< ");
+            result = suit_print_digest(&params_list->params[i].value.digest, indent_space, indent_delta);
+            printf(" >>");
+            break;
 
-            /* SUIT_Digest */
-            case SUIT_PARAMETER_IMAGE_DIGEST:
-                printf("<< ");
-                result = suit_print_digest(&params_list->params[i].value.digest, indent_space, indent_delta);
-                printf(" >>");
-                break;
-
-            case SUIT_PARAMETER_VERSION:
-            case SUIT_PARAMETER_WAIT_INFO:
-            default:
-                result = SUIT_ERR_NOT_IMPLEMENTED;
-                break;
+        case SUIT_PARAMETER_VERSION:
+        case SUIT_PARAMETER_WAIT_INFO:
+        default:
+            result = SUIT_ERR_NOT_IMPLEMENTED;
+            break;
         }
         if (result != SUIT_SUCCESS) {
             return result;
@@ -858,90 +858,90 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
     for (size_t i = 0; i < cmd_seq->len; i++) {
         printf("%*s/ %s / %ld, ", indent_space, "", suit_command_sequence_key_to_str(cmd_seq->commands[i].label), cmd_seq->commands[i].label);
         switch (cmd_seq->commands[i].label) {
-            /* SUIT_Rep_Policy */
-            case SUIT_CONDITION_VENDOR_IDENTIFIER:
-            case SUIT_CONDITION_CLASS_IDENTIFIER:
-            case SUIT_CONDITION_IMAGE_MATCH:
-            case SUIT_CONDITION_COMPONENT_SLOT:
-            case SUIT_CONDITION_CHECK_CONTENT:
-            case SUIT_CONDITION_ABORT:
-            case SUIT_CONDITION_DEVICE_IDENTIFIER:
+        /* SUIT_Rep_Policy */
+        case SUIT_CONDITION_VENDOR_IDENTIFIER:
+        case SUIT_CONDITION_CLASS_IDENTIFIER:
+        case SUIT_CONDITION_IMAGE_MATCH:
+        case SUIT_CONDITION_COMPONENT_SLOT:
+        case SUIT_CONDITION_CHECK_CONTENT:
+        case SUIT_CONDITION_ABORT:
+        case SUIT_CONDITION_DEVICE_IDENTIFIER:
 
-            /* in draft-ietf-suit-update-management */
-            case SUIT_CONDITION_USE_BEFORE:
-            case SUIT_CONDITION_IMAGE_NOT_MATCH:
-            case SUIT_CONDITION_MINIMUM_BATTERY:
-            case SUIT_CONDITION_UPDATE_AUTHORIZED:
-            case SUIT_CONDITION_VERSION:
+        /* in draft-ietf-suit-update-management */
+        case SUIT_CONDITION_USE_BEFORE:
+        case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        case SUIT_CONDITION_MINIMUM_BATTERY:
+        case SUIT_CONDITION_UPDATE_AUTHORIZED:
+        case SUIT_CONDITION_VERSION:
 
 
-            case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
-            case SUIT_DIRECTIVE_WRITE:
-            case SUIT_DIRECTIVE_FETCH:
-            case SUIT_DIRECTIVE_COPY:
-            case SUIT_DIRECTIVE_INVOKE:
-            case SUIT_DIRECTIVE_SWAP:
+        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
+        case SUIT_DIRECTIVE_WRITE:
+        case SUIT_DIRECTIVE_FETCH:
+        case SUIT_DIRECTIVE_COPY:
+        case SUIT_DIRECTIVE_INVOKE:
+        case SUIT_DIRECTIVE_SWAP:
 
-            /* in draft-ietf-suit-update-management */
-            case SUIT_DIRECTIVE_WAIT:
+        /* in draft-ietf-suit-update-management */
+        case SUIT_DIRECTIVE_WAIT:
 
-            /* in draft-ietf-suit-trust-domains */
-            case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
-            case SUIT_DIRECTIVE_UNLINK:
-                printf("%lu", cmd_seq->commands[i].value.uint64);
-                break;
+        /* in draft-ietf-suit-trust-domains */
+        case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+        case SUIT_DIRECTIVE_UNLINK:
+            printf("%lu", cmd_seq->commands[i].value.uint64);
+            break;
 
-            /* $$SUIT_Parameters */
-            case SUIT_DIRECTIVE_SET_PARAMETERS:
-            case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-                printf("{\n");
-                if (cmd_seq->commands[i].value.params_list.len > 0) {
-                    result = suit_print_suit_parameters_list(&cmd_seq->commands[i].value.params_list, indent_space + indent_delta, indent_delta);
+        /* $$SUIT_Parameters */
+        case SUIT_DIRECTIVE_SET_PARAMETERS:
+        case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
+            printf("{\n");
+            if (cmd_seq->commands[i].value.params_list.len > 0) {
+                result = suit_print_suit_parameters_list(&cmd_seq->commands[i].value.params_list, indent_space + indent_delta, indent_delta);
+            }
+            printf("%*s}", indent_space, "");
+            break;
+
+        /* SUIT_Directive_Try_Each_Argument */
+        case SUIT_DIRECTIVE_TRY_EACH:
+            printf("[\n");
+            bool l1_comma = false;
+            while (1) {
+                result = suit_decode_command_sequence(mode, &cmd_seq->commands[i].value.string, &tmp_cmd_seq);
+                if (result != SUIT_SUCCESS) {
+                    break;
                 }
-                printf("%*s}", indent_space, "");
-                break;
-
-            /* SUIT_Directive_Try_Each_Argument */
-            case SUIT_DIRECTIVE_TRY_EACH:
-                printf("[\n");
-                bool l1_comma = false;
-                while (1) {
-                    result = suit_decode_command_sequence(mode, &cmd_seq->commands[i].value.string, &tmp_cmd_seq);
-                    if (result != SUIT_SUCCESS) {
-                        break;
-                    }
-                    if (l1_comma) {
-                        printf(",\n");
-                    }
-                    printf("%*s<< [\n", indent_space + indent_delta, "");
-                    result = suit_print_cmd_seq(mode, &tmp_cmd_seq, indent_space + 2 * indent_delta, indent_delta);
-                    if (result != SUIT_SUCCESS) {
-                        break;
-                    }
-                    printf("%*s] >>", indent_space + indent_delta, "");
-                    l1_comma = true;
-                    if (i + 1 < cmd_seq->len && cmd_seq->commands[i + 1].label == SUIT_DIRECTIVE_TRY_EACH) {
-                        i++;
-                    }
-                    else {
-                        break;
-                    }
+                if (l1_comma) {
+                    printf(",\n");
                 }
-                printf("\n%*s]", indent_space, "");
-                break;
+                printf("%*s<< [\n", indent_space + indent_delta, "");
+                result = suit_print_cmd_seq(mode, &tmp_cmd_seq, indent_space + 2 * indent_delta, indent_delta);
+                if (result != SUIT_SUCCESS) {
+                    break;
+                }
+                printf("%*s] >>", indent_space + indent_delta, "");
+                l1_comma = true;
+                if (i + 1 < cmd_seq->len && cmd_seq->commands[i + 1].label == SUIT_DIRECTIVE_TRY_EACH) {
+                    i++;
+                }
+                else {
+                    break;
+                }
+            }
+            printf("\n%*s]", indent_space, "");
+            break;
 
-            /* SUIT_Command_Sequence */
-            case SUIT_DIRECTIVE_RUN_SEQUENCE:
+        /* SUIT_Command_Sequence */
+        case SUIT_DIRECTIVE_RUN_SEQUENCE:
 
-            /* SUIT_Override_Mult_Arg */
-            //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+        /* SUIT_Override_Mult_Arg */
+        //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
 
-            /* SUIT_Directive_Copy_Params */
-            //case SUIT_DIRECTIVE_COPY_PARAMS:
+        /* SUIT_Directive_Copy_Params */
+        //case SUIT_DIRECTIVE_COPY_PARAMS:
 
-            default:
-                result = SUIT_ERR_NOT_IMPLEMENTED;
-                break;
+        default:
+            result = SUIT_ERR_NOT_IMPLEMENTED;
+            break;
         }
         if (result != SUIT_SUCCESS) {
             return result;

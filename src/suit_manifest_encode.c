@@ -186,61 +186,61 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
     for (size_t i = 0; i < params_list->len; i++) {
         const suit_parameters_t *param = &params_list->params[i];
         switch (param->label) {
-            /* uint */
-            case SUIT_PARAMETER_COMPONENT_SLOT:
-            case SUIT_PARAMETER_IMAGE_SIZE:
-            case SUIT_PARAMETER_SOURCE_COMPONENT:
-            case SUIT_PARAMETER_USE_BEFORE:
-            case SUIT_PARAMETER_MINIMUM_BATTERY:
-            case SUIT_PARAMETER_UPDATE_PRIORITY:
-                QCBOREncode_AddUInt64ToMapN(context, param->label, param->value.uint64);
-                break;
+        /* uint */
+        case SUIT_PARAMETER_COMPONENT_SLOT:
+        case SUIT_PARAMETER_IMAGE_SIZE:
+        case SUIT_PARAMETER_SOURCE_COMPONENT:
+        case SUIT_PARAMETER_USE_BEFORE:
+        case SUIT_PARAMETER_MINIMUM_BATTERY:
+        case SUIT_PARAMETER_UPDATE_PRIORITY:
+            QCBOREncode_AddUInt64ToMapN(context, param->label, param->value.uint64);
+            break;
 
-            /* tstr */
-            case SUIT_PARAMETER_URI:
-                if (param->value.string.len > 0) {
-                    QCBOREncode_AddTextToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
-                }
-                else {
-                    QCBOREncode_AddNULLToMapN(context, param->label);
-                }
-                break;
+        /* tstr */
+        case SUIT_PARAMETER_URI:
+            if (param->value.string.len > 0) {
+                QCBOREncode_AddTextToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
+            }
+            else {
+                QCBOREncode_AddNULLToMapN(context, param->label);
+            }
+            break;
 
-            /* bstr */
-            case SUIT_PARAMETER_VENDOR_IDENTIFIER:
-            case SUIT_PARAMETER_CLASS_IDENTIFIER:
-            case SUIT_PARAMETER_INVOKE_ARGS:
-            case SUIT_PARAMETER_CONTENT:
-            /* draft-ietf-suit-firmware-encryption */
-            case SUIT_PARAMETER_ENCRYPTION_INFO:
-                QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
-                break;
+        /* bstr */
+        case SUIT_PARAMETER_VENDOR_IDENTIFIER:
+        case SUIT_PARAMETER_CLASS_IDENTIFIER:
+        case SUIT_PARAMETER_INVOKE_ARGS:
+        case SUIT_PARAMETER_CONTENT:
+        /* draft-ietf-suit-firmware-encryption */
+        case SUIT_PARAMETER_ENCRYPTION_INFO:
+            QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
+            break;
 
-            /* bool */
-            case SUIT_PARAMETER_STRICT_ORDER:
-            case SUIT_PARAMETER_SOFT_FAILURE:
-                QCBOREncode_AddBoolToMapN(context, param->label, &param->value.boolean);
-                break;
+        /* bool */
+        case SUIT_PARAMETER_STRICT_ORDER:
+        case SUIT_PARAMETER_SOFT_FAILURE:
+            QCBOREncode_AddBoolToMapN(context, param->label, &param->value.boolean);
+            break;
 
-            /* SUIT_Digest */
-            case SUIT_PARAMETER_IMAGE_DIGEST:
-                QCBOREncode_BstrWrapInMapN(context, param->label);
-                result = suit_encode_append_digest(&param->value.digest, 0, context);
-                QCBOREncode_CloseBstrWrap(context, NULL);
-                break;
+        /* SUIT_Digest */
+        case SUIT_PARAMETER_IMAGE_DIGEST:
+            QCBOREncode_BstrWrapInMapN(context, param->label);
+            result = suit_encode_append_digest(&param->value.digest, 0, context);
+            QCBOREncode_CloseBstrWrap(context, NULL);
+            break;
 
 
-            /* UUID */
-            case SUIT_PARAMETER_DEVICE_IDENTIFIER:
+        /* UUID */
+        case SUIT_PARAMETER_DEVICE_IDENTIFIER:
 
-            /* SUIT_Parameter_Version_Match */
-            case SUIT_PARAMETER_VERSION:
+        /* SUIT_Parameter_Version_Match */
+        case SUIT_PARAMETER_VERSION:
 
-            /* bstr wrapped SUIT_Wait_Event */
-            case SUIT_PARAMETER_WAIT_INFO:
+        /* bstr wrapped SUIT_Wait_Event */
+        case SUIT_PARAMETER_WAIT_INFO:
 
-            default:
-                result = SUIT_ERR_NOT_IMPLEMENTED;
+        default:
+            result = SUIT_ERR_NOT_IMPLEMENTED;
         }
         if (result != SUIT_SUCCESS) {
             break;
@@ -274,63 +274,63 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             continue;
         }
         switch (item->label) {
-            /* SUIT_Rep_Policy */
-            case SUIT_CONDITION_VENDOR_IDENTIFIER:
-            case SUIT_CONDITION_CLASS_IDENTIFIER:
-            case SUIT_CONDITION_DEVICE_IDENTIFIER:
-            case SUIT_CONDITION_IMAGE_MATCH:
-            case SUIT_CONDITION_COMPONENT_SLOT:
-            case SUIT_CONDITION_CHECK_CONTENT:
-            case SUIT_CONDITION_ABORT:
+        /* SUIT_Rep_Policy */
+        case SUIT_CONDITION_VENDOR_IDENTIFIER:
+        case SUIT_CONDITION_CLASS_IDENTIFIER:
+        case SUIT_CONDITION_DEVICE_IDENTIFIER:
+        case SUIT_CONDITION_IMAGE_MATCH:
+        case SUIT_CONDITION_COMPONENT_SLOT:
+        case SUIT_CONDITION_CHECK_CONTENT:
+        case SUIT_CONDITION_ABORT:
 
-            /* in draft-ietf-suit-update-management */
-            case SUIT_CONDITION_USE_BEFORE:
-            case SUIT_CONDITION_IMAGE_NOT_MATCH:
-            case SUIT_CONDITION_MINIMUM_BATTERY:
-            case SUIT_CONDITION_UPDATE_AUTHORIZED:
-            case SUIT_CONDITION_VERSION:
+        /* in draft-ietf-suit-update-management */
+        case SUIT_CONDITION_USE_BEFORE:
+        case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        case SUIT_CONDITION_MINIMUM_BATTERY:
+        case SUIT_CONDITION_UPDATE_AUTHORIZED:
+        case SUIT_CONDITION_VERSION:
 
 
-            case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
-            case SUIT_DIRECTIVE_WRITE:
-            case SUIT_DIRECTIVE_FETCH:
-            case SUIT_DIRECTIVE_COPY:
-            case SUIT_DIRECTIVE_INVOKE:
-            case SUIT_DIRECTIVE_SWAP:
+        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
+        case SUIT_DIRECTIVE_WRITE:
+        case SUIT_DIRECTIVE_FETCH:
+        case SUIT_DIRECTIVE_COPY:
+        case SUIT_DIRECTIVE_INVOKE:
+        case SUIT_DIRECTIVE_SWAP:
 
-            /* in draft-ietf-suit-update-management */
-            case SUIT_DIRECTIVE_WAIT:
+        /* in draft-ietf-suit-update-management */
+        case SUIT_DIRECTIVE_WAIT:
 
-            /* in draft-ietf-suit-trust-domains */
-            case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
-            case SUIT_DIRECTIVE_UNLINK:
-                QCBOREncode_AddUInt64(&context, item->label);
-                QCBOREncode_AddUInt64(&context, item->value.uint64);
-                break;
+        /* in draft-ietf-suit-trust-domains */
+        case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+        case SUIT_DIRECTIVE_UNLINK:
+            QCBOREncode_AddUInt64(&context, item->label);
+            QCBOREncode_AddUInt64(&context, item->value.uint64);
+            break;
 
-            /* $$SUIT_Parameters */
-            case SUIT_DIRECTIVE_SET_PARAMETERS:
-            case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-                QCBOREncode_AddUInt64(&context, item->label);
-                result = suit_append_directive_override_parameters(&item->value.params_list, suit_encode, &context);
-                break;
+        /* $$SUIT_Parameters */
+        case SUIT_DIRECTIVE_SET_PARAMETERS:
+        case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
+            QCBOREncode_AddUInt64(&context, item->label);
+            result = suit_append_directive_override_parameters(&item->value.params_list, suit_encode, &context);
+            break;
 
-            case SUIT_DIRECTIVE_TRY_EACH:
-                QCBOREncode_AddUInt64(&context, item->label);
-                QCBOREncode_OpenArray(&context);
-                for (size_t j = i; j < cmd_seq->len; j++) {
-                    if (cmd_seq->commands[j].label != SUIT_DIRECTIVE_TRY_EACH) {
-                        continue;
-                    }
-                    QCBOREncode_AddBytes(&context, (UsefulBufC){.ptr = cmd_seq->commands[j].value.string.ptr, .len = cmd_seq->commands[j].value.string.len});
-                    cmd_seq->commands[j].label = SUIT_CONDITION_INVALID;;
+        case SUIT_DIRECTIVE_TRY_EACH:
+            QCBOREncode_AddUInt64(&context, item->label);
+            QCBOREncode_OpenArray(&context);
+            for (size_t j = i; j < cmd_seq->len; j++) {
+                if (cmd_seq->commands[j].label != SUIT_DIRECTIVE_TRY_EACH) {
+                    continue;
                 }
-                QCBOREncode_CloseArray(&context);
-                break;
+                QCBOREncode_AddBytes(&context, (UsefulBufC){.ptr = cmd_seq->commands[j].value.string.ptr, .len = cmd_seq->commands[j].value.string.len});
+                cmd_seq->commands[j].label = SUIT_CONDITION_INVALID;;
+            }
+            QCBOREncode_CloseArray(&context);
+            break;
 
-            case SUIT_DIRECTIVE_RUN_SEQUENCE:
-            default:
-                result = SUIT_ERR_NOT_IMPLEMENTED;
+        case SUIT_DIRECTIVE_RUN_SEQUENCE:
+        default:
+            result = SUIT_ERR_NOT_IMPLEMENTED;
         }
     }
     QCBOREncode_CloseArray(&context);
