@@ -1,10 +1,10 @@
 # [libcsuit](https://github.com/kentakayama/libcsuit/)
-**libcsuit** is a C library for encoding and decoding [IETF SUIT manifests](https://tools.ietf.org/html/draft-ietf-suit-manifest).
+**libcsuit** is a C library for encoding and decoding [IETF SUIT manifests](https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest).
 The manifest contains meta-data about the firmware image. The manifest is protected against modification and provides information
 about the software/firmware author.
 
 For more information on how the IETF SUIT manifest is used to protect firmware updates of IoT devices, please look at the
- [IETF SUIT architecture](https://datatracker.ietf.org/doc/html/draft-ietf-suit-architecture) document and the
+ [IETF SUIT architecture](https://datatracker.ietf.org/doc/html/rfc9019) document and the
  [IETF SUIT](https://datatracker.ietf.org/wg/suit/about/) working group.
 
 Supported features are listed [SUPPORTED.md](./SUPPORTED.md).
@@ -16,7 +16,12 @@ This implementation uses
  - the [t_cose](https://github.com/laurencelundblade/t_cose) library for cryptographic processing of COSE structures,
  - OpenSSL or Mbed TLS (based on the PSA Crypto API) for cryptographic algorithms.
 
-This implementation offers a subset of the functionality defined in [draft-ietf-suit-manifest-19](https://tools.ietf.org/html/draft-ietf-suit-manifest-19).
+This implementation offers the functionality defined in 
+- [draft-ietf-suit-manifest-22](https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest-22)
+- [draft-ietf-suit-trust-domains-02](https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02)
+- [draft-ietf-suit-update-management-01](https://datatracker.ietf.org/doc/html/draft-ietf-suit-update-management-01)
+- [draft-ietf-suit-firmware-encryption-11](https://datatracker.ietf.org/doc/html/draft-ietf-suit-firmware-encryption-11)
+- ~~[draft-ietf-suit-report-05](https://datatracker.ietf.org/doc/html/draft-ietf-suit-report-05)~~
 
 Example programs are offered for testing.
 
@@ -48,10 +53,10 @@ docker build -t libcsuit_psa -f psa.Dockerfile .
 docker run -t libcsuit_psa
 ```
 
-**(b) Firmware Encryption with Mbed TLS**
+**(c) Use OpenSSL 3**
 ```
-docker build -t libcsuit_enc -f enc.Dockerfile .
-docker run -t libcsuit_enc
+docker build -t libcsuit_ossl3 -f ossl3.Dockerfile .
+docker run -t libcsuit_ossl3
 ```
 
 ### Using Makefiles
@@ -77,10 +82,17 @@ make -f Makefile.encode test
 # generates ./testfiles/suit_manifest_expX.cbor
 ```
 
+- suit_manifest_encrypt (generate encrypted payload)
+```bash
+make -f Makefile.cncrypt run
+```
+
 - suit_manifest_process (extract values and call appropriate callbacks)
 ```bash
 make -f Makefile.process test
 ```
+
+
 
 To install libcsuit.a use the following command:
 ```
