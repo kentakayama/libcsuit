@@ -1,38 +1,38 @@
 # Supported features by libcsuit
 
 ## Summary
-- :green_square: : supported
-- :black_large_square: : **not** supported
+- :check_mark_button: : supported
+- :cross_mark: : **not** supported
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::black_large_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+decode | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button:
+encode | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button:
+process | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::green_square::green_square: |  | 
-encode | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::green_square::green_square: |  | 
-process | :green_square::green_square::green_square: | :black_large_square::black_large_square: | :green_square::green_square::green_square: |  | 
+decode | :check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button: |  | 
+encode | :check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button: |  | 
+process | :check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button: |  | 
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::black_large_square::black_large_square: | :green_square:
-encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::black_large_square::black_large_square: | :green_square:
-process | :green_square: | :green_square::green_square::green_square::green_square::black_large_square: | :black_large_square::black_large_square::black_large_square: | :green_square::green_square::green_square::black_large_square::black_large_square: | :green_square:
+decode | :check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::cross_mark::cross_mark: | :check_mark_button:
+encode | :check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::cross_mark::cross_mark: | :check_mark_button:
+process | :check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :cross_mark::cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::cross_mark::cross_mark: | :check_mark_button:
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode |  |  |  | :green_square::green_square::green_square::black_large_square: | 
-encode |  |  |  | :green_square::green_square::green_square::black_large_square: | 
-process |  |  |  | :green_square::black_large_square::black_large_square::black_large_square: | 
+decode |  |  |  | :check_mark_button::check_mark_button::check_mark_button::cross_mark: | 
+encode |  |  |  | :check_mark_button::check_mark_button::check_mark_button::cross_mark: | 
+process |  |  |  | :check_mark_button::cross_mark::cross_mark::cross_mark: | 
 ### SUIT Report
 Operation | Metadata | Capabilities
 ---|---|---
-decode | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
-encode | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
-process | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
+decode | :cross_mark::cross_mark::cross_mark::cross_mark: | :cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark:
+encode | :cross_mark::cross_mark::cross_mark::cross_mark: | :cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark:
+process | :cross_mark::cross_mark::cross_mark::cross_mark: | :cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark:
 
 ## NOTE: How to read the Supported Features Tables
 **IN**: which document
