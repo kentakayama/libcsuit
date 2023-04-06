@@ -29,7 +29,7 @@ encode |  |  |  | :green_square::green_square::green_square::black_large_square:
 process |  |  |  | :green_square::black_large_square::black_large_square::black_large_square:
 ### SUIT Report
 Operation | Metadata | Capabilities
----|---|---|---|---|---
+---|---|---
 decode | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
 encode | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
 process | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:

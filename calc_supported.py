@@ -95,7 +95,7 @@ def calc_suit_report():
     for i in range(len(documents)):
         ret_str += f"### {documents[i]}\n"
         ret_str += "Operation | Metadata | Capabilities\n"
-        ret_str += "---|---|---|---|---|---\n"
+        ret_str += "---|---|---\n"
         ret_str += "decode"
         for level in range(len(pos_list)):
             ret_str += f" | {':green_square:'*tab[i][level][0][0]}{':black_large_square:'*tab[i][level][0][1]}"
