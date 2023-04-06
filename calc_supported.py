@@ -2,43 +2,114 @@
 import re
 
 # const
-pos_list = [2, 4, 5, 6, 7]
-table_str = "Name | Label | CDDL Structure | IN | IS | Supported?"
-documents = [ "SUIT Manifest", "SUIT Multiple Trust Domains", "SUIT Update Management", "SUIT Encrypted Payload", "SUIT Report" ]
-supported_str = "^[-A-Za-z ()]+ \| [0-9]+ \| ([-a-z]+) \| ([A-Za-z ]+) \| [A-Za-z /]+ \| ([Rr-])([Ww-])([Xx-])$"
-#supported_str = r"^([A-Za-z ]+) | ([0-9]+) | ([-a-z]+)"
-print(f"pat: {supported_str}")
+supported_str = "^[-A-Za-z ()]+ \| [?0-9]+ \| ([-a-z]+) \| ([A-Za-z ]+) \| [A-Za-z /]+ \| ([Rr-])([Ww-])([Xx-])$"
 
+def calc_suit_manifest():
+    # const
+    table_str = "Name | Label | CDDL Structure | IN | IS | Supported?"
+    documents = [ "SUIT Manifest", "SUIT Multiple Trust Domains", "SUIT Update Management", "SUIT Encrypted Payload" ]
 
-# regex pattern
-supported_pat = re.compile(supported_str)
+    pos_list = [2, 4, 5, 6]
+    # regex pattern
+    supported_pat = re.compile(supported_str)
 
-# outputs
-num_matched = 0
-tab = [ [ [ [0, 0] for i in range(3) ] for j in range(len(pos_list)) ] for k in range(len(documents)) ]
-print(tab)
+    # outputs
+    num_matched = 0
+    tab = [ [ [ [0, 0] for i in range(3) ] for j in range(len(pos_list)) ] for k in range(len(documents)) ]
+    print(tab)
 
-# start reading and writing
-f = open("TABLES_SUPPORTED.md", "r")
-for line in f.read().splitlines():
-    if line == table_str:
-        num_matched += 1
-        print(num_matched)
-        continue
+    # start reading and writing
+    f = open("TABLES_MANIFEST_SUPPORTED.md", "r")
+    for line in f.read().splitlines():
+        if line == table_str:
+            num_matched += 1
+            print(num_matched)
+            continue
 
-    if num_matched in pos_list:
-        #print(line)
-        m = supported_pat.match(line)
-        if m:
-            print(m.groups())
-            name, doc, sr, sw, sx = m.groups()
-            tab[documents.index(doc)][pos_list.index(num_matched)][0][0 if sr == "R" else 1] += 1
-            tab[documents.index(doc)][pos_list.index(num_matched)][1][0 if sw == "W" else 1] += 1
-            tab[documents.index(doc)][pos_list.index(num_matched)][2][0 if sx == "X" else 1] += 1
+        if num_matched in pos_list:
+            m = supported_pat.match(line)
+            if m:
+                print(m.groups())
+                name, doc, sr, sw, sx = m.groups()
+                tab[documents.index(doc)][pos_list.index(num_matched)][0][0 if sr == "R" else 1] += 1
+                tab[documents.index(doc)][pos_list.index(num_matched)][1][0 if sw == "W" else 1] += 1
+                tab[documents.index(doc)][pos_list.index(num_matched)][2][0 if sx == "X" else 1] += 1
 
-f.close()
+    f.close()
+    print(tab)
 
-print(tab)
+    ret_str = ""
+    for i in range(len(documents)):
+        ret_str += f"### {documents[i]}\n"
+        ret_str += "Operation | Metadata | Condition | Directive | Parameter | Text\n"
+        ret_str += "---|---|---|---|---|---\n"
+        ret_str += "decode"
+        for level in range(len(pos_list)):
+            ret_str += f" | {':green_square:'*tab[i][level][0][0]}{':black_large_square:'*tab[i][level][0][1]}"
+        ret_str += "\n"
+        ret_str += "encode"
+        for level in range(len(pos_list)):
+            ret_str += f" | {':green_square:'*tab[i][level][1][0]}{':black_large_square:'*tab[i][level][1][1]}"
+        ret_str += "\n"
+        ret_str += "process"
+        for level in range(len(pos_list)):
+            ret_str += f" | {':green_square:'*tab[i][level][2][0]}{':black_large_square:'*tab[i][level][2][1]}"
+        ret_str += "\n"
+    return ret_str
+
+def calc_suit_report():
+    # const
+    table_str = "Name | Label | CDDL Structure | IN | IS | Supported?"
+    documents = [ "SUIT Report", "SUIT Capability Report" ]
+
+    pos_list = [1, 2]
+    # regex pattern
+    supported_pat = re.compile(supported_str)
+
+    # outputs
+    num_matched = 0
+    tab = [ [ [ [0, 0] for i in range(3) ] for j in range(len(pos_list)) ] for k in range(len(documents)) ]
+    print(tab)
+
+    # start reading and writing
+    f = open("TABLES_REPORT_SUPPORTED.md", "r")
+    for line in f.read().splitlines():
+        if line == table_str:
+            num_matched += 1
+            print(num_matched)
+            continue
+
+        if num_matched in pos_list:
+            m = supported_pat.match(line)
+            if m:
+                print(m.groups())
+                name, doc, sr, sw, sx = m.groups()
+                tab[documents.index(doc)][pos_list.index(num_matched)][0][0 if sr == "R" else 1] += 1
+                tab[documents.index(doc)][pos_list.index(num_matched)][1][0 if sw == "W" else 1] += 1
+                tab[documents.index(doc)][pos_list.index(num_matched)][2][0 if sx == "X" else 1] += 1
+
+    f.close()
+    print(tab)
+
+    ret_str = ""
+    for i in range(len(tab)):
+        ret_str += f"### {documents[i]}\n"
+        ret_str += "Operation | Metadata | Condition | Directive | Parameter | Text\n"
+        ret_str += "---|---|---|---|---|---\n"
+        ret_str += "decode"
+        for level in range(len(pos_list)):
+            ret_str += f" | {':green_square:'*tab[i][level][0][0]}{':black_large_square:'*tab[i][level][0][1]}"
+        ret_str += "\n"
+        ret_str += "encode"
+        for level in range(len(pos_list)):
+            ret_str += f" | {':green_square:'*tab[i][level][1][0]}{':black_large_square:'*tab[i][level][1][1]}"
+        ret_str += "\n"
+        ret_str += "process"
+        for level in range(len(pos_list)):
+            ret_str += f" | {':green_square:'*tab[i][level][2][0]}{':black_large_square:'*tab[i][level][2][1]}"
+        ret_str += "\n"
+    return ret_str
+
 
 w = open("SUPPORTED.md", "w")
 head = """# Supported features by libcsuit
@@ -48,23 +119,8 @@ head = """# Supported features by libcsuit
 - :black_large_square: : **not** supported
 """
 w.write(head)
-
-for i in range(len(documents)):
-    w.write(f"### {documents[i]}\n")
-    w.write("Operation | Metadata | Condition | Directive | Parameter | Text\n")
-    w.write("---|---|---|---|---|---\n")
-    w.write("decode")
-    for level in range(len(pos_list)):
-        w.write(f" | {':green_square:'*tab[i][level][0][0]}{':black_large_square:'*tab[i][level][0][1]}")
-    w.write("\n")
-    w.write("encode")
-    for level in range(len(pos_list)):
-        w.write(f" | {':green_square:'*tab[i][level][1][0]}{':black_large_square:'*tab[i][level][1][1]}")
-    w.write("\n")
-    w.write("process")
-    for level in range(len(pos_list)):
-        w.write(f" | {':green_square:'*tab[i][level][2][0]}{':black_large_square:'*tab[i][level][2][1]}")
-    w.write("\n")
+w.write(calc_suit_manifest())
+w.write(calc_suit_report())
 
 middle = """
 ## NOTE: How to read the Supported Features Tables
@@ -95,7 +151,11 @@ SUIT features are listed below for each SUIT documents.
 """
 w.write(middle)
 
-f = open("TABLES_SUPPORTED.md", "r")
-[w.write(l) for l in f.readlines()]
+with open("TABLES_MANIFEST_SUPPORTED.md", "r") as f:
+    w.write(f.read())
+
+with open("TABLES_REPORT_SUPPORTED.md", "r") as f:
+    w.write(f.read())
+
 w.close()
 

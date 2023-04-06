@@ -1,3 +1,4 @@
+## SUIT Manifest + Extensions
 ### SUIT Metadata
 
 Name | Label | CDDL Structure | IN | IS | Supported?
