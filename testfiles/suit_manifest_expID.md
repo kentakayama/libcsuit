@@ -1,3 +1,8 @@
+<!--
+ Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+
+ SPDX-License-Identifier: BSD-2-Clause
+-->
 
 ## Example 4: Combined SUIT Manifests with Integrated-Dependency {#suit-integrated-dependency}
 {: numbered='no'}

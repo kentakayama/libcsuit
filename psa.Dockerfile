@@ -1,4 +1,4 @@
-# Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 # SPDX-License-Identifier: BSD-2-Clause
 FROM debian:latest
 
@@ -25,9 +25,11 @@ WORKDIR /root/libcsuit
 RUN make MBEDTLS=1
 RUN make -f Makefile.encode MBEDTLS=1
 RUN make -f Makefile.parser MBEDTLS=1
+RUN make -f Makefile.encrypt MBEDTLS=1
 RUN make -f Makefile.process MBEDTLS=1
 
 CMD make test MBEDTLS=1 && \
     make -f Makefile.encode MBEDTLS=1 test && \
     make -f Makefile.parser MBEDTLS=1 test && \
+    make -f Makefile.encrypt MBEDTLS run && \
     make -f Makefile.process MBEDTLS=1 test
