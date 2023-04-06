@@ -54,7 +54,7 @@
             h'7461'                              / "ta" /
           ]
         ],
-        / suit-common-sequence / 4: << [
+        / suit-shared-sequence / 4: << [
           / suit-directive-override-parameters / 20, {
             / suit-parameter-vendor-identifier / 1: h'C0DDD5F15243566087DB4F5B0AA26C2F',
             / suit-parameter-class-identifier / 2: h'DB42F7093D8C55BAA8C5265FC5820F4E',
@@ -96,7 +96,7 @@
           h'636F6E6669672E6A736F6E'  / "config.json" /
         ]
       ],
-      / suit-common-sequence / 4: << [
+      / suit-shared-sequence / 4: << [
         / suit-directive-set-component-index / 12, 0,
         / suit-directive-override-parameters / 20, {
           / suit-parameter-vendor-identifier / 1: h'C0DDD5F15243566087DB4F5B0AA26C2F',
@@ -212,7 +212,7 @@ D8 6B                                               # tag(107) / SUIT_Envelope_T
                                     8D82573A926D4754935332DC29997F74 # tc-uuid
                                  42                 # bytes(2)
                                     7461            # "ta"
-                           04                       # unsigned(4) / suit-common-sequence: /
+                           04                       # unsigned(4) / suit-shared-sequence: /
                            58 54                    # bytes(84)
                               86                    # array(6)
                                  14                 # unsigned(20) / suit-directive-override-parameters: /
@@ -274,7 +274,7 @@ D8 6B                                               # tag(107) / SUIT_Envelope_T
                            5365637572654653         # "SecureFS"
                         4B                          # bytes(11)
                            636F6E6669672E6A736F6E   # "config.json"
-                  04                                # unsigned(4) / suit-common-sequence: /
+                  04                                # unsigned(4) / suit-shared-sequence: /
                   58 57                             # bytes(87)
                      88                             # array(8)
                         0C                          # unsigned(12) / suit-directive-set-component-index: /

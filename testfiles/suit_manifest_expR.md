@@ -34,7 +34,7 @@
           'ta'
         ]
       ],
-      / common-sequence / 4: << [
+      / shared-sequence / 4: << [
         / directive-override-parameters / 20, {
           / vendor-id / 1: h'C0DDD5F15243566087DB4F5B0AA26C2F' / c0ddd5f1-5243-5660-87db-4f5b0aa26c2f /,
           / class-id / 2: h'DB42F7093D8C55BAA8C5265FC5820F4E' / db42f709-3d8c-55ba-a8c5-265fc5820f4e /

@@ -36,7 +36,7 @@
                     [h'02'],
                     [h'01']
                 ],
-                / common-sequence / 4: << [
+                / shared-sequence / 4: << [
                     / directive-set-component-index / 12, 0,
                     / directive-override-parameters / 20, {
                         / vendor-id / 1: h'fa6b4a53d5ad5fdfbe9de663e4d41ffe' / fa6b4a53-d5ad-5fdf-be9d-e663e4d41ffe /,

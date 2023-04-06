@@ -1249,7 +1249,7 @@ suit_err_t suit_print_manifest(const uint8_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ common-sequence / 4: << [\n", indent_space + 2 * indent_delta, "");
+        printf("%*s/ shared-sequence / 4: << [\n", indent_space + 2 * indent_delta, "");
         result = suit_print_cmd_seq(mode, &manifest->common.shared_seq, indent_space + 3 * indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;

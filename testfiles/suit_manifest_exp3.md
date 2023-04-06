@@ -34,7 +34,7 @@
                 / components / 2: [
                     [h'00']
                 ],
-                / common-sequence / 4: << [
+                / shared-sequence / 4: << [
                     / directive-override-parameters / 20, {
                         / vendor-id / 1: h'fa6b4a53d5ad5fdfbe9de663e4d41ffe' / fa6b4a53-d5ad-5fdf-be9d-e663e4d41ffe /,
                         / class-id / 2: h'1492af1425695e48bf429b2d51f2ab45' / 1492af14-2569-5e48-bf42-9b2d51f2ab45 /
