@@ -210,6 +210,7 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             case SUIT_PARAMETER_VENDOR_IDENTIFIER:
             case SUIT_PARAMETER_CLASS_IDENTIFIER:
             case SUIT_PARAMETER_INVOKE_ARGS:
+            case SUIT_PARAMETER_CONTENT:
             /* draft-ietf-suit-firmware-encryption */
             case SUIT_PARAMETER_ENCRYPTION_INFO:
                 QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});

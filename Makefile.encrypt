@@ -46,5 +46,5 @@ run: all
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJS) $(TARGET) ./testfiles/encrypted_image.bin ./testfiles/encryption_info.cose
+	$(RM) $(OBJS) $(TARGET)
 
