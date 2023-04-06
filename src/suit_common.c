@@ -21,7 +21,7 @@ suit_err_t suit_error_from_qcbor_error(QCBORError error)
     }
 }
 
-bool suit_continue(const uint8_t mode,
+bool suit_continue(const suit_decode_mode_t mode,
                    suit_err_t result)
 {
     bool ret = false;
@@ -31,24 +31,26 @@ bool suit_continue(const uint8_t mode,
             break;
         case SUIT_ERR_FAILED_TO_VERIFY:
         case SUIT_ERR_FAILED_TO_SIGN:
-            if (mode & SUIT_DECODE_MODE_SKIP_SIGN_FAILURE) {
+            if (mode.SKIP_SIGN_FAILURE) {
+                ret = true;
+            }
+            break;
+        case SUIT_ERR_NOT_CANONICAL_CBOR:
+            if (mode.ALLOW_NOT_CANONICAL_CBOR) {
                 ret = true;
             }
             break;
         case SUIT_ERR_NOT_IMPLEMENTED:
-        case SUIT_ERR_INVALID_TYPE_OF_ARGUMENT:
-            if (mode & SUIT_DECODE_MODE_SKIP_UNKNOWN_ELEMENT) {
-                ret = true;
-            }
+        case SUIT_ERR_INVALID_TYPE_OF_VALUE:
+        case SUIT_ERR_INVALID_VALUE:
+        case SUIT_ERR_INVALID_TYPE_OF_KEY:
+        case SUIT_ERR_INVALID_KEY:
         case SUIT_ERR_NO_MEMORY:
         case SUIT_ERR_FATAL:
         default:
             break;
     }
-    if (ret == false) {
-        return false;
-    }
-    return true;
+    return ret;
 }
 
 suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message,
@@ -69,10 +71,26 @@ suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message,
         return SUIT_ERR_NO_MORE_ITEMS;
     }
     else if (data_type != QCBOR_TYPE_ANY && item->uDataType != data_type) {
-        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     return SUIT_SUCCESS;
 }
+
+suit_err_t suit_qcbor_get_next_label_type(QCBORDecodeContext *message,
+                                          QCBORItem *item,
+                                          uint8_t data_type,
+                                          uint8_t label_type)
+{
+    suit_err_t result = suit_qcbor_get_next(message, item, data_type);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    if (item->uLabelType != label_type) {
+        return SUIT_ERR_INVALID_TYPE_OF_KEY;
+    }
+    return SUIT_SUCCESS;
+}
+
 
 suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message,
                                 QCBORItem *item,
@@ -92,7 +110,7 @@ suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message,
         return SUIT_ERR_NO_MORE_ITEMS;
     }
     else if (data_type != QCBOR_TYPE_ANY && item->uDataType != data_type) {
-        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     return SUIT_SUCCESS;
 }
@@ -106,7 +124,7 @@ suit_err_t suit_qcbor_get(QCBORDecodeContext *message,
         return suit_qcbor_get_next(message, item, data_type);
     }
     else if (data_type != QCBOR_TYPE_ANY && item->uDataType != data_type) {
-        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     return SUIT_SUCCESS;
 }
@@ -151,7 +169,7 @@ suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    return (suit_qcbor_value_is_uint64(item)) ? SUIT_SUCCESS : SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+    return (suit_qcbor_value_is_uint64(item)) ? SUIT_SUCCESS : SUIT_ERR_INVALID_TYPE_OF_VALUE;
 }
 
 bool suit_qcbor_skip_any(QCBORDecodeContext *message, QCBORItem *item);
@@ -287,7 +305,7 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context,
                             suit_digest_t *digest)
 {
     if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
-        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     if (digest->bytes.ptr == NULL) {
         return SUIT_ERR_FAILED_TO_VERIFY;

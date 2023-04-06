@@ -29,9 +29,10 @@ typedef enum {
     SUIT_ERR_PARAMETER_NOT_FOUND,       /*! required suit-parameter does not exist */
     SUIT_ERR_AUTHENTICATION_NOT_FOUND,  /*! suit-authentication-wrapper does not exist */
 
-    SUIT_ERR_INVALID_TYPE_OF_ARGUMENT,  /*! type of an item is not expected */
+    SUIT_ERR_INVALID_TYPE_OF_VALUE,     /*! type of an item is not expected */
     SUIT_ERR_INVALID_VALUE,             /*! the input value is invalid */
     SUIT_ERR_INVALID_TYPE_OF_KEY,       /*! type of a key is not expected */
+    SUIT_ERR_INVALID_KEY,               /*! invalid map key */
     SUIT_ERR_NO_MORE_ITEMS,             /*! mandatory items in array did not appeare */
     SUIT_ERR_NOT_IMPLEMENTED,           /*! parser is not implemented */
     SUIT_ERR_FAILED_TO_VERIFY,          /*! COSE or hash digest verification failure */
@@ -42,25 +43,27 @@ typedef enum {
 
     //SUIT_ERR_AUTHENTICATION_POSITION    = 7, /*! suit-authentication-block MUST come before any element, except suit-delegation */
     SUIT_ERR_REDUNDANT,                 /*! same key appears, e.g. suit-install exists in both suit-manifest and suit-envelope */
+    SUIT_ERR_NOT_CANONICAL_CBOR,        /*! not encoded with canonical CBOR */
     SUIT_ERR_INVALID_MANIFEST_VERSION,  /*! does not support SUIT Manifest version specified by suit-manifest-version */
-    SUIT_ERR_INVALID_KEY,               /*! invalid map key */
     //SUIT_ERR_NO_ARGUMENT                = 13, /*! arguments for callback function did not appear */
     SUIT_ERR_TRY_OUT,                   /*! all command_sequence in try-each section failed */
     SUIT_ERR_ABORT,                     /*! abort to execute, mainly for libcsuit internal */
 } suit_err_t;
 
 /*! \brief abort immediately on any error */
-#define SUIT_DECODE_MODE_STRICT                         0
-/*! \brief through but report on verification failure */
-#define SUIT_DECODE_MODE_SKIP_SIGN_FAILURE              1
-/*! \brief through unknown or unimplemented element(key or value) */
-#define SUIT_DECODE_MODE_SKIP_UNKNOWN_ELEMENT           2
-/*! \brief preserve successfully parsed elements on error in Map/Array */
-#define SUIT_DECODE_MODE_PRESERVE_ON_ERROR              4
-/*! \brief ignore missing authentication-wrapper */
-#define SUIT_DECODE_MODE_SKIP_AUTHENTICATION_WRAPPER    8
-/*! \brief through excepting fatal error */
-#define SUIT_DECODE_MODE_SKIP_ANY_ERROR                 255
+
+typedef struct {
+    /*! \brief through but report on verification failure */
+    uint8_t SKIP_SIGN_FAILURE: 1;
+    /*! \brief through unknown or unimplemented element(key or value) */
+    uint8_t SKIP_UNKNOWN_ELEMENT: 1;
+    /*! \brief ignore missing authentication-wrapper */
+    uint8_t SKIP_AUTHENTICATION_FAILURE: 1;
+    /*! \brief allow not well-formed SUIT Manifest */
+    uint8_t ALLOW_NOT_CANONICAL_CBOR: 1;
+} suit_decode_mode_t;
+#define SUIT_DECODE_MODE_STRICT ((suit_decode_mode_t){0x00})
+#define SUIT_DECODE_MODE_SKIP_ANY_ERROR ((suit_decode_mode_t){0xFF})
 
 #ifndef SUIT_MAX_ARRAY_LENGTH
 #define SUIT_MAX_ARRAY_LENGTH           20
@@ -374,7 +377,7 @@ typedef struct suit_dependencies {
  * SUIT_Parameters
  */
 typedef struct suit_parameters {
-    uint64_t                        label;
+    int64_t                         label;
     union {
         suit_buf_t                  string;
         int64_t                     int64;
@@ -582,12 +585,28 @@ typedef struct suit_encode {
 suit_err_t suit_error_from_qcbor_error(QCBORError error);
 bool suit_qcbor_value_is_uint64(QCBORItem *item);
 bool suit_qcbor_value_is_uint32(QCBORItem *item);
-suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message, QCBORItem *item);
-suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message, QCBORItem *item, uint8_t data_type);
-suit_err_t suit_qcbor_get(QCBORDecodeContext *message, QCBORItem *item, bool next, uint8_t data_type);
-suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message, QCBORItem *item, uint8_t data_type);
-bool suit_qcbor_skip_any(QCBORDecodeContext *message, QCBORItem *item);
-suit_err_t suit_verify_item(QCBORDecodeContext *context, QCBORItem *item, suit_digest_t *digest);
+suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message,
+                                    QCBORItem *item);
+suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message,
+                               QCBORItem *item,
+                               uint8_t data_type);
+suit_err_t suit_qcbor_get_next_label_type(QCBORDecodeContext *message,
+                                          QCBORItem *item,
+                                          uint8_t data_type,
+                                          uint8_t label_type);
+suit_err_t suit_qcbor_get(QCBORDecodeContext *message,
+                          QCBORItem *item,
+                          bool next,
+                          uint8_t data_type);
+suit_err_t suit_qcbor_peek_next(QCBORDecodeContext *message,
+                                QCBORItem *item,
+                                uint8_t data_type);
+bool suit_qcbor_skip_any(QCBORDecodeContext *message,
+                         QCBORItem *item);
+suit_err_t suit_verify_item(QCBORDecodeContext *context,
+                            QCBORItem *item,
+                            suit_digest_t *digest);
 size_t suit_qcbor_calc_rollback(QCBORItem *item);
-bool suit_continue(uint8_t mode, suit_err_t result);
+bool suit_continue(suit_decode_mode_t mode,
+                   suit_err_t result);
 #endif  // SUIT_COMMON_H

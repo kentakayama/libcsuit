@@ -27,7 +27,6 @@ char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
 char* suit_common_key_to_str(suit_common_key_t common_key);
 char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive);
 char* suit_parameter_key_to_str(suit_parameter_key_t parameter);
-char* suit_info_key_to_str(const suit_info_key_t info_key);
 char* suit_store_key_to_str(suit_store_key_t operation);
 char* suit_err_to_str(suit_err_t error);
 
@@ -36,10 +35,10 @@ suit_err_t suit_print_hex(const uint8_t *array, size_t size);
 suit_err_t suit_print_bytestr(const uint8_t *bytes, size_t len);
 
 suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_list, const uint32_t indent_space, const uint32_t indent_delta);
-suit_err_t suit_print_cmd_seq(uint8_t mode, const suit_command_sequence_t *cmd_seq, const uint32_t indent_space, const uint32_t indent_delta);
+suit_err_t suit_print_cmd_seq(suit_decode_mode_t mode, const suit_command_sequence_t *cmd_seq, const uint32_t indent_space, const uint32_t indent_delta);
 suit_err_t suit_print_component_identifier(const suit_component_identifier_t *identifier);
 suit_err_t suit_print_digest(const suit_digest_t *digest, const uint32_t indent_space, const uint32_t indent_delta);
-suit_err_t suit_print_envelope(uint8_t mode, const suit_envelope_t *envelope, const uint32_t indent_space, const uint32_t indent_delta);
+suit_err_t suit_print_envelope(suit_decode_mode_t mode, const suit_envelope_t *envelope, const uint32_t indent_space, const uint32_t indent_delta);
 
 /*!
     \brief  Print SUIT fetch callback

@@ -106,8 +106,7 @@ int main(int argc, char *argv[]) {
 
     // Print manifest.
     printf("\nmain : Print Manifest.\n");
-    uint8_t mode = SUIT_DECODE_MODE_STRICT;
-    result = suit_print_envelope(mode, &envelope, 4, 4);
+    result = suit_print_envelope(SUIT_DECODE_MODE_STRICT, &envelope, 4, 4);
     if (result != SUIT_SUCCESS) {
         printf("main : Can't print Manifest file.\n");
         return EXIT_FAILURE;
@@ -118,7 +117,7 @@ int main(int argc, char *argv[]) {
     size_t encode_len = MAX_FILE_BUFFER_SIZE;
     uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
-    result = suit_encode_envelope(mode, &envelope, mechanisms, &ret_pos, &encode_len);
+    result = suit_encode_envelope(SUIT_DECODE_MODE_STRICT, &envelope, mechanisms, &ret_pos, &encode_len);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;

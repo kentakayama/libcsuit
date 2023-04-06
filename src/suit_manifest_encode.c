@@ -149,7 +149,7 @@ suit_err_t suit_generate_encoded_digest(const uint8_t *ptr,
     return result;
 }
 
-suit_err_t suit_encode_append_payloads(const uint8_t mode,
+suit_err_t suit_encode_append_payloads(const suit_decode_mode_t mode,
                                        const suit_envelope_t *envelope,
                                        QCBOREncodeContext *context)
 {
@@ -160,7 +160,7 @@ suit_err_t suit_encode_append_payloads(const uint8_t mode,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_encode_append_authentication_wrapper(const uint8_t mode,
+suit_err_t suit_encode_append_authentication_wrapper(const suit_decode_mode_t mode,
                                                      UsefulBufC digest,
                                                      UsefulBuf signatures[],
                                                      size_t num_signature,
@@ -816,7 +816,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
 /*
     Public function. See suit_manifest_data.h
  */
-suit_err_t suit_encode_envelope(const uint8_t mode,
+suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
                                 const suit_envelope_t *envelope,
                                 const suit_mechanism_t *mechanisms,
                                 uint8_t **buf,

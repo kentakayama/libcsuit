@@ -31,13 +31,17 @@ char* suit_err_to_str(suit_err_t error)
         return "SUIT_ERR_NO_MEMORY";
     case SUIT_ERR_NOT_FOUND:
         return "SUIT_ERR_NOT_FOUND";
+    case SUIT_ERR_PARAMETER_NOT_FOUND:
+        return "SUIT_ERR_PARAMETER_NOT_FOUND";
     case SUIT_ERR_AUTHENTICATION_NOT_FOUND:
         return "SUIT_ERR_AUTHENTICATION_NOT_FOUND";
 
-    case SUIT_ERR_INVALID_TYPE_OF_ARGUMENT:
-        return "SUIT_INVALID_TYPE_OF_ARGUMENT";
+    case SUIT_ERR_INVALID_TYPE_OF_VALUE:
+        return "SUIT_INVALID_TYPE_OF_VALUE";
     case SUIT_ERR_INVALID_VALUE:
         return "SUIT_ERR_INVALID_VALUE";
+    case SUIT_ERR_INVALID_TYPE_OF_KEY:
+        return "SUIT_ERR_INVALID_TYPE_OF_KEY";
     case SUIT_ERR_INVALID_KEY:
         return "SUIT_ERR_INVALID_KEY";
     case SUIT_ERR_NO_MORE_ITEMS:
@@ -57,15 +61,16 @@ char* suit_err_to_str(suit_err_t error)
 
     case SUIT_ERR_REDUNDANT:
         return "SUIT_ERR_REDUNDANT";
+    case SUIT_ERR_NOT_CANONICAL_CBOR:
+        return "SUIT_ERR_NOT_CANONICAL_CBOR";
     case SUIT_ERR_INVALID_MANIFEST_VERSION:
         return "SUIT_ERR_INVALID_MANIFEST_VERSION";
     case SUIT_ERR_TRY_OUT:
         return "SUIT_ERR_TRY_OUT";
     case SUIT_ERR_ABORT:
         return "SUIT_ERR_ABORT";
-    default:
-        return "SUIT_ERR_UNKNOWN";
     }
+    return NULL;
 }
 
 char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key)
@@ -77,9 +82,16 @@ char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key)
         return "authentication";
     case SUIT_MANIFEST:
         return "manifest";
-    default:
-        return NULL;
+    case SUIT_ENVELOPE_KEY_INVALID:
+    case SUIT_SEVERED_DEPENDENCY_RESOLUTION:
+    case SUIT_SEVERED_PAYLOAD_FETCH:
+    case SUIT_SEVERED_INSTALL:
+    case SUIT_SEVERED_TEXT:
+    case SUIT_SEVERED_COSWID:
+    case SUIT_INTEGRATED_PAYLOAD:
+        break;
     }
+    return NULL;
 }
 
 char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key)
@@ -113,9 +125,10 @@ char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key)
         return "text";
     case SUIT_UNINSTALL:
         return "uninstall";
-    default:
-        return NULL;
+    case SUIT_COMMON_KEY_INVALID:
+        break;
     }
+    return NULL;
 }
 
 char* suit_common_key_to_str(suit_common_key_t common_key)
@@ -127,9 +140,10 @@ char* suit_common_key_to_str(suit_common_key_t common_key)
         return "components";
     case SUIT_SHARED_SEQUENCE:
         return "shared-sequence";
-    default:
-        return NULL;
+    case SUIT_COMMON_KEY_INVALID:
+        break;
     }
+    return NULL;
 }
 
 char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
@@ -203,9 +217,11 @@ char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
     case SUIT_DIRECTIVE_COPY_PARAMS:
         return "directive-copy-params";
     */
-    default:
-        return NULL;
+    case SUIT_CONDITION_INVALID:
+    //case SUIT_DIRECTIVE_INVALID:
+        break;
     }
+    return NULL;
 }
 
 char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
@@ -251,21 +267,10 @@ char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
     case SUIT_PARAMETER_FETCH_ARGS:
         return "fetch-args";
     */
-    default:
-        return NULL;
+    case SUIT_PARAMETER_INVALID:
+        break;
     }
-}
-
-char* suit_info_key_to_str(const suit_info_key_t info_key)
-{
-    switch (info_key) {
-    case SUIT_INFO_DEFAULT:
-        return "default";
-    case SUIT_INFO_ENCRYPTION:
-        return "SUIT_Encryption_Info";
-    default:
-        return NULL;
-    }
+    return NULL;
 }
 
 char* suit_cose_protected_key_to_str(int64_t key)
@@ -285,9 +290,8 @@ char* suit_cose_protected_key_to_str(int64_t key)
         return "Partial IV";
     case 7:
         return "counter signature";
-    default:
-        return NULL;
     }
+    return NULL;
 }
 
 /*
@@ -383,10 +387,8 @@ char* suit_cose_alg_to_str(int64_t id)
         return "AES-CCM-64-128-128";
     case 33:
         return "AES-CCM-64-128-256";
-
-    default:
-        return NULL;
     }
+    return NULL;
 }
 
 void suit_print_cose_header_value(QCBORItem *item)
@@ -521,7 +523,7 @@ suit_err_t suit_print_hex_in_max(const uint8_t *array,
 suit_err_t suit_print_uuid(const suit_buf_t *buf)
 {
     if (buf == NULL || buf->len != 16) {
-        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     int16_t digits[] = {4, 2, 2, 2, 6};
     int16_t pos = 0;
@@ -580,7 +582,7 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
         QCBORTagListOut Out = {0, 3, puTags};
         QCBORDecode_GetNextWithTags(&context, &item, &Out);
         if (item.uDataType != QCBOR_TYPE_ARRAY) {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+            return SUIT_ERR_INVALID_TYPE_OF_VALUE;
         }
         for (size_t i = 0; i < Out.uNumUsed; i++) {
             printf("%ld(\n", puTags[i]);
@@ -609,7 +611,7 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
             suit_print_hex(item.val.string.ptr, item.val.string.len);
         }
         else {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+            return SUIT_ERR_INVALID_TYPE_OF_VALUE;
         }
 
         if (cose_struct_len > 3) {
@@ -652,7 +654,7 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
                     printf("\n");
                 }
                 else {
-                    return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 }
                 printf("%*s]", indent_space + 2 * indent_delta, "");
                 if (i + 1 < num_recipients) {
@@ -692,7 +694,7 @@ suit_err_t suit_print_signature(const suit_buf_t *signature,
         QCBORTagListOut Out = {0, 1, puTags};
         QCBORDecode_GetNextWithTags(&context, &item, &Out);
         if (item.uDataType != QCBOR_TYPE_ARRAY) {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+            return SUIT_ERR_INVALID_TYPE_OF_VALUE;
         }
         printf("%ld([\n", puTags[0]);
 
@@ -719,7 +721,7 @@ suit_err_t suit_print_signature(const suit_buf_t *signature,
             printf("\n");
         }
         else {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+            return SUIT_ERR_INVALID_TYPE_OF_VALUE;
         }
 
         result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_BYTE_STRING);
@@ -846,7 +848,7 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_cmd_seq(const uint8_t mode,
+suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
                               const suit_command_sequence_t *cmd_seq,
                               const uint32_t indent_space,
                               const uint32_t indent_delta)
@@ -1194,7 +1196,7 @@ suit_err_t suit_print_text(const suit_text_t *text,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_manifest(const uint8_t mode,
+suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
                                const suit_manifest_t *manifest,
                                const uint32_t indent_space,
                                const uint32_t indent_delta)
@@ -1442,7 +1444,7 @@ suit_err_t suit_print_manifest(const uint8_t mode,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_integrated_payload(const uint8_t mode,
+suit_err_t suit_print_integrated_payload(const suit_decode_mode_t mode,
                                          const suit_payloads_t *payloads,
                                          const uint32_t indent_space,
                                          const uint32_t indent_delta)
@@ -1457,7 +1459,7 @@ suit_err_t suit_print_integrated_payload(const uint8_t mode,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_envelope(const uint8_t mode,
+suit_err_t suit_print_envelope(const suit_decode_mode_t mode,
                                const suit_envelope_t *envelope,
                                const uint32_t indent_space,
                                const uint32_t indent_delta)

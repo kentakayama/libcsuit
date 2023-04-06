@@ -29,7 +29,7 @@ suit_err_t suit_fix_suit_encode_buf(suit_encode_t *suit_encode, const size_t use
 
     \return     This returns one of the error codes defined by \ref suit_err_t.
  */
-suit_err_t suit_decode_envelope(uint8_t mode, suit_buf_t *buf, suit_envelope_t *envelope, suit_mechanism_t *mechanism);
+suit_err_t suit_decode_envelope(suit_decode_mode_t mode, suit_buf_t *buf, suit_envelope_t *envelope, suit_mechanism_t *mechanism);
 
 /*!
     \brief  Decode array of SUIT_Component_Identifier.
@@ -40,7 +40,7 @@ suit_err_t suit_decode_envelope(uint8_t mode, suit_buf_t *buf, suit_envelope_t *
 
     \return     This returns one of the error codes defined by \ref suit_err_t.
  */
-suit_err_t suit_decode_component_identifiers(uint8_t mode, suit_buf_t *buf, suit_component_identifier_t *identifier);
+suit_err_t suit_decode_component_identifiers(suit_decode_mode_t mode, suit_buf_t *buf, suit_component_identifier_t *identifier);
 
 /*!
     \brief  Decode bstr-wrapped command sequence.
@@ -51,12 +51,12 @@ suit_err_t suit_decode_component_identifiers(uint8_t mode, suit_buf_t *buf, suit
 
     \return     This returns one of the error codes defined by \ref suit_err_t.
  */
-suit_err_t suit_decode_command_sequence(uint8_t mode, const suit_buf_t *buf, suit_command_sequence_t *cmd_seq);
+suit_err_t suit_decode_command_sequence(suit_decode_mode_t mode, const suit_buf_t *buf, suit_command_sequence_t *cmd_seq);
 
-suit_err_t suit_decode_dependencies_from_item(uint8_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_dependencies_t *dependencies);
-suit_err_t suit_decode_component_identifiers_from_item(uint8_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_component_identifier_t *identifier);
-suit_err_t suit_decode_components_from_item(uint8_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_component_with_index_t *components, uint8_t *num);
-suit_err_t suit_decode_digest_from_item(uint8_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_digest_t *digest);
+suit_err_t suit_decode_dependencies_from_item(suit_decode_mode_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_dependencies_t *dependencies);
+suit_err_t suit_decode_component_identifiers_from_item(suit_decode_mode_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_component_identifier_t *identifier);
+suit_err_t suit_decode_components_from_item(suit_decode_mode_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_component_with_index_t *components, uint8_t *num);
+suit_err_t suit_decode_digest_from_item(suit_decode_mode_t mode, QCBORDecodeContext *context, QCBORItem *item, bool next, suit_digest_t *digest);
 
 /*!
     \brief  Encode SUIT binary
@@ -93,6 +93,6 @@ suit_err_t suit_decode_digest_from_item(uint8_t mode, QCBORDecodeContext *contex
     }
     \endcode
  */
-suit_err_t suit_encode_envelope(uint8_t mode, const suit_envelope_t *envelope, const suit_mechanism_t *mechanism, uint8_t **buf, size_t *len);
+suit_err_t suit_encode_envelope(suit_decode_mode_t mode, const suit_envelope_t *envelope, const suit_mechanism_t *mechanism, uint8_t **buf, size_t *len);
 
 #endif  // SUIT_MANIFEST_DATA_H

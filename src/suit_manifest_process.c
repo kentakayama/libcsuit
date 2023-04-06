@@ -29,7 +29,7 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
     QCBORError error = QCBOR_SUCCESS;
     QCBORDecode_EnterMap(context, &item);
     if (item.uDataType != QCBOR_TYPE_MAP) {
-        result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
         goto error;
     }
     suit_parameter_key_t parameter;
@@ -327,7 +327,7 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
     case QCBOR_TYPE_INT64:
         QCBORDecode_GetUInt64(context, &val.u64);
         if (val.u64 > UINT8_MAX) {
-            return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+            return SUIT_ERR_INVALID_TYPE_OF_VALUE;
         }
         suit_index->index[0] = (uint8_t)val.u64;
         suit_index->len = 1;
@@ -348,18 +348,18 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
         for (size_t i = 0; i < suit_index->len; i++) {
             QCBORDecode_GetUInt64(context, &val.u64);
             if (val.u64 > UINT8_MAX) {
-                return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             suit_index->index[i] = (uint8_t)val.u64;
         }
         QCBORDecode_ExitArray(context);
     default:
-        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
 
     error = QCBORDecode_GetError(context);
     if (error != QCBOR_SUCCESS) {
-        return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     return SUIT_SUCCESS;
 }
@@ -847,7 +847,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
         case SUIT_DIRECTIVE_TRY_EACH:
             QCBORDecode_EnterArray(&context, &item);
             if (item.uDataType != QCBOR_TYPE_ARRAY) {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto error;
             }
             const size_t try_count = item.val.uCount;
@@ -872,7 +872,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                     break;
                 }
                 else {
-                    result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                    result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                     goto error;
                 }
             }
@@ -988,7 +988,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
     QCBORDecode_Init(&context, extracted->shared_sequence, QCBOR_DECODE_MODE_NORMAL);
     QCBORDecode_EnterArray(&context, &item);
     if (item.uDataType != QCBOR_TYPE_ARRAY) {
-        result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
         goto error;
     }
     size_t length = item.val.uCount;
@@ -1011,7 +1011,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                 goto error;
             }
             if (val.u64 > UINT8_MAX) {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto error;
             }
             suit_index.len = 1;
@@ -1042,7 +1042,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
         case SUIT_DIRECTIVE_TRY_EACH:
             QCBORDecode_EnterArray(&context, &item);
             if (item.uDataType != QCBOR_TYPE_ARRAY) {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto error;
             }
             const size_t try_count = item.val.uCount;
@@ -1067,7 +1067,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                     break;
                 }
                 else {
-                    result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                    result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                     goto error;
                 }
             }
@@ -1241,7 +1241,7 @@ suit_err_t suit_extract_common(QCBORDecodeContext *context,
     QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
     QCBORDecode_EnterMap(context, &item);
     if (item.uDataType != QCBOR_TYPE_MAP) {
-        result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
         goto error;
     }
     size_t length = item.val.uCount;
@@ -1326,7 +1326,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
     QCBORDecode_Init(&context, extracted->manifest, QCBOR_DECODE_MODE_NORMAL);
     QCBORDecode_EnterMap(&context, &item);
     if (item.uDataType != QCBOR_TYPE_MAP) {
-        result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+        result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
         goto error;
     }
     size_t manifest_key_len = item.val.uCount;
@@ -1347,7 +1347,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 goto error;
             }
             if (!(item.uDataType == QCBOR_TYPE_INT64 || item.uDataType == QCBOR_TYPE_UINT64)) {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto error;
             }
             if (item.val.int64 != 1) {
@@ -1360,7 +1360,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 goto error;
             }
             if (!(item.uDataType == QCBOR_TYPE_INT64 || item.uDataType == QCBOR_TYPE_UINT64)) {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto error;
             }
             // TODO: check sequence-number
@@ -1385,7 +1385,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 QCBORDecode_GetByteString(&context, &extracted->validate);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_DEPENDENCY_RESOLUTION:
@@ -1396,7 +1396,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, &context, &item, true, &extracted->dependency_resolution_digest);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_PAYLOAD_FETCH:
@@ -1407,7 +1407,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, &context, &item, true, &extracted->payload_fetch_digest);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_INSTALL:
@@ -1418,7 +1418,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, &context, &item, true, &extracted->install_digest);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_UNINSTALL:
@@ -1426,7 +1426,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 QCBORDecode_GetByteString(&context, &extracted->uninstall);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_LOAD:
@@ -1434,7 +1434,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 QCBORDecode_GetByteString(&context, &extracted->load);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_INVOKE:
@@ -1442,7 +1442,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 QCBORDecode_GetByteString(&context, &extracted->invoke);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_TEXT:
@@ -1453,7 +1453,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, &context, &item, true, &extracted->text_digest);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
         case SUIT_COSWID:
@@ -1464,7 +1464,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, &context, &item, true, &extracted->coswid_digest);
             }
             else {
-                result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
 

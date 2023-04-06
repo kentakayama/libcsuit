@@ -73,7 +73,7 @@ int main(int argc,
 
     // Decode manifest file.
     printf("main : Decode Manifest file.\n");
-    uint8_t mode = SUIT_DECODE_MODE_STRICT;
+    suit_decode_mode_t mode = SUIT_DECODE_MODE_STRICT;
 #ifdef SKIP_ERROR
     mode = SUIT_DECODE_MODE_SKIP_ANY_ERROR;
 #endif
