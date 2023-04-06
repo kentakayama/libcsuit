@@ -44,7 +44,7 @@ Vendor Identifier | 1 | suit-condition-vendor-identifier | SUIT Manifest | REQUI
 Class Identifier | 2 | suit-condition-class-identifier | SUIT Manifest | N/M | RWX
 Image Match | 3 | suit-condition-image-match | SUIT Manifest | REQUIRED | RWX
 Use Before | 4 | suit-condition-use-before | SUIT Update Management | OPTIONAL | RWX
-Component Slot | 5 | suit-condition-component-slot | SUIT Manifest | N/M | RW-
+Component Slot | 5 | suit-condition-component-slot | SUIT Manifest | N/M | RWX
 Check Content | 6 | suit-condition-check-content | SUIT Manifest | N/M | RWX
 Dependency Integrity | 7 | suit-condition-dependency-integrity | SUIT Multiple Trust Domains | N/M | ---
 Is Dependency | 8 | suit-condition-is-dependency | SUIT Multiple Trust Domains | N/M | ---
