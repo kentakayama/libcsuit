@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -1294,6 +1294,7 @@ suit_err_t suit_print_manifest(const uint8_t mode,
         printf("%*s] >>", indent_space + indent_delta, "");
         comma = true;
     }
+
     if (manifest->unsev_mem.invoke.len > 0) {
         if (comma) {
             printf(",\n");
@@ -1400,6 +1401,19 @@ suit_err_t suit_print_manifest(const uint8_t mode,
         if (result != SUIT_SUCCESS) {
             return result;
         }
+        comma = true;
+    }
+
+    if (manifest->unsev_mem.uninstall.len > 0) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ uninstall / 24: << [\n", indent_space + indent_delta, "");
+        result = suit_print_cmd_seq(mode, &manifest->unsev_mem.uninstall, indent_space + 2 * indent_delta, indent_delta);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        printf("%*s] >>", indent_space + indent_delta, "");
         comma = true;
     }
 
@@ -1653,6 +1667,7 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     printf("condition callback : {\n");
     printf("  operation : %s\n", suit_command_sequence_key_to_str(condition_args.condition));
     switch (condition_args.condition) {
+    case SUIT_CONDITION_COMPONENT_SLOT:
     case SUIT_CONDITION_CHECK_CONTENT:
     case SUIT_CONDITION_IMAGE_MATCH:
     case SUIT_CONDITION_IMAGE_NOT_MATCH:

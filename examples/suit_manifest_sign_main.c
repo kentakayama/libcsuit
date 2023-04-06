@@ -29,11 +29,14 @@ int main(int argc,
         return EXIT_FAILURE;
     }
     suit_err_t result = 0;
+    int ret = EXIT_FAILURE;
     uint8_t indent = 4;
     uint8_t tabstop = 2;
     char *input_file = argv[1];
     char *output_file = argv[2];
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+    uint8_t *manifest_buf = NULL;
+    uint8_t *encode_buf = NULL;
 
     result = suit_key_init_es256_key_pair(trust_anchor_prime256v1_private_key, trust_anchor_prime256v1_public_key, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
@@ -45,15 +48,15 @@ int main(int argc,
 
     // Read manifest file.
     printf("main : Read Manifest file.\n");
-    uint8_t *manifest_buf = malloc(SUIT_MAX_DATA_SIZE);
+    manifest_buf = malloc(SUIT_MAX_DATA_SIZE);
     if (manifest_buf == NULL) {
         printf("main : Failed to allocate memory.\n");
-        return EXIT_FAILURE;
+        goto out;
     }
     size_t manifest_len = read_from_file(input_file, manifest_buf, SUIT_MAX_DATA_SIZE);
     if (manifest_len == 0) {
         printf("main : Failed to read Manifest file.\n");
-        return EXIT_FAILURE;
+        goto out;
     }
     suit_print_hex(manifest_buf, manifest_len);
     printf("\n\n");
@@ -70,10 +73,10 @@ int main(int argc,
     }
 
     // Encode manifest.
-    uint8_t *encode_buf = malloc(SUIT_MAX_DATA_SIZE);
+    encode_buf = malloc(SUIT_MAX_DATA_SIZE);
     if (encode_buf == NULL) {
         printf("main : Failed to allocate memory.\n");
-        return EXIT_FAILURE;
+        goto out;
     }
     size_t encode_len = SUIT_MAX_DATA_SIZE;
     uint8_t *ret_pos = encode_buf;
@@ -83,7 +86,7 @@ int main(int argc,
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    printf("main : Total buffer memory usage was %ld/%ld bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
+    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
 
     // Print manifest.
     printf("\nmain : Print Manifest.\n");
@@ -94,6 +97,14 @@ int main(int argc,
     }
 
     write_to_file(output_file, ret_pos, encode_len);
+    ret = EXIT_SUCCESS;
+out:
+    if (manifest_buf != NULL) {
+        free(manifest_buf);
+    }
+    if (encode_buf != NULL) {
+        free(encode_buf);
+    }
     suit_free_key(&mechanisms[0].key);
-    return EXIT_SUCCESS;
+    return ret;
 }

@@ -5,7 +5,7 @@
 / SUIT_Envelope / {
   / authentication-wrapper / 2: << [
     << [
-      / digest-algorithm-id: / -16 / cose-alg-sha256 /,
+      / digest-algorithm-id: / -16 / SHA256 /,
       / digest-bytes: / h'F9D837B7118A8972360022D51AC5319023D245A76F7504079B9ED01C0B4934F2'
     ] >>,
     << / COSE_Sign1_Tagged / 18([

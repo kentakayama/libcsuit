@@ -1043,8 +1043,27 @@ suit_err_t suit_decode_manifest_from_item(const uint8_t mode,
             case SUIT_INVOKE:
                 result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.invoke);
                 break;
+            /* in draft-ietf-suit-trust-domains */
+            case SUIT_UNINSTALL:
+                result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.uninstall);
+                break;
 
             case SUIT_REFERENCE_URI:
+                result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
+                if (!suit_continue(mode, result)) {
+                    break;
+                }
+                if (result == SUIT_SUCCESS) {
+                    manifest->reference_uri.len = item->val.string.len;
+                    manifest->reference_uri.ptr = (uint8_t *)item->val.string.ptr;
+                }
+                else if (result == SUIT_ERR_INVALID_TYPE_OF_ARGUMENT) {
+                    if (!suit_qcbor_skip_any(context, item)) {
+                        result = SUIT_ERR_FATAL;
+                    }
+                }
+                break;
+
             default:
                 // TODO
                 result = SUIT_ERR_NOT_IMPLEMENTED;

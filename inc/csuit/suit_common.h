@@ -498,6 +498,7 @@ typedef struct suit_unseverable_members {
     suit_command_sequence_t         validate;
     suit_command_sequence_t         load;
     suit_command_sequence_t         invoke;
+    suit_command_sequence_t         uninstall;
     // TODO :                       $$unseverable-manifest-member-extensions
 } suit_unseverable_members_t;
 

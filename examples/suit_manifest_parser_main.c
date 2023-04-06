@@ -107,7 +107,7 @@ int main(int argc,
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    printf("main : Total buffer memory usage was %ld/%ld bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
+    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
 
     if (manifest_len != encode_len) {
         printf("main : The manifest length is changed %ld => %ld\n", manifest_len, encode_len);

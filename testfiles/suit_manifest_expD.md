@@ -5,7 +5,7 @@
 / SUIT_Envelope / {
   / authentication-wrapper / 2: << [
     << [
-      / digest-algorithm-id: / -16 / cose-alg-sha256 /,
+      / digest-algorithm-id: / -16 / SHA256 /,
       / digest-bytes: / h'1D3734C0F89C56F49BB59252FEDE4A639A2C350AB050E5F97D40B3157B8C3F66'
     ] >>,
     << / COSE_Sign1_Tagged / 18([
@@ -24,10 +24,10 @@
       / dependencies / 1: {
         / component-index / 1: {
           / dependency-prefix / 1: [
-            'TEEP-Device',
-            'SecureFS',
+             'TEEP-Device',
+             'SecureFS',
             h'8D82573A926D4754935332DC29997F74', / tc-uuid /
-            'suit'
+             'suit'
           ]
         }
       },
@@ -41,10 +41,10 @@
       / shared-sequence / 4: << [
         / directive-set-component-index / 12, 0,
         / directive-override-parameters / 20, {
-          / vendor-id / 1: h'C0DDD5F15243566087DB4F5B0AA26C2F' / c0ddd5f1-5243-5660-87db-4f5b0aa26c2f /,
-          / class-id / 2: h'DB42F7093D8C55BAA8C5265FC5820F4E' / db42f709-3d8c-55ba-a8c5-265fc5820f4e /,
-          / image-digest / 3: << [
-            / algorithm-id: / -16 / SHA-256 /,
+          / parameter-vendor-identifier / 1: h'C0DDD5F15243566087DB4F5B0AA26C2F',
+          / parameter-class-identifier / 2: h'DB42F7093D8C55BAA8C5265FC5820F4E',
+          / parameter-image-digest / 3: << [
+            / digest-algorithm-id: / -16 / SHA256 /,
             / digest-bytes: / h'AAABCCCDEEEF00012223444566678889ABBBCDDDEFFF01112333455567778999'
           ] >>,
           / image-size / 14: 64
@@ -78,6 +78,12 @@
       },
       / directive-fetch / 21, 2,
       / condition-image-match / 3, 15
+    ] >>,
+    / uninstall / 24: << [
+      / directive-set-component-index / 12, 1,
+      / directive-process-dependency / 11, 0,
+      / directive-set-component-index / 12, 0,
+      / directive-unlink / 33, 15
     ] >>
   } >>
 }
@@ -92,7 +98,7 @@ A2025873825824822F58201D3734C0F89C56F49BB59252FEDE4A639A2C35
 0AB050E5F97D40B3157B8C3F66584AD28443A10126A0F65840549D29D9A3
 BC54F3257ED157768AA3A2C7176A53B47ABBE47E94EC39591D54EA7C3AB5
 1DD8DFB817D526E831820CAC7F7C7F01CB460AD7F17B0CDE113740242203
-59015EA7010102030358B0A301A101A101844B544545502D446576696365
+59016BA8010102030358B0A301A101A101844B544545502D446576696365
 485365637572654653508D82573A926D4754935332DC29997F7444737569
 740281834B544545502D4465766963654853656375726546534B636F6E66
 69672E6A736F6E045857880C0014A40150C0DDD5F15243566087DB4F5B0A
@@ -103,5 +109,6 @@ CCCDEEEF00012223444566678889ABBBCDDDEFFF01112333455567778999
 68747470733A2F2F6578616D706C652E6F72672F38643832353733612D39
 3236642D343735342D393335332D3332646332393939376637342E737569
 74150211582F8C0C010B000C0014A115781F68747470733A2F2F6578616D
-706C652E6F72672F636F6E6669672E6A736F6E1502030F
+706C652E6F72672F636F6E6669672E6A736F6E1502030F18184A880C010B
+000C0018210F
 ~~~~
