@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -141,37 +141,21 @@ char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
         return "condition-class-identifier";
     case SUIT_CONDITION_IMAGE_MATCH:
         return "condition-image-match";
-    case SUIT_CONDITION_USE_BEFORE:
-        return "condition-use-before";
     case SUIT_CONDITION_COMPONENT_SLOT:
         return "condition-component-slot";
     case SUIT_CONDITION_CHECK_CONTENT:
         return "condition-check-content";
-    case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
-        return "condition-dependency-integrity";
-    case SUIT_CONDITION_IS_DEPENDENCY:
-        return "condition-is-dependency";
     case SUIT_CONDITION_ABORT:
         return "condition-abort";
     case SUIT_CONDITION_DEVICE_IDENTIFIER:
         return "condition-device-identifier";
-    case SUIT_CONDITION_IMAGE_NOT_MATCH:
-        return "condition-image-not-match";
-    case SUIT_CONDITION_MINIMUM_BATTERY:
-        return "condition-minimum-battery";
-    case SUIT_CONDITION_UPDATE_AUTHORIZED:
-        return "condition-update-authorized";
-    case SUIT_CONDITION_VERSION:
-        return "condition-version";
 
-    case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
-        return "directive-process-dependency";
     case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
         return "directive-set-component-index";
     case SUIT_DIRECTIVE_TRY_EACH:
         return "directive-try-each";
-    case SUIT_DIRECTIVE_SET_PARAMETERS:
-        return "directive-set-parameters";
+    case SUIT_DIRECTIVE_WRITE:
+        return "directive-write";
     case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
         return "directive-override-parameters";
     case SUIT_DIRECTIVE_FETCH:
@@ -180,14 +164,38 @@ char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
         return "directive-copy";
     case SUIT_DIRECTIVE_INVOKE:
         return "directive-invoke";
-    case SUIT_DIRECTIVE_WAIT:
-        return "directive-wait";
     case SUIT_DIRECTIVE_SWAP:
         return "directive-swap";
     case SUIT_DIRECTIVE_RUN_SEQUENCE:
         return "directive-run-sequence";
+
+    /* draft-ietf-suit-trust-domains */
+    case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        return "condition-dependency-integrity";
+    case SUIT_CONDITION_IS_DEPENDENCY:
+        return "condition-is-dependency";
+
+    case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+        return "directive-process-dependency";
+    case SUIT_DIRECTIVE_SET_PARAMETERS:
+        return "directive-set-parameters";
     case SUIT_DIRECTIVE_UNLINK:
         return "directive-unlink";
+
+    /* draft-ietf-suit-update-management */
+    case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        return "condition-image-not-match";
+    case SUIT_CONDITION_MINIMUM_BATTERY:
+        return "condition-minimum-battery";
+    case SUIT_CONDITION_UPDATE_AUTHORIZED:
+        return "condition-update-authorized";
+    case SUIT_CONDITION_VERSION:
+        return "condition-version";
+    case SUIT_CONDITION_USE_BEFORE:
+        return "condition-use-before";
+
+    case SUIT_DIRECTIVE_WAIT:
+        return "directive-wait";
 
     /* To Be Defined?
     case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
@@ -793,6 +801,7 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
                     printf(" /");
                 }
                 break;
+            case SUIT_PARAMETER_CONTENT:
             case SUIT_PARAMETER_INVOKE_ARGS:
                 result = suit_print_hex(params_list->params[i].value.string.ptr,
                                         params_list->params[i].value.string.len);
@@ -1285,6 +1294,7 @@ suit_err_t suit_print_manifest(const uint8_t mode,
         printf("%*s] >>", indent_space + indent_delta, "");
         comma = true;
     }
+
     if (manifest->unsev_mem.invoke.len > 0) {
         if (comma) {
             printf(",\n");
@@ -1391,6 +1401,19 @@ suit_err_t suit_print_manifest(const uint8_t mode,
         if (result != SUIT_SUCCESS) {
             return result;
         }
+        comma = true;
+    }
+
+    if (manifest->unsev_mem.uninstall.len > 0) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ uninstall / 24: << [\n", indent_space + indent_delta, "");
+        result = suit_print_cmd_seq(mode, &manifest->unsev_mem.uninstall, indent_space + 2 * indent_delta, indent_delta);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        printf("%*s] >>", indent_space + indent_delta, "");
         comma = true;
     }
 
@@ -1587,8 +1610,13 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
     printf("  dst-component-identifier : ");
     suit_print_component_identifier(&store_args.dst);
     printf("\n");
-    printf("  src-component-identifier : ");
-    suit_print_component_identifier(&store_args.src);
+    if (store_args.operation == SUIT_COPY || store_args.operation == SUIT_SWAP) {
+        printf("  src-component-identifier : ");
+        suit_print_component_identifier(&store_args.src);
+        printf("\n");
+    }
+    printf("  src-buf : ");
+    suit_print_hex_in_max(store_args.src_buf.ptr, store_args.src_buf.len, SUIT_MAX_PRINT_BYTE_COUNT);
     printf("\n");
     if (!UsefulBuf_IsNULLOrEmptyC(store_args.encryption_info)) {
         printf("  encryption-info : ");
@@ -1638,9 +1666,18 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
 
     printf("condition callback : {\n");
     printf("  operation : %s\n", suit_command_sequence_key_to_str(condition_args.condition));
-    printf("  dst-component-identifier : ");
-    suit_print_component_identifier(&condition_args.dst);
-    printf("\n");
+    switch (condition_args.condition) {
+    case SUIT_CONDITION_COMPONENT_SLOT:
+    case SUIT_CONDITION_CHECK_CONTENT:
+    case SUIT_CONDITION_IMAGE_MATCH:
+    case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        printf("  dst-component-identifier : ");
+        suit_print_component_identifier(&condition_args.dst);
+        printf("\n");
+        break;
+    default:
+        break;
+    }
 
     printf("  expected : ");
     switch (condition_args.condition) {

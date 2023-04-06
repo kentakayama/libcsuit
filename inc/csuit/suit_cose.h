@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  *
@@ -13,7 +13,9 @@
 #include "t_cose/t_cose_sign1_sign.h"
 
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
+#include "t_cose/t_cose_encrypt_enc.h"
 #include "t_cose/t_cose_encrypt_dec.h"
+#include "t_cose/t_cose_recipient_enc_keywrap.h"
 #include "t_cose/t_cose_recipient_dec_keywrap.h"
 #endif
 
@@ -77,6 +79,7 @@ typedef struct suit_key {
 typedef struct suit_mechanism {
     int cose_tag; // COSE_Sign1, COSE_Sign, COSE_Encrypt0, COSE_Encrypt, etc.
     suit_key_t key;
+    UsefulBufC kid;
     bool use;
 } suit_mechanism_t;
 
@@ -167,7 +170,7 @@ suit_err_t suit_verify_cose_mac0(const UsefulBufC signed_cose,
     \param[in]  encrypted_payload   Pointer and length of the target encrypted payload.
     \param[in]  encryption_info     Pointer and length of the COSE_Encrypt or COSE_Encrypt0.
     \param[in]  working_buf         Pointer and length of the working buffer for decryption.
-    \param[in]  secret_key          Pointer of secret key.
+    \param[in]  mechanism           Pointer of \t suit_mechanism_t.
     \param[out] returned_payload    Pointer and length of the plaintext payload.
 
     \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_DECRYPT.
@@ -177,6 +180,24 @@ suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
                                      UsefulBuf working_buf,
                                      const suit_mechanism_t *mechanism,
                                      UsefulBufC *retuned_payload);
+/*!
+    \brief  Encrypt COSE_Encrypt or COSE_Encrypt0 encrypted payload.
+
+    \param[in]  plaintext_payload       Pointer and length of the plaintext payload.
+    \param[in]  mechanism               Pointer of \t suit_mechanism_t.
+    \param[in]  encrypted_payload_buf   Pointer and length of the working buffer for encrypted payload.
+    \param[in]  encryption_info_buf     Pointer and length of the working buffer for encryption_info.
+    \param[out] encrypted_payload       Pointer and length of the plaintext payload.
+    \param[out] encryption_info         Pointer and length of the COSE_Encrypt or COSE_Encrypt0.
+
+    \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_DECRYPT.
+ */
+suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
+                                     const suit_mechanism_t *mechanism,
+                                     UsefulBuf encryped_payload_buf,
+                                     UsefulBuf encryption_info_buf,
+                                     UsefulBufC *encrypted_payload,
+                                     UsefulBufC *encryption_info);
 
 #endif  /* SUIT_COSE_H */
 

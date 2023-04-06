@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  *
@@ -16,7 +16,11 @@
     Public function. See suit_digest.h
  */
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
-suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len) {
+suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len)
+{
     psa_status_t status;
     size_t real_hash_size;
     psa_hash_operation_t sha256_psa = PSA_HASH_OPERATION_INIT;
@@ -43,7 +47,11 @@ suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, ui
     return SUIT_SUCCESS;
 }
 #else
-suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len) {
+suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len)
+{
     suit_err_t result = SUIT_ERR_FAILED_TO_VERIFY;
     if (digest_bytes_len > UINT32_MAX) {
         return SUIT_ERR_NO_MEMORY;
@@ -67,7 +75,11 @@ suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, ui
 /*
     Public function. See suit_digest.h
  */
-suit_err_t suit_verify_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len) {
+suit_err_t suit_verify_sha256(const uint8_t *tgt_ptr,
+                              const size_t tgt_len,
+                              const uint8_t *digest_bytes_ptr,
+                              const size_t digest_bytes_len)
+{
     if (digest_bytes_len != SHA256_DIGEST_LENGTH) {
         return SUIT_ERR_FATAL;
     }
@@ -79,43 +91,89 @@ suit_err_t suit_verify_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, cons
     return (memcmp(digest_bytes_ptr, hash, SHA256_DIGEST_LENGTH) == 0) ? SUIT_SUCCESS : SUIT_ERR_FAILED_TO_VERIFY;
 }
 
-suit_err_t suit_verify_digest(suit_buf_t *buf, suit_digest_t *digest) {
+suit_err_t suit_verify_digest(const suit_buf_t *buf,
+                              const suit_digest_t *digest)
+{
     suit_err_t result;
 
     switch (digest->algorithm_id) {
-        case SUIT_ALGORITHM_ID_SHA256:
-            result = suit_verify_sha256(buf->ptr, buf->len, digest->bytes.ptr, digest->bytes.len);
-            break;
-        case SUIT_ALGORITHM_ID_SHAKE128:
-        case SUIT_ALGORITHM_ID_SHA384:
-        case SUIT_ALGORITHM_ID_SHA512:
-        case SUIT_ALGORITHM_ID_SHAKE256:
-        default:
-            result = SUIT_ERR_NOT_IMPLEMENTED;
+    case SUIT_ALGORITHM_ID_SHA256:
+        result = suit_verify_sha256(buf->ptr, buf->len, digest->bytes.ptr, digest->bytes.len);
+        break;
+    case SUIT_ALGORITHM_ID_SHAKE128:
+    case SUIT_ALGORITHM_ID_SHA384:
+    case SUIT_ALGORITHM_ID_SHA512:
+    case SUIT_ALGORITHM_ID_SHAKE256:
+    default:
+        result = SUIT_ERR_NOT_IMPLEMENTED;
     }
     return result;
 }
 
-suit_err_t suit_generate_digest(const uint8_t *ptr, const size_t len, suit_encode_t *suit_encode, suit_digest_t *digest) {
-    suit_err_t result = SUIT_SUCCESS;
-    UsefulBuf digest_buf;
+suit_err_t suit_generate_digest(const suit_buf_t buf,
+                                const suit_buf_t digest_buf,
+                                suit_digest_t *digest)
+{
+    suit_err_t result;
 
-    result = suit_use_suit_encode_buf(suit_encode, SHA256_DIGEST_WORK_SPACE_LENGTH, &digest_buf);
+    switch (digest->algorithm_id) {
+    case SUIT_ALGORITHM_ID_SHA256:
+        result = suit_generate_sha256(buf.ptr, buf.len, digest_buf.ptr, digest_buf.len);
+        if (result == SUIT_SUCCESS) {
+            digest->bytes = digest_buf;
+        }
+        break;
+    case SUIT_ALGORITHM_ID_SHAKE128:
+    case SUIT_ALGORITHM_ID_SHA384:
+    case SUIT_ALGORITHM_ID_SHA512:
+    case SUIT_ALGORITHM_ID_SHAKE256:
+    default:
+        result = SUIT_ERR_NOT_IMPLEMENTED;
+    }
+    return result;
+}
+
+suit_err_t suit_generate_digest_using_encode_buf(const uint8_t *ptr,
+                                                 const size_t len,
+                                                 suit_encode_t *suit_encode,
+                                                 suit_digest_t *digest)
+{
+    suit_err_t result = SUIT_SUCCESS;
+
+    size_t work_space_length;
+    size_t fixed_length;
+
+    switch (digest->algorithm_id) {
+    case SUIT_ALGORITHM_ID_SHA256:
+        work_space_length = SHA256_DIGEST_WORK_SPACE_LENGTH;
+        fixed_length = SHA256_DIGEST_LENGTH;
+        break;
+    default:
+        return SUIT_ERR_NOT_IMPLEMENTED;
+    }
+
+    UsefulBuf digest_buf;
+    result = suit_use_suit_encode_buf(suit_encode, work_space_length, &digest_buf);
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    result = suit_generate_sha256(ptr, len, digest_buf.ptr, digest_buf.len);
+    suit_buf_t buf;
+    buf.ptr = (uint8_t *)ptr;
+    buf.len = len;
+    suit_buf_t working_buf;
+    working_buf.ptr = digest_buf.ptr;
+    working_buf.len = digest_buf.len;
+    result = suit_generate_digest(buf, working_buf, digest);
     if (result != SUIT_SUCCESS) {
         return result;
     }
     /* given length are working memory size, so we must overwrite it into actual hash length */
-    result = suit_fix_suit_encode_buf(suit_encode, SHA256_DIGEST_LENGTH);
+    result = suit_fix_suit_encode_buf(suit_encode, fixed_length);
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    digest->algorithm_id = SUIT_ALGORITHM_ID_SHA256;
     digest->bytes.ptr = digest_buf.ptr;
-    digest->bytes.len = SHA256_DIGEST_LENGTH;
+    digest->bytes.len = fixed_length;
     return SUIT_SUCCESS;
 }
 

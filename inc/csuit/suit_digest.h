@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  *
@@ -38,7 +38,10 @@ struct suit_buf;
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_generate_sha224(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha224(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
 /*!
     \brief      Generate SHA-256 digest
@@ -50,7 +53,10 @@ suit_err_t suit_generate_sha224(const uint8_t *tgt_ptr, const size_t tgt_len, ui
 
     This function generates SHA-256 hash to the digest_bytes_ptr.
  */
-suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
 /*!
     \brief      Generate SHA-384 digest
@@ -62,7 +68,10 @@ suit_err_t suit_generate_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, ui
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_generate_sha384(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha384(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
 /*!
     \brief      Generate SHA-512 digest
@@ -74,7 +83,10 @@ suit_err_t suit_generate_sha384(const uint8_t *tgt_ptr, const size_t tgt_len, ui
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_generate_sha512(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha512(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
 /*!
     \brief      Generate SHA3-224 digest
@@ -86,7 +98,10 @@ suit_err_t suit_generate_sha512(const uint8_t *tgt_ptr, const size_t tgt_len, ui
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_generate_sha3_224(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha3_224(const uint8_t *tgt_ptr,
+                                  const size_t tgt_len,
+                                  uint8_t *digest_bytes_ptr,
+                                  const size_t digest_bytes_len);
 
 /*!
     \brief      Generate SHA3-256 digest
@@ -98,7 +113,10 @@ suit_err_t suit_generate_sha3_224(const uint8_t *tgt_ptr, const size_t tgt_len, 
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_generate_sha3_256(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha3_256(const uint8_t *tgt_ptr,
+                                  const size_t tgt_len,
+                                  uint8_t *digest_bytes_ptr,
+                                  const size_t digest_bytes_len);
 
 /*!
     \brief      Generate SHA3-384 digest
@@ -110,7 +128,10 @@ suit_err_t suit_generate_sha3_256(const uint8_t *tgt_ptr, const size_t tgt_len, 
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_generate_sha3_384(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha3_384(const uint8_t *tgt_ptr,
+                                  const size_t tgt_len,
+                                  uint8_t *digest_bytes_ptr,
+                                  const size_t digest_bytes_len);
 
 /*!
     \brief      Generate SHA3-512 digest
@@ -122,7 +143,10 @@ suit_err_t suit_generate_sha3_384(const uint8_t *tgt_ptr, const size_t tgt_len, 
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_generate_sha3_512(const uint8_t *tgt_ptr, const size_t tgt_len, uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_generate_sha3_512(const uint8_t *tgt_ptr,
+                                  const size_t tgt_len,
+                                  uint8_t *digest_bytes_ptr,
+                                  const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA-224 digest
@@ -134,7 +158,10 @@ suit_err_t suit_generate_sha3_512(const uint8_t *tgt_ptr, const size_t tgt_len, 
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_sha224(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha224(const uint8_t *tgt_ptr,
+                              const size_t tgt_len,
+                              const uint8_t *digest_bytes_ptr,
+                              const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA-256 digest
@@ -147,7 +174,10 @@ suit_err_t suit_verify_sha224(const uint8_t *tgt_ptr, const size_t tgt_len, cons
     This verifies the hash of the payload, specified by tgt_ptr and tgt_len,
     matches the input digest, specified by digest_bytes_ptr and digest_bytes_len.
  */
-suit_err_t suit_verify_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha256(const uint8_t *tgt_ptr,
+                              const size_t tgt_len,
+                              const uint8_t *digest_bytes_ptr,
+                              const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA-384 digest
@@ -159,7 +189,10 @@ suit_err_t suit_verify_sha256(const uint8_t *tgt_ptr, const size_t tgt_len, cons
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_sha384(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha384(const uint8_t *tgt_ptr,
+                              const size_t tgt_len,
+                              const uint8_t *digest_bytes_ptr,
+                              const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA-512 digest
@@ -171,7 +204,10 @@ suit_err_t suit_verify_sha384(const uint8_t *tgt_ptr, const size_t tgt_len, cons
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_sha512(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha512(const uint8_t *tgt_ptr,
+                              const size_t tgt_len,
+                              const uint8_t *digest_bytes_ptr,
+                              const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA3-224 digest
@@ -183,7 +219,10 @@ suit_err_t suit_verify_sha512(const uint8_t *tgt_ptr, const size_t tgt_len, cons
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_sha3_224(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha3_224(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                const uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA3-256 digest
@@ -195,7 +234,10 @@ suit_err_t suit_verify_sha3_224(const uint8_t *tgt_ptr, const size_t tgt_len, co
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_sha3_256(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha3_256(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                const uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA3-384 digest
@@ -207,7 +249,10 @@ suit_err_t suit_verify_sha3_256(const uint8_t *tgt_ptr, const size_t tgt_len, co
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_sha3_384(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha3_384(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                const uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
 /*!
     \brief      Verify SHA3-512 digest
@@ -219,10 +264,39 @@ suit_err_t suit_verify_sha3_384(const uint8_t *tgt_ptr, const size_t tgt_len, co
 
     NOTE: Currently not implemented.
  */
-suit_err_t suit_verify_sha3_512(const uint8_t *tgt_ptr, const size_t tgt_len, const uint8_t *digest_bytes_ptr, const size_t digest_bytes_len);
+suit_err_t suit_verify_sha3_512(const uint8_t *tgt_ptr,
+                                const size_t tgt_len,
+                                const uint8_t *digest_bytes_ptr,
+                                const size_t digest_bytes_len);
 
-suit_err_t suit_verify_digest(struct suit_buf *buf, struct suit_digest *digest);
-suit_err_t suit_generate_digest(const uint8_t *ptr, const size_t len, suit_encode_t *suit_encode, struct suit_digest *digest);
+/*!
+    \brief      Verify the digest of suit_buf_t match
+
+    \param[in]  buf                 Pointer and length of the payload.
+    \param[in]  digest              \t suit_digest.
+
+    \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
+ */
+suit_err_t suit_verify_digest(const struct suit_buf *buf,
+                              const struct suit_digest *digest);
+
+/*!
+    \brief      Generate digest of suit_buf_t
+
+    \param[in]  buf                 Pointer and length of the payload.
+    \param[in]  working             Pointer and length of working buffer to calculate hash.
+    \param[out] digest              \t suit_digest.
+
+    \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
+ */
+suit_err_t suit_generate_digest(const suit_buf_t buf,
+                                const suit_buf_t digest_buf,
+                                suit_digest_t *digest);
+
+suit_err_t suit_generate_digest_using_encode_buf(const uint8_t *ptr,
+                                                 const size_t len,
+                                                 suit_encode_t *suit_encode,
+                                                 suit_digest_t *digest);
 
 #endif /* SUIT_DIGEST_H */
 

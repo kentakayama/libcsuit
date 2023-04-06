@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -26,6 +26,7 @@ typedef enum {
 
     SUIT_ERR_NO_MEMORY,                 /*! exceed the allocated memory */
     SUIT_ERR_NOT_FOUND,                 /*! the specified content does not exist or unaccessible */
+    SUIT_ERR_PARAMETER_NOT_FOUND,       /*! required suit-parameter does not exist */
     SUIT_ERR_AUTHENTICATION_NOT_FOUND,  /*! suit-authentication-wrapper does not exist */
 
     SUIT_ERR_INVALID_TYPE_OF_ARGUMENT,  /*! type of an item is not expected */
@@ -49,15 +50,17 @@ typedef enum {
 } suit_err_t;
 
 /*! \brief abort immediately on any error */
-#define SUIT_DECODE_MODE_STRICT                 0
+#define SUIT_DECODE_MODE_STRICT                         0
 /*! \brief through but report on verification failure */
-#define SUIT_DECODE_MODE_SKIP_SIGN_FAILURE      1
+#define SUIT_DECODE_MODE_SKIP_SIGN_FAILURE              1
 /*! \brief through unknown or unimplemented element(key or value) */
-#define SUIT_DECODE_MODE_SKIP_UNKNOWN_ELEMENT   2
+#define SUIT_DECODE_MODE_SKIP_UNKNOWN_ELEMENT           2
 /*! \brief preserve successfully parsed elements on error in Map/Array */
-#define SUIT_DECODE_MODE_PRESERVE_ON_ERROR      4
+#define SUIT_DECODE_MODE_PRESERVE_ON_ERROR              4
+/*! \brief ignore missing authentication-wrapper */
+#define SUIT_DECODE_MODE_SKIP_AUTHENTICATION_WRAPPER    8
 /*! \brief through excepting fatal error */
-#define SUIT_DECODE_MODE_SKIP_ANY_ERROR       255
+#define SUIT_DECODE_MODE_SKIP_ANY_ERROR                 255
 
 #ifndef SUIT_MAX_ARRAY_LENGTH
 #define SUIT_MAX_ARRAY_LENGTH           20
@@ -157,6 +160,7 @@ typedef enum suit_dependency_key {
 
 typedef enum suit_con_dir_key {
     SUIT_CONDITION_INVALID              = 0,
+    SUIT_DIRECTIVE_INVALID              = 0,
 
     /* draft-ietf-suit-manifest */
     SUIT_CONDITION_VENDOR_IDENTIFIER    = 1,
@@ -311,7 +315,7 @@ typedef enum suit_parameter_bool {
  */
 typedef struct suit_buf {
     size_t                          len;
-    const uint8_t                   *ptr;
+    uint8_t                         *ptr;
 } suit_buf_t;
 
 // COSE_Encrypt_Tagged/COSE_Encrypt0_Tagged
@@ -494,6 +498,7 @@ typedef struct suit_unseverable_members {
     suit_command_sequence_t         validate;
     suit_command_sequence_t         load;
     suit_command_sequence_t         invoke;
+    suit_command_sequence_t         uninstall;
     // TODO :                       $$unseverable-manifest-member-extensions
 } suit_unseverable_members_t;
 

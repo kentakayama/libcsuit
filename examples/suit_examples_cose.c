@@ -38,7 +38,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     }
 
     psa_set_key_usage_flags(&key_attributes, usage);
-    psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDSA(hash));
+    psa_set_key_algorithm(&key_attributes, PSA_ALG_DETERMINISTIC_ECDSA(hash));
     if (key->private_key == NULL) {
         psa_set_key_type(&key_attributes, PSA_KEY_TYPE_ECC_PUBLIC_KEY(nid));
         result = psa_import_key(&key_attributes,
@@ -57,7 +57,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
         return SUIT_ERR_FAILED_TO_VERIFY;
     }
 
-    key->cose_key.key.ptr       = key_handle;
+    key->cose_key.key.handle    = key_handle;
 
     return SUIT_SUCCESS;
 }
@@ -135,8 +135,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
         goto out;
     }
 
-    key->cose_key.k.key_ptr  = pkey;
-    key->cose_key.crypto_lib = T_COSE_CRYPTO_LIB_OPENSSL;
+    key->cose_key.key.ptr  = pkey;
     return SUIT_SUCCESS;
 
 out:
@@ -306,7 +305,7 @@ suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key,
 suit_err_t suit_free_key(const suit_key_t *key)
 {
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
-    psa_destroy_key(key->cose_key.key_handle);
+    psa_destroy_key((psa_key_handle_t)key->cose_key.key.handle);
 #else
     EVP_PKEY_free(key->cose_key.key.ptr);
 #endif

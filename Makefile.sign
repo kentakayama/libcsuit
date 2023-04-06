@@ -7,16 +7,16 @@
 CFLAGS	= -Wall -g
 LDFLAGS	= -lt_cose -lqcbor -lm
 INC		= -I ./inc -I ./examples/inc
-TARGET	= ./bin/suit_manifest_encrypt
-SRCS	=	examples/suit_manifest_encrypt_main.c \
-			examples/suit_examples_common.c \
-			examples/suit_examples_cose.c \
-			src/suit_common.c \
-			src/suit_digest.c \
-			src/suit_cose.c \
-			src/suit_manifest_encode.c \
-			src/suit_manifest_decode.c \
-			src/suit_manifest_print.c
+TARGET	= ./bin/suit_manifest_sign
+SRCS =	examples/suit_manifest_sign_main.c \
+		examples/suit_examples_common.c \
+		examples/suit_examples_cose.c \
+		src/suit_common.c \
+		src/suit_digest.c \
+		src/suit_cose.c \
+		src/suit_manifest_encode.c \
+		src/suit_manifest_decode.c \
+		src/suit_manifest_print.c
 OBJDIR	= ./obj
 OBJS	= $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 
@@ -37,14 +37,9 @@ $(OBJDIR)/%.o:	%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
-.PHONY: all
+.PHONY: all test clean
+
 all: $(TARGET)
 
-.PHONY: run
-run: all
-	$(TARGET) ./testfiles/raw_image.bin ./testfiles/encrypted_image.bin ./testfiles/encryption_info.cose
-
-.PHONY: clean
 clean:
-	$(RM) $(OBJS) $(TARGET) ./testfiles/encrypted_image.bin ./testfiles/encryption_info.cose
-
+	$(RM) $(OBJS) $(TARGET)

@@ -153,7 +153,7 @@ The following description Markdown and CBOR files are compliant with [draft-ietf
 ## License and Copyright
 BSD 2-Clause License
 
-Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:

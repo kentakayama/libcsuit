@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -20,7 +20,7 @@
 
 int main(int argc, char *argv[]) {
     // check arguments.
-    if (argc < 1) {
+    if (argc < 2) {
         printf("%s <output manifest file path>", argv[0]);
         return EXIT_FAILURE;
     }

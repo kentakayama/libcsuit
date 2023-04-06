@@ -18,7 +18,7 @@
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/q_useful_buf.h"
 
-#define MAX_FILE_BUFFER_SIZE            4096
+#define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
 
 int main(int argc,
          char *argv[])
@@ -58,9 +58,13 @@ int main(int argc,
 
     // Read manifest file.
     printf("main : Read Manifest file.\n");
-    uint8_t manifest_buf[MAX_FILE_BUFFER_SIZE];
-    size_t manifest_len = read_from_file(manifest_file, manifest_buf, MAX_FILE_BUFFER_SIZE);
-    if (!manifest_len) {
+    uint8_t *manifest_buf = malloc(SUIT_MAX_DATA_SIZE);
+    if (manifest_buf == NULL) {
+        printf("main : Failed to allocate memory.\n");
+        return EXIT_FAILURE;
+    }
+    size_t manifest_len = read_from_file(manifest_file, manifest_buf, SUIT_MAX_DATA_SIZE);
+    if (manifest_len == 0) {
         printf("main : Failed to read Manifest file.\n");
         return EXIT_FAILURE;
     }
@@ -90,8 +94,12 @@ int main(int argc,
     }
 
     // Encode manifest.
-    uint8_t encode_buf[MAX_FILE_BUFFER_SIZE];
-    size_t encode_len = MAX_FILE_BUFFER_SIZE;
+    uint8_t *encode_buf = malloc(SUIT_MAX_DATA_SIZE);
+    if (encode_buf == NULL) {
+        printf("main : Failed to allocate memory.\n");
+        return EXIT_FAILURE;
+    }
+    size_t encode_len = SUIT_MAX_DATA_SIZE;
     uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
     result = suit_encode_envelope(mode, &envelope, mechanisms, &ret_pos, &encode_len);
@@ -99,7 +107,7 @@ int main(int argc,
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    printf("main : Total buffer memory usage was %ld/%ld bytes\n", ret_pos + encode_len - encode_buf, sizeof(encode_buf));
+    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
 
     if (manifest_len != encode_len) {
         printf("main : The manifest length is changed %ld => %ld\n", manifest_len, encode_len);

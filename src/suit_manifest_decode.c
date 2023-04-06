@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -44,7 +44,7 @@ suit_err_t suit_decode_digest_from_item(const uint8_t mode,
         return result;
     }
     if (result == SUIT_SUCCESS) {
-        digest->bytes.ptr = item->val.string.ptr;
+        digest->bytes.ptr = (uint8_t *)item->val.string.ptr;
         digest->bytes.len = item->val.string.len;
     }
 
@@ -86,7 +86,7 @@ suit_err_t suit_decode_digest_from_bstr(const uint8_t mode,
         return result;
     }
     suit_buf_t buf;
-    buf.ptr = item->val.string.ptr;
+    buf.ptr = (uint8_t *)item->val.string.ptr;
     buf.len = item->val.string.len;
     return suit_decode_digest(mode, &buf, digest);
 }
@@ -134,13 +134,16 @@ suit_err_t suit_decode_parameters_list_from_item(const uint8_t mode,
                     result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
                     break;
                 }
-                params_list->params[i].value.string.ptr = item->val.string.ptr;
+                params_list->params[i].value.string.ptr = (uint8_t *)item->val.string.ptr;
                 params_list->params[i].value.string.len = item->val.string.len;
                 break;
 
             /* bstr */
             case SUIT_PARAMETER_VENDOR_IDENTIFIER:
             case SUIT_PARAMETER_CLASS_IDENTIFIER:
+            case SUIT_PARAMETER_DEVICE_IDENTIFIER:
+            case SUIT_PARAMETER_CONTENT:
+            //case SUIT_PARAMETER_FETCH_ARGS:
             case SUIT_PARAMETER_INVOKE_ARGS:
             /* draft-ietf-suit-firmware-encryption */
             case SUIT_PARAMETER_ENCRYPTION_INFO:
@@ -148,7 +151,7 @@ suit_err_t suit_decode_parameters_list_from_item(const uint8_t mode,
                     result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
                     break;
                 }
-                params_list->params[i].value.string.ptr = item->val.string.ptr;
+                params_list->params[i].value.string.ptr = (uint8_t *)item->val.string.ptr;
                 params_list->params[i].value.string.len = item->val.string.len;
                 break;
 
@@ -170,9 +173,6 @@ suit_err_t suit_decode_parameters_list_from_item(const uint8_t mode,
             case SUIT_PARAMETER_IMAGE_DIGEST:
                 result = suit_decode_digest_from_bstr(mode, context, item, false, &params_list->params[i].value.digest);
                 break;
-
-            /* UUID */
-            case SUIT_PARAMETER_DEVICE_IDENTIFIER:
 
             /* SUIT_Parameter_Version_Match */
             case SUIT_PARAMETER_VERSION:
@@ -356,7 +356,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const uint8_t mode,
                         if (result == SUIT_SUCCESS) {
                             cmd_seq->commands[cmd_seq->len].label = label;
                             cmd_seq->commands[cmd_seq->len].value.string.len = item->val.string.len;
-                            cmd_seq->commands[cmd_seq->len].value.string.ptr = item->val.string.ptr;
+                            cmd_seq->commands[cmd_seq->len].value.string.ptr = (uint8_t *)item->val.string.ptr;
                             cmd_seq->len++;
                         }
                         else if (result == SUIT_ERR_INVALID_TYPE_OF_ARGUMENT) {
@@ -427,7 +427,7 @@ suit_err_t suit_decode_shared_sequence_from_bstr(const uint8_t mode,
     }
     suit_buf_t buf;
     buf.len = item->val.string.len;
-    buf.ptr = item->val.string.ptr;
+    buf.ptr = (uint8_t *)item->val.string.ptr;
     return suit_decode_command_sequence(mode, &buf, cmn_seq);
 }
 
@@ -467,7 +467,7 @@ suit_err_t suit_decode_command_sequence_from_bstr(const uint8_t mode,
     }
     suit_buf_t buf;
     buf.len = item->val.string.len;
-    buf.ptr = item->val.string.ptr;
+    buf.ptr = (uint8_t *)item->val.string.ptr;
     return suit_decode_command_sequence(mode, &buf, cmd_seq);
 }
 
@@ -494,7 +494,7 @@ suit_err_t suit_decode_component_identifiers_from_item(const uint8_t mode,
                 result = SUIT_ERR_NO_MEMORY;
                 break;
             }
-            identifier->identifier[identifier->len].ptr = item->val.string.ptr;
+            identifier->identifier[identifier->len].ptr = (uint8_t *)item->val.string.ptr;
             identifier->identifier[identifier->len].len = item->val.string.len;
             identifier->len++;
         }
@@ -765,7 +765,7 @@ suit_err_t suit_decode_text_component_from_item(const uint8_t mode,
                 }
                 if (result == SUIT_SUCCESS) {
                     buf->len = item->val.string.len;
-                    buf->ptr = item->val.string.ptr;
+                    buf->ptr = (uint8_t *)item->val.string.ptr;
                 }
                 else if (result == SUIT_ERR_INVALID_TYPE_OF_ARGUMENT) {
                     if (!suit_qcbor_skip_any(context, item)) {
@@ -847,7 +847,7 @@ suit_err_t suit_decode_text_from_item(const uint8_t mode,
                     case SUIT_TEXT_MANIFEST_DESCRIPTION:
                         result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
                         if (result == SUIT_SUCCESS) {
-                            text->manifest_description.ptr = item->val.string.ptr;
+                            text->manifest_description.ptr = (uint8_t *)item->val.string.ptr;
                             text->manifest_description.len = item->val.string.len;
                         }
                         break;
@@ -1025,7 +1025,7 @@ suit_err_t suit_decode_manifest_from_item(const uint8_t mode,
                 }
                 else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
                     /* bstr .cbor concise-software-identity */
-                    manifest->sev_man_mem.coswid.ptr = item->val.string.ptr;
+                    manifest->sev_man_mem.coswid.ptr = (uint8_t *)item->val.string.ptr;
                     manifest->sev_man_mem.coswid.len = item->val.string.len;
                     result = SUIT_SUCCESS;
                 }
@@ -1043,8 +1043,27 @@ suit_err_t suit_decode_manifest_from_item(const uint8_t mode,
             case SUIT_INVOKE:
                 result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.invoke);
                 break;
+            /* in draft-ietf-suit-trust-domains */
+            case SUIT_UNINSTALL:
+                result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.uninstall);
+                break;
 
             case SUIT_REFERENCE_URI:
+                result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
+                if (!suit_continue(mode, result)) {
+                    break;
+                }
+                if (result == SUIT_SUCCESS) {
+                    manifest->reference_uri.len = item->val.string.len;
+                    manifest->reference_uri.ptr = (uint8_t *)item->val.string.ptr;
+                }
+                else if (result == SUIT_ERR_INVALID_TYPE_OF_ARGUMENT) {
+                    if (!suit_qcbor_skip_any(context, item)) {
+                        result = SUIT_ERR_FATAL;
+                    }
+                }
+                break;
+
             default:
                 // TODO
                 result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -1099,7 +1118,7 @@ suit_err_t suit_decode_manifest_from_bstr(const uint8_t mode,
     if (result == SUIT_SUCCESS) {
         manifest->is_verified = true;
     }
-    suit_buf_t buf = {.ptr = item->val.string.ptr, .len = item->val.string.len};
+    suit_buf_t buf = {.ptr = (uint8_t *)item->val.string.ptr, .len = item->val.string.len};
 
     return suit_decode_manifest(mode, &buf, manifest);
 }
@@ -1126,7 +1145,7 @@ suit_err_t suit_decode_authentication_wrapper_from_item(const uint8_t mode,
         return result;
     }
     suit_buf_t digest_buf;
-    digest_buf.ptr = item->val.string.ptr;
+    digest_buf.ptr = (uint8_t *)item->val.string.ptr;
     digest_buf.len = item->val.string.len;
     result = suit_decode_digest(mode, &digest_buf, &wrapper->digest);
     if (result != SUIT_SUCCESS) {
@@ -1139,7 +1158,7 @@ suit_err_t suit_decode_authentication_wrapper_from_item(const uint8_t mode,
             break;
         }
         suit_buf_t *buf = &wrapper->signatures[i];
-        buf->ptr = item->val.string.ptr;
+        buf->ptr = (uint8_t *)item->val.string.ptr;
         buf->len = item->val.string.len;
 
         for (int32_t j = 0; j < SUIT_MAX_KEY_NUM; j++) {
@@ -1201,7 +1220,7 @@ suit_err_t suit_decode_envelope_from_item(const uint8_t mode,
         return SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
     }
     size_t map_count = item->val.uCount;
-    bool is_authentication_set = false;
+    bool is_authentication_set = (mode & SUIT_DECODE_MODE_SKIP_AUTHENTICATION_WRAPPER) ? true : false;
     bool is_manifest_set = false;
     suit_buf_t buf;
     for (size_t i = 0; i < map_count; i++) {
@@ -1226,7 +1245,7 @@ suit_err_t suit_decode_envelope_from_item(const uint8_t mode,
                         result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
                         break;
                     }
-                    buf.ptr = item->val.string.ptr;
+                    buf.ptr = (uint8_t *)item->val.string.ptr;
                     buf.len = item->val.string.len;
                     result = suit_decode_authentication_wrapper(mode, &buf, &envelope->wrapper, mechanisms);
                     if (result == SUIT_SUCCESS) {
@@ -1322,7 +1341,7 @@ suit_err_t suit_decode_envelope_from_item(const uint8_t mode,
                         result = SUIT_ERR_INVALID_TYPE_OF_ARGUMENT;
                         break;
                     }
-                    envelope->manifest.sev_man_mem.coswid.ptr = item->val.string.ptr;
+                    envelope->manifest.sev_man_mem.coswid.ptr = (uint8_t *)item->val.string.ptr;
                     envelope->manifest.sev_man_mem.coswid.len = item->val.string.len;
                     envelope->manifest.sev_man_mem.coswid_status |= SUIT_SEVERABLE_IN_ENVELOPE;
                     break;

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -8,7 +8,16 @@ CFLAGS	= -Wall -g
 LDFLAGS	= -lt_cose -lqcbor -lm
 INC		= -I ./inc -I ./examples/inc
 TARGET	= ./bin/suit_manifest_process
-SRCS	= examples/suit_manifest_process_main.c examples/suit_examples_common.c examples/suit_examples_cose.c src/suit_common.c src/suit_digest.c src/suit_cose.c src/suit_manifest_process.c src/suit_manifest_decode.c src/suit_manifest_encode.c src/suit_manifest_print.c
+SRCS	=	examples/suit_manifest_process_main.c \
+			examples/suit_examples_common.c \
+			examples/suit_examples_cose.c \
+			src/suit_common.c \
+			src/suit_digest.c \
+			src/suit_cose.c \
+			src/suit_manifest_process.c \
+			src/suit_manifest_decode.c \
+			src/suit_manifest_encode.c \
+			src/suit_manifest_print.c
 OBJDIR	= ./obj
 OBJS	= $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 
@@ -27,11 +36,15 @@ all: $(TARGET)
 
 $(TARGET):	$(OBJS)
 	mkdir -p ./bin
-	$(CC) -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -o $@ $^ $(LDFLAGS)
+	$(CC)	-Xlinker --wrap=suit_fetch_callback \
+			-Xlinker --wrap=suit_store_callback \
+			-Xlinker --wrap=suit_invoke_callback \
+			-Xlinker --wrap=suit_condition_callback \
+			-o $@ $^ $(LDFLAGS)
 
 $(OBJDIR)/%.o:	%.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+	$(CC) $(CFLAGS) $(INC) $(CMD_LINE) -o $@ -c $<
 
 TEST_NUM	:= 0 1 2A 2B 3 4 5 U I D R D00 D01 ID01
 

@@ -1,0 +1,20 @@
+diff --git a/crypto_adapters/t_cose_psa_crypto.c b/crypto_adapters/t_cose_psa_crypto.c
+index 0c750ce..cab0835 100644
+--- a/crypto_adapters/t_cose_psa_crypto.c
++++ b/crypto_adapters/t_cose_psa_crypto.c
+@@ -122,12 +122,12 @@ static psa_algorithm_t cose_alg_id_to_psa_alg_id(int32_t cose_alg_id)
+ {
+     /* The #ifdefs save a little code when algorithms are disabled */
+     switch(cose_alg_id) {
+-        case T_COSE_ALGORITHM_ES256 : return PSA_ALG_ECDSA(PSA_ALG_SHA_256);
++        case T_COSE_ALGORITHM_ES256 : return PSA_ALG_DETERMINISTIC_ECDSA(PSA_ALG_SHA_256);
+ #ifndef T_COSE_DISABLE_ES384
+-        case T_COSE_ALGORITHM_ES384 : return PSA_ALG_ECDSA(PSA_ALG_SHA_384);
++        case T_COSE_ALGORITHM_ES384 : return PSA_ALG_DETERMINISTIC_ECDSA(PSA_ALG_SHA_384);
+ #endif
+ #ifndef T_COSE_DISABLE_ES512
+-        case T_COSE_ALGORITHM_ES512 : return PSA_ALG_ECDSA(PSA_ALG_SHA_512);
++        case T_COSE_ALGORITHM_ES512 : return PSA_ALG_DETERMINISTIC_ECDSA(PSA_ALG_SHA_512);
+ #endif
+ #ifndef T_COSE_DISABLE_PS256
+         case T_COSE_ALGORITHM_PS256 : return PSA_ALG_RSA_PSS(PSA_ALG_SHA_256);

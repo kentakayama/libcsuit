@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -115,7 +115,8 @@ suit_err_t suit_generate_digest_include_header(const uint8_t *ptr,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    return suit_generate_digest(t_buf.ptr, t_buf.len, suit_encode, digest);
+    digest->algorithm_id = SUIT_ALGORITHM_ID_SHA256;
+    return suit_generate_digest_using_encode_buf(t_buf.ptr, t_buf.len, suit_encode, digest);
 }
 
 suit_err_t suit_generate_encoded_digest(const uint8_t *ptr,
@@ -586,6 +587,13 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
             return result;
         }
     }
+    UsefulBuf uninstall_buf = NULLUsefulBuf;
+    if (manifest->unsev_mem.uninstall.len > 0) {
+        result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->unsev_mem.uninstall, suit_encode, &uninstall_buf);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
 
     /* encode severable members */
     if (manifest->sev_man_mem.dependency_resolution_status & SUIT_SEVERABLE_EXISTS) {
@@ -626,6 +634,19 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         suit_encode->payload_fetch_digest = manifest->sev_mem_dig.payload_fetch;
     }
 
+    if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_EXISTS) {
+        suit_encode->coswid = (UsefulBufC){.ptr = manifest->sev_man_mem.coswid.ptr, .len = manifest->sev_man_mem.coswid.len};
+        if (manifest->sev_man_mem.text_status & SUIT_SEVERABLE_IN_ENVELOPE) {
+            result = suit_generate_digest_include_header(suit_encode->coswid.ptr, suit_encode->coswid.len, suit_encode, &suit_encode->coswid_digest);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+        }
+    }
+    else if (manifest->sev_mem_dig.coswid.bytes.len > 0) {
+        suit_encode->coswid_digest = manifest->sev_mem_dig.coswid;
+    }
+
     if (manifest->sev_man_mem.install_status & SUIT_SEVERABLE_EXISTS) {
         UsefulBuf install_buf = NULLUsefulBuf;
         result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->sev_man_mem.install, suit_encode, &install_buf);
@@ -664,18 +685,6 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         suit_encode->text_digest = manifest->sev_mem_dig.text;
     }
 
-    if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_EXISTS) {
-        suit_encode->coswid = (UsefulBufC){.ptr = manifest->sev_man_mem.coswid.ptr, .len = manifest->sev_man_mem.coswid.len};
-        if (manifest->sev_man_mem.text_status & SUIT_SEVERABLE_IN_ENVELOPE) {
-            result = suit_generate_digest_include_header(suit_encode->coswid.ptr, suit_encode->coswid.len, suit_encode, &suit_encode->coswid_digest);
-            if (result != SUIT_SUCCESS) {
-                return result;
-            }
-        }
-    }
-    else if (manifest->sev_mem_dig.coswid.bytes.len > 0) {
-        suit_encode->coswid_digest = manifest->sev_mem_dig.coswid;
-    }
 
     /* Encode whole manifest */
     UsefulBuf suit_manifest = NULLUsefulBuf;
@@ -687,30 +696,53 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
     QCBOREncodeContext context;
     QCBOREncode_Init(&context, suit_manifest);
     QCBOREncode_OpenMap(&context);
+    // NOTE: create canonical (deterministic) cbor
+    // 1
     QCBOREncode_AddUInt64ToMapN(&context, SUIT_MANIFEST_VERSION, manifest->version);
+    // 2
     QCBOREncode_AddUInt64ToMapN(&context, SUIT_MANIFEST_SEQUENCE_NUMBER, manifest->sequence_number);
+    // 3
     QCBOREncode_AddBytesToMapN(&context, SUIT_COMMON, UsefulBuf_Const(suit_common));
 
+    // 4
     if (manifest->reference_uri.len > 0) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_REFERENCE_URI, (UsefulBufC){.ptr = manifest->reference_uri.ptr, .len = manifest->reference_uri.len});
     }
 
+    // 5
     if (manifest->manifest_component_id.len > 0) {
         suit_encode_append_component_identifier(&manifest->manifest_component_id, SUIT_MANIFEST_COMPONENT_ID, &context);
     }
 
+    // 7
     if (!UsefulBuf_IsNULLOrEmpty(validate_buf)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_VALIDATE, UsefulBuf_Const(validate_buf));
     }
 
+    // 8
     if (!UsefulBuf_IsNULLOrEmpty(load_buf)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_LOAD, UsefulBuf_Const(load_buf));
     }
 
+    // 9
     if (!UsefulBuf_IsNULLOrEmpty(invoke_buf)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_INVOKE, UsefulBuf_Const(invoke_buf));
     }
 
+    // 14
+    if (suit_encode->coswid_digest.bytes.len > 0) {
+        /* severed */
+        QCBOREncode_AddUInt64(&context, SUIT_COSWID);
+        result = suit_encode_append_digest(&suit_encode->coswid_digest, 0, &context);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
+    else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->coswid)) {
+        QCBOREncode_AddBytesToMapN(&context, SUIT_COSWID, suit_encode->coswid);
+    }
+
+    // 15
     if (suit_encode->dependency_resolution_digest.bytes.len > 0) {
         /* severed */
         QCBOREncode_AddUInt64(&context, SUIT_DEPENDENCY_RESOLUTION);
@@ -723,6 +755,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         QCBOREncode_AddBytesToMapN(&context, SUIT_DEPENDENCY_RESOLUTION, suit_encode->dependency_resolution);
     }
 
+    // 16
     if (suit_encode->payload_fetch_digest.bytes.len > 0) {
         /* severed */
         QCBOREncode_AddUInt64(&context, SUIT_PAYLOAD_FETCH);
@@ -735,6 +768,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         QCBOREncode_AddBytesToMapN(&context, SUIT_PAYLOAD_FETCH, suit_encode->payload_fetch);
     }
 
+    // 17
     if (suit_encode->install_digest.bytes.len > 0) {
         /* severed */
         QCBOREncode_AddUInt64(&context, SUIT_INSTALL);
@@ -747,6 +781,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         QCBOREncode_AddBytesToMapN(&context, SUIT_INSTALL, suit_encode->install);
     }
 
+    // 23
     if (suit_encode->text_digest.bytes.len > 0) {
         /* severed */
         QCBOREncode_AddUInt64(&context, SUIT_TEXT);
@@ -759,16 +794,9 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         QCBOREncode_AddBytesToMapN(&context, SUIT_TEXT, suit_encode->text);
     }
 
-    if (suit_encode->coswid_digest.bytes.len > 0) {
-        /* severed */
-        QCBOREncode_AddUInt64(&context, SUIT_COSWID);
-        result = suit_encode_append_digest(&suit_encode->coswid_digest, 0, &context);
-        if (result != SUIT_SUCCESS) {
-            return result;
-        }
-    }
-    else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->coswid)) {
-        QCBOREncode_AddBytesToMapN(&context, SUIT_COSWID, suit_encode->coswid);
+    // 24
+    if (!UsefulBuf_IsNULLOrEmpty(uninstall_buf)) {
+        QCBOREncode_AddBytesToMapN(&context, SUIT_UNINSTALL, UsefulBuf_Const(uninstall_buf));
     }
 
     QCBOREncode_CloseMap(&context);
