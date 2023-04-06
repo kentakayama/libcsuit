@@ -1,32 +1,32 @@
 # Supported features by libcsuit
 
 ## Summary
-- :white_check_mark: : supported
+- :square: : supported
 - :stop_sign: : **not** supported
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark:
-encode | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark:
-process | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark:
+decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square:
+encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square:
+process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark: |  | 
-encode | :white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark: |  | 
-process | :white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark: |  | 
+decode | :green_square::green_square::green_square: | :stop_sign::stop_sign: | :green_square::green_square::green_square: |  | 
+encode | :green_square::green_square::green_square: | :stop_sign::stop_sign: | :green_square::green_square::green_square: |  | 
+process | :green_square::green_square::green_square: | :stop_sign::stop_sign: | :green_square::green_square::green_square: |  | 
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::stop_sign::stop_sign: | :white_check_mark:
-encode | :white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::stop_sign::stop_sign: | :white_check_mark:
-process | :white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :stop_sign::stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::stop_sign::stop_sign: | :white_check_mark:
+decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :stop_sign::stop_sign::stop_sign: | :green_square::green_square::green_square::stop_sign::stop_sign: | :green_square:
+encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :stop_sign::stop_sign::stop_sign: | :green_square::green_square::green_square::stop_sign::stop_sign: | :green_square:
+process | :green_square: | :green_square::green_square::green_square::green_square::stop_sign: | :stop_sign::stop_sign::stop_sign: | :green_square::green_square::green_square::stop_sign::stop_sign: | :green_square:
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode |  |  |  | :white_check_mark::white_check_mark::white_check_mark::stop_sign: | 
-encode |  |  |  | :white_check_mark::white_check_mark::white_check_mark::stop_sign: | 
-process |  |  |  | :white_check_mark::stop_sign::stop_sign::stop_sign: | 
+decode |  |  |  | :green_square::green_square::green_square::stop_sign: | 
+encode |  |  |  | :green_square::green_square::green_square::stop_sign: | 
+process |  |  |  | :green_square::stop_sign::stop_sign::stop_sign: | 
 ### SUIT Report
 Operation | Metadata | Capabilities
 ---|---|---
