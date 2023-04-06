@@ -1699,13 +1699,13 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
         printf("\n");
         break;
 
-    /* suit-digest */
+    /* uint64 image_size and suit-digest */
     case SUIT_CONDITION_IMAGE_MATCH:
     case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        printf("{\n    image_size : %lu\n    image_digest : ", condition_args.expected.image_size);
         suit_print_digest(&condition_args.expected.image_digest, 2, 2);
         printf("\n");
         break;
-
 
     /* must be handled in the library */
     case SUIT_CONDITION_IS_DEPENDENCY:

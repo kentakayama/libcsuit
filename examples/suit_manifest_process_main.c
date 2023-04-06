@@ -247,7 +247,16 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
         //return SUIT_ERR_NOT_FOUND;
         fetch_ret->buf_len = fetch_args.buf_len;
     }
-    return SUIT_SUCCESS;
+
+    if (result != SUIT_SUCCESS) {
+        printf("callback : error = %s(%d)\n", suit_err_to_str(result), result);
+        printf("callback : suppress it for testing.\n\n");
+        result = SUIT_SUCCESS;
+    }
+    else {
+        printf("callback : %s SUCCESS\n\n", suit_command_sequence_key_to_str(SUIT_DIRECTIVE_FETCH));
+    }
+    return result;
 }
 
 suit_err_t suit_condition_check_content(const suit_component_identifier_t *dst,
@@ -350,9 +359,12 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args)
     }
 
     if (result != SUIT_SUCCESS) {
-        printf("main : error = %s(%d)\n", suit_err_to_str(result), result);
-        printf("main : suppress it for testing.\n\n");
+        printf("callback : error = %s(%d)\n", suit_err_to_str(result), result);
+        printf("callback : suppress it for testing.\n\n");
         result = SUIT_SUCCESS;
+    }
+    else {
+        printf("callback : %s SUCCESS\n\n", suit_command_sequence_key_to_str(condition_args.condition));
     }
     return result;
 }
@@ -375,11 +387,11 @@ suit_err_t __wrap_suit_invoke_callback(suit_invoke_args_t invoke_args)
         int ret;
         ret = chdir(cd);
         if (ret != 0) {
-            printf("(sub) Failed to set working directory at \"%s\"\n", cd);
+            printf("(callback) Failed to set working directory at \"%s\"\n", cd);
             return SUIT_ERR_FATAL;
         }
-        printf("<sub>$ cd %s\n", cd);
-        printf("<sub>$ %s\n", command);
+        printf("<callback>$ cd %s\n", cd);
+        printf("<callback>$ %s\n", command);
         ret = system(command);
         printf("\n");
         fflush(stdout);
@@ -389,11 +401,11 @@ suit_err_t __wrap_suit_invoke_callback(suit_invoke_args_t invoke_args)
         int status;
         waitpid(pid, &status, 0);
         if (WIFEXITED(status)) {
-            printf("<sub> Command exited with %d\n", WEXITSTATUS(status));
+            printf("<callback> Command exited with %d\n", WEXITSTATUS(status));
             return SUIT_SUCCESS;
         }
         else {
-            printf("<sub> Command terminated %u\n", status);
+            printf("<callback> Command terminated %u\n", status);
             return SUIT_ERR_FATAL;
         }
     }
@@ -509,9 +521,12 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
         break;
     }
     if (result != SUIT_SUCCESS) {
-        printf("main : error = %s(%d)\n", suit_err_to_str(result), result);
-        printf("main : suppress it for testing.\n\n");
+        printf("callback : error = %s(%d)\n", suit_err_to_str(result), result);
+        printf("callback : suppress it for testing.\n\n");
         result = SUIT_SUCCESS;
+    }
+    else {
+        printf("callback : %s SUCCESS\n\n", suit_store_key_to_str(store_args.operation));
     }
     return result;
 }

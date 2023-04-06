@@ -28,6 +28,7 @@ char* suit_common_key_to_str(suit_common_key_t common_key);
 char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive);
 char* suit_parameter_key_to_str(suit_parameter_key_t parameter);
 char* suit_info_key_to_str(const suit_info_key_t info_key);
+char* suit_store_key_to_str(suit_store_key_t operation);
 char* suit_err_to_str(suit_err_t error);
 
 suit_err_t suit_print_hex_in_max(const uint8_t *array, const size_t size, const size_t max_print_size);
