@@ -479,6 +479,7 @@ suit_err_t suit_encode_text(const suit_text_t *text,
         if (text_component->component_version.len > 0) {
             QCBOREncode_AddTextToMapN(&context, SUIT_TEXT_COMPONENT_VERSION, (UsefulBufC){.ptr = text_component->component_version.ptr, .len = text_component->component_version.len});
         }
+        /* in draft-ietf-suit-update-management */
         if (text_component->version_required.len > 0) {
             QCBOREncode_AddTextToMapN(&context, SUIT_TEXT_VERSION_REQUIRED, (UsefulBufC){.ptr = text_component->version_required.ptr, .len = text_component->version_required.len});
         }

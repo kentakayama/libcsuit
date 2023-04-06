@@ -754,6 +754,7 @@ suit_err_t suit_decode_text_component_from_item(const uint8_t mode,
                 case SUIT_TEXT_COMPONENT_VERSION:
                     buf = &text_component->component_version;
                     break;
+                /* in draft-ietf-suit-update-management */
                 case SUIT_TEXT_VERSION_REQUIRED:
                     buf = &text_component->version_required;
                     break;
@@ -852,8 +853,26 @@ suit_err_t suit_decode_text_from_item(const uint8_t mode,
                         }
                         break;
                     case SUIT_TEXT_UPDATE_DESCRIPTION:
+                        result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
+                        if (result == SUIT_SUCCESS) {
+                            text->update_description.ptr = (uint8_t *)item->val.string.ptr;
+                            text->update_description.len = item->val.string.len;
+                        }
+                        break;
                     case SUIT_TEXT_MANIFEST_JSON_SOURCE:
+                        result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
+                        if (result == SUIT_SUCCESS) {
+                            text->manifest_json_source.ptr = (uint8_t *)item->val.string.ptr;
+                            text->manifest_json_source.len = item->val.string.len;
+                        }
+                        break;
                     case SUIT_TEXT_MANIFEST_YAML_SOURCE:
+                        result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
+                        if (result == SUIT_SUCCESS) {
+                            text->manifest_yaml_source.ptr = (uint8_t *)item->val.string.ptr;
+                            text->manifest_yaml_source.len = item->val.string.len;
+                        }
+                        break;
                     default:
                         result = SUIT_ERR_NOT_IMPLEMENTED;
                         if (!suit_continue(mode, result)) {

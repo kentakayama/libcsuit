@@ -1076,11 +1076,12 @@ suit_err_t suit_print_text_component(const suit_text_component_t *text_component
         }
         comma = true;
     }
+    /* in draft-ietf-suit-update-management */
     if (text_component->version_required.ptr != NULL) {
         if (comma) {
             printf(",\n");
         }
-        printf("%*stext-version-required : ", indent_space, "");
+        printf("%*s/ text-version-required / %d: ", indent_space, "", SUIT_TEXT_VERSION_REQUIRED);
         result = suit_print_string(&text_component->version_required);
         if (result != SUIT_SUCCESS) {
             return result;
