@@ -135,8 +135,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
         goto out;
     }
 
-    key->cose_key.k.key_ptr  = pkey;
-    key->cose_key.crypto_lib = T_COSE_CRYPTO_LIB_OPENSSL;
+    key->cose_key.key.ptr  = pkey;
     return SUIT_SUCCESS;
 
 out:
