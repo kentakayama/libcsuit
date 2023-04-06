@@ -10,14 +10,14 @@
 suit_err_t suit_error_from_qcbor_error(QCBORError error)
 {
     switch (error) {
-        case QCBOR_SUCCESS:
-            return SUIT_SUCCESS;
-        case QCBOR_ERR_BUFFER_TOO_SMALL:
-            return SUIT_ERR_NO_MEMORY;
-        case QCBOR_ERR_NO_MORE_ITEMS:
-            return SUIT_ERR_NO_MORE_ITEMS;
-        default:
-            return SUIT_ERR_FATAL;
+    case QCBOR_SUCCESS:
+        return SUIT_SUCCESS;
+    case QCBOR_ERR_BUFFER_TOO_SMALL:
+        return SUIT_ERR_NO_MEMORY;
+    case QCBOR_ERR_NO_MORE_ITEMS:
+        return SUIT_ERR_NO_MORE_ITEMS;
+    default:
+        return SUIT_ERR_FATAL;
     }
 }
 
@@ -26,29 +26,34 @@ bool suit_continue(const suit_decode_mode_t mode,
 {
     bool ret = false;
     switch (result) {
-        case SUIT_SUCCESS:
+    case SUIT_SUCCESS:
+        ret = true;
+        break;
+    case SUIT_ERR_FAILED_TO_VERIFY:
+    case SUIT_ERR_FAILED_TO_SIGN:
+        if (mode.SKIP_AUTHENTICATION_FAILURE || mode.SKIP_SIGN_FAILURE) {
             ret = true;
-            break;
-        case SUIT_ERR_FAILED_TO_VERIFY:
-        case SUIT_ERR_FAILED_TO_SIGN:
-            if (mode.SKIP_SIGN_FAILURE) {
-                ret = true;
-            }
-            break;
-        case SUIT_ERR_NOT_CANONICAL_CBOR:
-            if (mode.ALLOW_NOT_CANONICAL_CBOR) {
-                ret = true;
-            }
-            break;
-        case SUIT_ERR_NOT_IMPLEMENTED:
-        case SUIT_ERR_INVALID_TYPE_OF_VALUE:
-        case SUIT_ERR_INVALID_VALUE:
-        case SUIT_ERR_INVALID_TYPE_OF_KEY:
-        case SUIT_ERR_INVALID_KEY:
-        case SUIT_ERR_NO_MEMORY:
-        case SUIT_ERR_FATAL:
-        default:
-            break;
+        }
+        break;
+    case SUIT_ERR_AUTHENTICATION_NOT_FOUND:
+        if (mode.SKIP_AUTHENTICATION_FAILURE) {
+            ret = true;
+        }
+        break;
+    case SUIT_ERR_NOT_CANONICAL_CBOR:
+        if (mode.ALLOW_NOT_CANONICAL_CBOR) {
+            ret = true;
+        }
+        break;
+    case SUIT_ERR_NOT_IMPLEMENTED:
+    case SUIT_ERR_INVALID_TYPE_OF_VALUE:
+    case SUIT_ERR_INVALID_VALUE:
+    case SUIT_ERR_INVALID_TYPE_OF_KEY:
+    case SUIT_ERR_INVALID_KEY:
+    case SUIT_ERR_NO_MEMORY:
+    case SUIT_ERR_FATAL:
+    default:
+        break;
     }
     return ret;
 }

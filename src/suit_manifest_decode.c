@@ -1178,7 +1178,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                     is_manifest_set = true;
                 }
                 else {
-                     result = SUIT_ERR_FAILED_TO_VERIFY;
+                     result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
                 }
                 break;
             /* SUIT_Severable_Manifest_members */
@@ -1196,7 +1196,12 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                     envelope->manifest.sev_man_mem.payload_fetch_status |= SUIT_SEVERABLE_IN_ENVELOPE;
                 }
                 else {
-                    result = SUIT_ERR_FAILED_TO_VERIFY;
+                    if (is_manifest_set) {
+                        result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
+                    }
+                    else {
+                        result = SUIT_ERR_FAILED_TO_VERIFY;
+                    }
                 }
                 break;
             case SUIT_SEVERED_INSTALL:
@@ -1213,7 +1218,12 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                     envelope->manifest.sev_man_mem.install_status |= SUIT_SEVERABLE_IN_ENVELOPE;
                 }
                 else {
-                    result = SUIT_ERR_FAILED_TO_VERIFY;
+                    if (is_manifest_set) {
+                        result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
+                    }
+                    else {
+                        result = SUIT_ERR_FAILED_TO_VERIFY;
+                    }
                 }
                 break;
             case SUIT_SEVERED_TEXT:
@@ -1230,7 +1240,12 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                     envelope->manifest.sev_man_mem.text_status |= SUIT_SEVERABLE_IN_ENVELOPE;
                 }
                 else {
-                    result = SUIT_ERR_FAILED_TO_VERIFY;
+                    if (is_manifest_set) {
+                        result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
+                    }
+                    else {
+                        result = SUIT_ERR_FAILED_TO_VERIFY;
+                    }
                 }
                 break;
             case SUIT_SEVERED_COSWID:
@@ -1245,7 +1260,12 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                     envelope->manifest.sev_man_mem.coswid_status |= SUIT_SEVERABLE_IN_ENVELOPE;
                 }
                 else {
-                    result = SUIT_ERR_FAILED_TO_VERIFY;
+                    if (is_manifest_set) {
+                        result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
+                    }
+                    else {
+                        result = SUIT_ERR_FAILED_TO_VERIFY;
+                    }
                 }
                 break;
             case SUIT_SEVERED_DEPENDENCY_RESOLUTION:
@@ -1261,7 +1281,12 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                     envelope->manifest.sev_man_mem.dependency_resolution_status |= SUIT_SEVERABLE_IN_ENVELOPE;
                 }
                 else {
-                    result = SUIT_ERR_FAILED_TO_VERIFY;
+                    if (is_manifest_set) {
+                        result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
+                    }
+                    else {
+                        result = SUIT_ERR_FAILED_TO_VERIFY;
+                    }
                 }
                 break;
 

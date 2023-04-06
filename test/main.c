@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 #include "csuit/csuit.h"
-#include "csuit/suit_manifest_process.h"
 #include "qcbor/qcbor_spiffy_decode.h"
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
@@ -14,6 +13,8 @@
 void test_csuit_rollback(void);
 void test_csuit_get_digest(void);
 void test_csuit_suit_encode_buf(void);
+void test_csuit_canonical_cbor(void);
+void test_csuit_without_authentication_wrapper(void);
 
 int main(int argc, char *argv[]) {
     CU_pSuite suite;
@@ -22,6 +23,8 @@ int main(int argc, char *argv[]) {
     CU_add_test(suite, "test_csuit_rollback", test_csuit_rollback);
     CU_add_test(suite, "test_csuit_get_digest", test_csuit_get_digest);
     CU_add_test(suite, "test_csuit_suit_encode_buf", test_csuit_suit_encode_buf);
+    CU_add_test(suite, "test_csuit_without_authentication_wrapper", test_csuit_without_authentication_wrapper);
+    CU_add_test(suite, "test_csuit_canonical_cbor", test_csuit_canonical_cbor);
     CU_basic_set_mode(CU_BRM_SILENT);
     CU_basic_run_tests();
     CU_cleanup_registry();
@@ -218,3 +221,74 @@ void test_csuit_suit_encode_buf(void) {
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
 }
 
+void test_csuit_without_authentication_wrapper(void) {
+    uint8_t mini_manifest[] = {
+        0xd8, 0x6b,                                                     // 107(
+              0xa1,                                                     // map(1){
+                    0x03,                                               // manifest 3
+                    0x4d,                                               // bytes <<
+                          0xa3,                                         // map(3){
+                                0x01,                                   // manifest-version 1
+                                0x01,                                   // 1
+                                0x02,                                   // manifest-sequence-number 2
+                                0x00,                                   // 0
+                                0x03,                                   // common
+                                0x46,                                   // bytes <<
+                                      0xa1,                             // map(1){
+                                            0x02,                       // components 2
+                                            0x81,                       // array(1)[
+                                                  0x81, 0x41, 0x00      // [h'00']
+    };
+    suit_err_t result;
+    suit_buf_t buf;
+    buf.ptr = mini_manifest;
+    buf.len = sizeof(mini_manifest);
+    suit_envelope_t envelope = {0};
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
+
+    result = suit_decode_envelope(SUIT_DECODE_MODE_STRICT, &buf, &envelope, mechanisms);
+    CU_ASSERT_EQUAL(result, SUIT_ERR_AUTHENTICATION_NOT_FOUND);
+
+    suit_decode_mode_t mode = SUIT_DECODE_MODE_STRICT;
+    mode.SKIP_AUTHENTICATION_FAILURE = 1;
+    envelope = (suit_envelope_t) {0};
+    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
+    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+}
+
+void test_csuit_canonical_cbor(void) {
+    uint8_t mini_manifest[] = {
+        0xd8, 0x6b,                                                     // 107(
+              0xa1,                                                     // map(1){
+                    0x03,                                               // manifest 3
+                    0x4d,                                               // bytes <<
+                          0xa3,                                         // map(3){
+                                0x02,                                   // manifest-sequence-number 2
+                                0x00,                                   // 0
+                                0x01,                                   // manifest-version 1
+                                0x01,                                   // 1
+                                0x03,                                   // common
+                                0x46,                                   // bytes <<
+                                      0xa1,                             // map(1){
+                                            0x02,                       // components 2
+                                            0x81,                       // array(1)[
+                                                  0x81, 0x41, 0x00      // [h'00']
+    };
+    suit_err_t result;
+    suit_buf_t buf;
+    buf.ptr = mini_manifest;
+    buf.len = sizeof(mini_manifest);
+    suit_envelope_t envelope = {0};
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
+
+    suit_decode_mode_t mode = SUIT_DECODE_MODE_STRICT;
+    mode.SKIP_AUTHENTICATION_FAILURE = 1;
+    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
+    CU_ASSERT_EQUAL(result, SUIT_ERR_NOT_CANONICAL_CBOR);
+
+    envelope = (suit_envelope_t) {0};
+    mode.SKIP_AUTHENTICATION_FAILURE = 1;
+    mode.ALLOW_NOT_CANONICAL_CBOR = 1;
+    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
+    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+}
