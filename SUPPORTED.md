@@ -28,17 +28,11 @@ decode |  |  |  | :green_square::green_square::green_square::black_large_square:
 encode |  |  |  | :green_square::green_square::green_square::black_large_square:
 process |  |  |  | :green_square::black_large_square::black_large_square::black_large_square:
 ### SUIT Report
-Operation | Metadata | Condition | Directive | Parameter | Text
+Operation | Metadata | Capabilities
 ---|---|---|---|---|---
 decode | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
 encode | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
 process | :black_large_square::black_large_square::black_large_square::black_large_square: | :black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square::black_large_square:
-### SUIT Capability Report
-Operation | Metadata | Condition | Directive | Parameter | Text
----|---|---|---|---|---
-decode |  | 
-encode |  | 
-process |  | 
 
 ## NOTE: How to read the Supported Features Tables
 **IN**: which document

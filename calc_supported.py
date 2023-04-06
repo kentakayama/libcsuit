@@ -60,7 +60,7 @@ def calc_suit_manifest():
 def calc_suit_report():
     # const
     table_str = "Name | Label | CDDL Structure | IN | IS | Supported?"
-    documents = [ "SUIT Report", "SUIT Capability Report" ]
+    documents = [ "SUIT Report" ]
 
     pos_list = [1, 2]
     # regex pattern
@@ -92,9 +92,9 @@ def calc_suit_report():
     print(tab)
 
     ret_str = ""
-    for i in range(len(tab)):
+    for i in range(len(documents)):
         ret_str += f"### {documents[i]}\n"
-        ret_str += "Operation | Metadata | Condition | Directive | Parameter | Text\n"
+        ret_str += "Operation | Metadata | Capabilities\n"
         ret_str += "---|---|---|---|---|---\n"
         ret_str += "decode"
         for level in range(len(pos_list)):
