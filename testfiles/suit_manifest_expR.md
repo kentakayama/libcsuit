@@ -28,13 +28,13 @@
     / common / 3: << {
       / components / 2: [
         [
-          'TEEP-Device',
-          'SecureFS',
+           'TEEP-Device',
+           'SecureFS',
           h'8D82573A926D4754935332DC29997F74',  / tc-uuid /
-          'ta'
+           'ta'
         ]
       ],
-      / shared-sequence / 4: << [
+      / common-sequence / 4: << [
         / directive-override-parameters / 20, {
           / vendor-id / 1: h'C0DDD5F15243566087DB4F5B0AA26C2F' / c0ddd5f1-5243-5660-87db-4f5b0aa26c2f /,
           / class-id / 2: h'DB42F7093D8C55BAA8C5265FC5820F4E' / db42f709-3d8c-55ba-a8c5-265fc5820f4e /
@@ -44,10 +44,10 @@
       ] >>
     } >>,
     / manifest-component-id / 5: [
-      'TEEP-Device',
-      'SecureFS',
+       'TEEP-Device',
+       'SecureFS',
       h'8D82573A926D4754935332DC29997F74',  / tc-uuid /
-      'suit'
+       'suit'
     ],
     / install / 17: << [
       / directive-set-component-index / 12, 0,

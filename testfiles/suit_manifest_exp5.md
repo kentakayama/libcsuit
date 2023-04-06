@@ -64,9 +64,9 @@
                 / directive-set-component-index / 12, 1,
                 / condition-image-match / 3, 15
             ] >>,
-            / run / 9: << [
+            / invoke / 9: << [
                 / directive-set-component-index / 12, 0,
-                / directive-run / 23, 2
+                / directive-invoke / 23, 2
             ] >>,
             / install / 17: << [
                 / directive-set-component-index / 12, 0,

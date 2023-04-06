@@ -51,8 +51,8 @@
             / validate / 7: << [
                 / condition-image-match / 3, 15
             ] >>,
-            / run / 9: << [
-                / directive-run / 23, 2
+            / invoke / 9: << [
+                / directive-invoke / 23, 2
             ] >>,
             / install / 17: [
                 / algorithm-id: / -16 / SHA-256 /,

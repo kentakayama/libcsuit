@@ -68,9 +68,9 @@
                 / directive-copy / 22, 2,
                 / condition-image-match / 3, 15
             ] >>,
-            / run / 9: << [
+            / invoke / 9: << [
                 / directive-set-component-index / 12, 2,
-                / directive-run / 23, 2
+                / directive-invoke / 23, 2
             ] >>,
             / payload-fetch / 16: << [
                 / directive-set-component-index / 12, 1,
