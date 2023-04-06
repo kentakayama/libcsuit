@@ -36,19 +36,19 @@
     / invoke / 9: << [
       / directive-set-component-index / 12, 0,
       / directive-override-parameters / 20, {
-        / invoke-args / 23: 'cat 00 10'
+        / parameter-invoke-args / 23: 'cat 00 10'
       },
       / directive-invoke / 23, 15
     ] >>,
     / dependency-resolution / 15: << [
       / directive-set-component-index / 12, 1,
       / directive-override-parameters / 20, {
-        / image-digest / 3: << [
-          / alg: / -16,
+        / parameter-image-digest / 3: << [
+          / digest-algorithm-id: / -16 / SHA256 /,
           / digest-bytes: / h'9971271881eddc8e7ac42c0107b07dac84de8f5165edc9ce0d7efd4d0586feda'
         ] >>,
-        / image-size / 14: 190,
-        / uri / 21: "http://example.com/dependent.suit"
+        / parameter-image-size / 14: 190,
+        / parameter-uri / 21: "http://example.com/dependent.suit"
       },
       / directive-fetch / 21, 2,
       / condition-image-match / 3, 15
@@ -59,7 +59,7 @@
 
       / directive-set-component-index / 12, 0,
       / directive-override-parameters / 20, {
-        / content / 18: ' in multiple trust domains'
+        / parameter-content / 18: ' in multiple trust domains'
       },
       / directive-write / 18, 15
     ] >>

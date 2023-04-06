@@ -28,13 +28,13 @@
     ],
     / invoke / 9: << [
       / directive-override-parameters / 20, {
-        / invoke-args / 23: 'cat 00'
+        / parameter-invoke-args / 23: 'cat 00'
       },
       / directive-invoke / 23, 15
     ] >>,
     / install / 17: << [
       / directive-override-parameters / 20, {
-        / content / 18: 'hello world'
+        / parameter-content / 18: 'hello world'
       },
       / directive-write / 18, 15
     ] >>

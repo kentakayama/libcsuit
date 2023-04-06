@@ -155,6 +155,14 @@ Example 3: A/B images | [suit_manifest_exp3.md](https://github.com/kentakayama/l
 Example 4: Load from External Storage | [suit_manifest_exp4.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.md) | [suit_manifest_exp4.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.cbor)
 Example 5: Two Images | [suit_manifest_exp5.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.md) | [suit_manifest_exp5.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.cbor)
 
+- [draft-ietf-suit-trust-domains-02](https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02)
+
+Example | Human Readable | Binary
+----|----|----
+Example 0 | Write Plaintext Payload | [suit_manifest_expS0.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS0.md) | [suit_manifest_exp_S0.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS0.cbor)
+Example 1 | Process Dependency | [suit_manifest_expS1.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS1.md) | [suit_manifest_exp_S1.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS1.cbor)
+Example 0 | Integrated Dependency | [suit_manifest_expS2.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS2.md) | [suit_manifest_exp_S2.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS2.cbor)
+
 - [draft-ietf-suit-firmware-encryption-11](https://datatracker.ietf.org/doc/html/draft-ietf-suit-firmware-encryption-11)
 
 Example | Human Readable | Binary
