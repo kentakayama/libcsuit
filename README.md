@@ -142,25 +142,47 @@ If you want to build the code for OpenSSL then omit the '-DMBEDTLS=1' parameter 
 
 
 ## SUIT Protocol Message Examples
-The following description Markdown and CBOR files are compliant with [draft-ietf-suit-manifest-19](https://tools.ietf.org/html/draft-ietf-suit-manifest-19).
-- Example 0
-  - [suit_manifest_exp0.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.md)
-  - [suit_manifest_exp0.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.cbor)
-- Example 1
-  - [suit_manifest_exp1.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.md)
-  - [suit_manifest_exp1.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.cbor)
-- Example 2
-  - [suit_manifest_exp2.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.md)
-  - [suit_manifest_exp2.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.cbor)
-- Example 3
-  - [suit_manifest_exp3.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.md)
-  - [suit_manifest_exp3.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.cbor)
-- Example 4
-  - [suit_manifest_exp4.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.md)
-  - [suit_manifest_exp4.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.cbor)
-- Example 5
-  - [suit_manifest_exp5.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.md)
-  - [suit_manifest_exp5.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.cbor)
+The following description Markdown and CBOR files are compliant with
+- [draft-ietf-suit-manifest-22](https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest-22).
+  - Example 0
+    - [suit_manifest_exp0.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.md)
+    - [suit_manifest_exp0.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.cbor)
+  - Example 1
+    - [suit_manifest_exp1.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.md)
+    - [suit_manifest_exp1.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.cbor)
+  - Example 2
+    - [suit_manifest_exp2.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.md)
+    - [suit_manifest_exp2.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.cbor)
+  - Example 3
+    - [suit_manifest_exp3.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.md)
+    - [suit_manifest_exp3.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.cbor)
+  - Example 4
+    - [suit_manifest_exp4.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.md)
+    - [suit_manifest_exp4.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.cbor)
+  - Example 5
+    - [suit_manifest_exp5.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.md)
+    - [suit_manifest_exp5.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.cbor)
+- [draft-ietf-suit-firmware-encryption-11](https://datatracker.ietf.org/doc/html/draft-ietf-suit-firmware-encryption-11)
+  - Example 0: Write and Decrypt Encrypted Payload
+    - [suit_manifest_exp_EW.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEW.md)
+    - [suit_manifest_exp_EW.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEW.cbor)
+  - Example 1: Fetch and Decrypt Encrypted Payload
+    - [suit_manifest_exp_EW.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEF.md)
+    - [suit_manifest_exp_EW.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEF.cbor)
+- [draft-ietf-teep-protocol-12](https://datatracker.ietf.org/doc/html/draft-ietf-teep-protocol-12)
+  - Example 1: Fetch from URI
+    - [suit_manifest_expU.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.md)
+    - [suit_manifest_expU.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.cbor)
+  - Example 2: Fetch from Integrated Payload
+    - [suit_manifest_expI.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expI.md)
+    - [suit_manifest_expI.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expI.cbor)
+  - Example 3: Personalization Data
+    - [suit_manifest_expD.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expD.md)
+    - [suit_manifest_expD.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expD.cbor)
+  - Example 4: Unlink
+    - [suit_manifest_expU.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.md)
+    - [suit_manifest_expU.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.cbor)
+
 
 ## License and Copyright
 BSD 2-Clause License
