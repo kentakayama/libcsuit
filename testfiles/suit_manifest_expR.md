@@ -1,3 +1,8 @@
+<!--
+ Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+
+ SPDX-License-Identifier: BSD-2-Clause
+-->
 
 ## E.4. Example 4: Unlink a Trusted Component {#suit-unlink}
 
