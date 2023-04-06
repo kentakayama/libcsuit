@@ -180,8 +180,8 @@ The following description Markdown and CBOR files are compliant with
     - [suit_manifest_expD.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expD.md)
     - [suit_manifest_expD.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expD.cbor)
   - Example 4: Unlink
-    - [suit_manifest_expU.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.md)
-    - [suit_manifest_expU.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.cbor)
+    - [suit_manifest_expR.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expR.md)
+    - [suit_manifest_expR.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expR.cbor)
 
 
 ## License and Copyright
