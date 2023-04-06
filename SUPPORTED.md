@@ -1,7 +1,7 @@
 # Supported features by libcsuit
 
 ## Summary
-- :square: : supported
+- :green_square: : supported
 - :red_square: : **not** supported
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
