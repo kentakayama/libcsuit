@@ -9,7 +9,7 @@ def calc_suit_manifest():
     table_str = "Name | Label | CDDL Structure | IN | IS | Supported?"
     documents = [ "SUIT Manifest", "SUIT Multiple Trust Domains", "SUIT Update Management", "SUIT Encrypted Payload" ]
 
-    pos_list = [2, 4, 5, 6]
+    pos_list = [2, 4, 5, 6, 7]
     # regex pattern
     supported_pat = re.compile(supported_str)
 
