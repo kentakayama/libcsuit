@@ -45,15 +45,15 @@ def calc_suit_manifest():
         ret_str += "---|---|---|---|---|---\n"
         ret_str += "decode"
         for level in range(len(pos_list)):
-            ret_str += f" | {':green_square:'*tab[i][level][0][0]}{':stop_sign:'*tab[i][level][0][1]}"
+            ret_str += f" | {':green_square:'*tab[i][level][0][0]}{':red_square:'*tab[i][level][0][1]}"
         ret_str += "\n"
         ret_str += "encode"
         for level in range(len(pos_list)):
-            ret_str += f" | {':green_square:'*tab[i][level][1][0]}{':stop_sign:'*tab[i][level][1][1]}"
+            ret_str += f" | {':green_square:'*tab[i][level][1][0]}{':red_square:'*tab[i][level][1][1]}"
         ret_str += "\n"
         ret_str += "process"
         for level in range(len(pos_list)):
-            ret_str += f" | {':green_square:'*tab[i][level][2][0]}{':stop_sign:'*tab[i][level][2][1]}"
+            ret_str += f" | {':green_square:'*tab[i][level][2][0]}{':red_square:'*tab[i][level][2][1]}"
         ret_str += "\n"
     return ret_str
 
@@ -98,15 +98,15 @@ def calc_suit_report():
         ret_str += "---|---|---\n"
         ret_str += "decode"
         for level in range(len(pos_list)):
-            ret_str += f" | {':green_square:'*tab[i][level][0][0]}{':stop_sign:'*tab[i][level][0][1]}"
+            ret_str += f" | {':green_square:'*tab[i][level][0][0]}{':red_square:'*tab[i][level][0][1]}"
         ret_str += "\n"
         ret_str += "encode"
         for level in range(len(pos_list)):
-            ret_str += f" | {':green_square:'*tab[i][level][1][0]}{':stop_sign:'*tab[i][level][1][1]}"
+            ret_str += f" | {':green_square:'*tab[i][level][1][0]}{':red_square:'*tab[i][level][1][1]}"
         ret_str += "\n"
         ret_str += "process"
         for level in range(len(pos_list)):
-            ret_str += f" | {':green_square:'*tab[i][level][2][0]}{':stop_sign:'*tab[i][level][2][1]}"
+            ret_str += f" | {':green_square:'*tab[i][level][2][0]}{':red_square:'*tab[i][level][2][1]}"
         ret_str += "\n"
     return ret_str
 
@@ -116,7 +116,7 @@ head = """# Supported features by libcsuit
 
 ## Summary
 - :square: : supported
-- :stop_sign: : **not** supported
+- :red_square: : **not** supported
 """
 w.write(head)
 w.write(calc_suit_manifest())

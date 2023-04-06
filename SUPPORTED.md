@@ -2,37 +2,37 @@
 
 ## Summary
 - :square: : supported
-- :stop_sign: : **not** supported
+- :red_square: : **not** supported
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square:
-encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square:
-process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::stop_sign: | :green_square::green_square::green_square::green_square::green_square::green_square:
+decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::red_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square: | :stop_sign::stop_sign: | :green_square::green_square::green_square: |  | 
-encode | :green_square::green_square::green_square: | :stop_sign::stop_sign: | :green_square::green_square::green_square: |  | 
-process | :green_square::green_square::green_square: | :stop_sign::stop_sign: | :green_square::green_square::green_square: |  | 
+decode | :green_square::green_square::green_square: | :red_square::red_square: | :green_square::green_square::green_square: |  | 
+encode | :green_square::green_square::green_square: | :red_square::red_square: | :green_square::green_square::green_square: |  | 
+process | :green_square::green_square::green_square: | :red_square::red_square: | :green_square::green_square::green_square: |  | 
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :stop_sign::stop_sign::stop_sign: | :green_square::green_square::green_square::stop_sign::stop_sign: | :green_square:
-encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :stop_sign::stop_sign::stop_sign: | :green_square::green_square::green_square::stop_sign::stop_sign: | :green_square:
-process | :green_square: | :green_square::green_square::green_square::green_square::stop_sign: | :stop_sign::stop_sign::stop_sign: | :green_square::green_square::green_square::stop_sign::stop_sign: | :green_square:
+decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :red_square::red_square::red_square: | :green_square::green_square::green_square::red_square::red_square: | :green_square:
+encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :red_square::red_square::red_square: | :green_square::green_square::green_square::red_square::red_square: | :green_square:
+process | :green_square: | :green_square::green_square::green_square::green_square::red_square: | :red_square::red_square::red_square: | :green_square::green_square::green_square::red_square::red_square: | :green_square:
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode |  |  |  | :green_square::green_square::green_square::stop_sign: | 
-encode |  |  |  | :green_square::green_square::green_square::stop_sign: | 
-process |  |  |  | :green_square::stop_sign::stop_sign::stop_sign: | 
+decode |  |  |  | :green_square::green_square::green_square::red_square: | 
+encode |  |  |  | :green_square::green_square::green_square::red_square: | 
+process |  |  |  | :green_square::red_square::red_square::red_square: | 
 ### SUIT Report
 Operation | Metadata | Capabilities
 ---|---|---
-decode | :stop_sign::stop_sign::stop_sign::stop_sign: | :stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign:
-encode | :stop_sign::stop_sign::stop_sign::stop_sign: | :stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign:
-process | :stop_sign::stop_sign::stop_sign::stop_sign: | :stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign:
+decode | :red_square::red_square::red_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
+encode | :red_square::red_square::red_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
+process | :red_square::red_square::red_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
 
 ## NOTE: How to read the Supported Features Tables
 **IN**: which document
