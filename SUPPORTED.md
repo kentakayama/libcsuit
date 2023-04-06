@@ -1,38 +1,38 @@
 # Supported features by libcsuit
 
 ## Summary
-- :check_mark_button: : supported
-- :cross_mark: : **not** supported
+- :white_check_mark: : supported
+- :stop_sign: : **not** supported
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button:
-encode | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button:
-process | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button:
+decode | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark:
+encode | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark:
+process | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button: |  | 
-encode | :check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button: |  | 
-process | :check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button: |  | 
+decode | :white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark: |  | 
+encode | :white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark: |  | 
+process | :white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark: |  | 
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::cross_mark::cross_mark: | :check_mark_button:
-encode | :check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::check_mark_button: | :cross_mark::cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::cross_mark::cross_mark: | :check_mark_button:
-process | :check_mark_button: | :check_mark_button::check_mark_button::check_mark_button::check_mark_button::cross_mark: | :cross_mark::cross_mark::cross_mark: | :check_mark_button::check_mark_button::check_mark_button::cross_mark::cross_mark: | :check_mark_button:
+decode | :white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::stop_sign::stop_sign: | :white_check_mark:
+encode | :white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::white_check_mark: | :stop_sign::stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::stop_sign::stop_sign: | :white_check_mark:
+process | :white_check_mark: | :white_check_mark::white_check_mark::white_check_mark::white_check_mark::stop_sign: | :stop_sign::stop_sign::stop_sign: | :white_check_mark::white_check_mark::white_check_mark::stop_sign::stop_sign: | :white_check_mark:
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode |  |  |  | :check_mark_button::check_mark_button::check_mark_button::cross_mark: | 
-encode |  |  |  | :check_mark_button::check_mark_button::check_mark_button::cross_mark: | 
-process |  |  |  | :check_mark_button::cross_mark::cross_mark::cross_mark: | 
+decode |  |  |  | :white_check_mark::white_check_mark::white_check_mark::stop_sign: | 
+encode |  |  |  | :white_check_mark::white_check_mark::white_check_mark::stop_sign: | 
+process |  |  |  | :white_check_mark::stop_sign::stop_sign::stop_sign: | 
 ### SUIT Report
 Operation | Metadata | Capabilities
 ---|---|---
-decode | :cross_mark::cross_mark::cross_mark::cross_mark: | :cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark:
-encode | :cross_mark::cross_mark::cross_mark::cross_mark: | :cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark:
-process | :cross_mark::cross_mark::cross_mark::cross_mark: | :cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark::cross_mark:
+decode | :stop_sign::stop_sign::stop_sign::stop_sign: | :stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign:
+encode | :stop_sign::stop_sign::stop_sign::stop_sign: | :stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign:
+process | :stop_sign::stop_sign::stop_sign::stop_sign: | :stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign::stop_sign:
 
 ## NOTE: How to read the Supported Features Tables
 **IN**: which document
