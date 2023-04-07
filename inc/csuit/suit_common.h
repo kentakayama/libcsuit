@@ -9,6 +9,9 @@
 
 #include "qcbor/qcbor.h"
 
+extern uint64_t LIBCSUIT_SUPPORTED_VERSIONS[];
+extern size_t LIBCSUIT_SUPPORTED_VERSIONS_LEN;
+
 /*!
     \file   suit_common.h
     \brief  Declarations of common parameters and functions.
@@ -28,6 +31,7 @@ typedef enum {
     SUIT_ERR_NOT_FOUND,                 /*! the specified content does not exist or unaccessible */
     SUIT_ERR_PARAMETER_NOT_FOUND,       /*! required suit-parameter does not exist */
     SUIT_ERR_AUTHENTICATION_NOT_FOUND,  /*! suit-authentication-wrapper does not exist */
+    SUIT_ERR_MANIFEST_KEY_NOT_FOUND,    /*! other SUIT_Envelope key does not exist */
 
     SUIT_ERR_INVALID_TYPE_OF_VALUE,     /*! type of an item is not expected */
     SUIT_ERR_INVALID_VALUE,             /*! the input value is invalid */

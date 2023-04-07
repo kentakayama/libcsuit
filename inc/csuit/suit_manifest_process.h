@@ -223,7 +223,12 @@ typedef struct suit_parameter_args {
 typedef union {
     uint16_t all;
     struct {
-        uint16_t reference_uri          : 1;
+        /* NOTE: must be false inside process-dependency
+         * see https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02#name-suit-directive-process-depe
+         */
+        uint16_t allow_missing          : 1;
+
+        uint16_t manifest_component_id  : 1;
         uint16_t dependency_resolution  : 1;
         uint16_t payload_fetch          : 1;
         uint16_t install                : 1;

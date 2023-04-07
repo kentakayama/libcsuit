@@ -7,6 +7,9 @@
 #include "csuit/suit_common.h"
 #include "csuit/suit_digest.h"
 
+uint64_t LIBCSUIT_SUPPORTED_VERSIONS[] = {1};
+size_t LIBCSUIT_SUPPORTED_VERSIONS_LEN = sizeof(LIBCSUIT_SUPPORTED_VERSIONS);
+
 suit_err_t suit_error_from_qcbor_error(QCBORError error)
 {
     switch (error) {

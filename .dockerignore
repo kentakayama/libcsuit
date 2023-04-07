@@ -4,6 +4,7 @@ suit_*
 libcsuit.a
 libcsuit.so
 bin/*
+tmp/*
 test/libcsuit_test
 test/result.txt
 CMakeLists.txt

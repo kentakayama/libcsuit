@@ -19,7 +19,7 @@
 
 char* suit_err_to_str(suit_err_t error)
 {
-    switch(error) {
+    switch (error) {
     case SUIT_SUCCESS:
         return "SUIT_SUCCESS";
     case SUIT_ERR_FATAL:
@@ -35,6 +35,8 @@ char* suit_err_to_str(suit_err_t error)
         return "SUIT_ERR_PARAMETER_NOT_FOUND";
     case SUIT_ERR_AUTHENTICATION_NOT_FOUND:
         return "SUIT_ERR_AUTHENTICATION_NOT_FOUND";
+    case SUIT_ERR_MANIFEST_KEY_NOT_FOUND:
+        return "SUIT_ERR_MANIFEST_KEY_NOT_FOUND";
 
     case SUIT_ERR_INVALID_TYPE_OF_VALUE:
         return "SUIT_INVALID_TYPE_OF_VALUE";

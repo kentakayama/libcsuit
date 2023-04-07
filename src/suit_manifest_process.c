@@ -368,8 +368,8 @@ suit_process_flag_t suit_manifest_key_to_process_flag(const suit_manifest_key_t 
 {
     suit_process_flag_t result = {0};
     switch (key) {
-    case SUIT_REFERENCE_URI:
-        result.reference_uri = 1;
+    case SUIT_MANIFEST_COMPONENT_ID:
+        result.manifest_component_id = 1;
         break;
     case SUIT_VALIDATE:
         result.validate = 1;
@@ -615,6 +615,7 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
         /* suit-digest */
         case SUIT_CONDITION_IMAGE_MATCH:
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
             if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE) {
                 args.expected.image_size = parameters[tmp_index].image_size;
             }
@@ -637,7 +638,6 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
             break;
 
         /* draft-ietf-suit-trust-domains */
-        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
         case SUIT_CONDITION_VERSION:
             break;
         default:
@@ -1122,7 +1122,7 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
                                                     suit_inputs_t *suit_inputs)
 {
     suit_err_t result = SUIT_SUCCESS;
-    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
+    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM] = {0};
 
     UsefulBufC command_buf;
     switch (command_key) {
@@ -1137,6 +1137,7 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
         break;
     case SUIT_UNINSTALL:
         command_buf = extracted->uninstall;
+        break;
     case SUIT_VALIDATE:
         command_buf = extracted->validate;
         break;
@@ -1154,7 +1155,6 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
         return SUIT_SUCCESS;
     }
 
-    memset(parameters, 0, sizeof(parameters));
     result = suit_process_shared_sequence(extracted, parameters);
     if (result != SUIT_SUCCESS) {
         goto error;
@@ -1330,7 +1330,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
         goto error;
     }
     size_t manifest_key_len = item.val.uCount;
-    for (size_t j = 0; j < manifest_key_len; j++) {
+    for (size_t i = 0; i < manifest_key_len; i++) {
         error = QCBORDecode_PeekNext(&context, &item);
         if (error != QCBOR_SUCCESS) {
             goto error;
@@ -1350,7 +1350,13 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto error;
             }
-            if (item.val.int64 != 1) {
+            size_t j = 0;
+            for (; j < LIBCSUIT_SUPPORTED_VERSIONS_LEN; j++) {
+                if (LIBCSUIT_SUPPORTED_VERSIONS[j] == item.val.uint64) {
+                    break;
+                }
+            }
+            if (j == LIBCSUIT_SUPPORTED_VERSIONS_LEN) {
                 result = SUIT_ERR_INVALID_MANIFEST_VERSION;
             }
             break;
@@ -1539,30 +1545,30 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
         else if (item.uLabelType == QCBOR_TYPE_INT64 || item.uLabelType == QCBOR_TYPE_UINT64) {
             envelope_key = item.label.int64;
             switch (envelope_key) {
+            case SUIT_DELEGATION:
+                result = SUIT_ERR_NOT_IMPLEMENTED;
+                goto error;
+
             case SUIT_AUTHENTICATION:
                 result = suit_process_authentication_wrapper(&context, suit_inputs, &manifest_digest);
                 break;
+
             case SUIT_MANIFEST:
                 if (manifest_digest.algorithm_id == SUIT_ALGORITHM_ID_INVALID) {
                     result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
                     goto error;
                 }
-                else {
-                    QCBORDecode_GetNext(&context, &item);
-                    result = suit_verify_item(&context, &item, &manifest_digest);
-                    if (result != SUIT_SUCCESS) {
-                        goto error;
-                    }
-                    extracted.manifest = item.val.string;
+                QCBORDecode_GetNext(&context, &item);
+                result = suit_verify_item(&context, &item, &manifest_digest);
+                if (result != SUIT_SUCCESS) {
+                    goto error;
                 }
+                extracted.manifest = item.val.string;
                 break;
-            case SUIT_DELEGATION:
-                result = SUIT_ERR_NOT_IMPLEMENTED;
-                goto error;
 
             /* Severed Members */
             case SUIT_SEVERED_INSTALL:
-                if (extracted.install.ptr != NULL) {
+                if (!UsefulBuf_IsNULLOrEmptyC(extracted.install)) {
                     result = SUIT_ERR_REDUNDANT;
                     goto error;
                 }
@@ -1570,7 +1576,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
                 break;
 
             case SUIT_SEVERED_DEPENDENCY_RESOLUTION:
-                if (extracted.dependency_resolution.ptr != NULL) {
+                if (!UsefulBuf_IsNULLOrEmptyC(extracted.dependency_resolution)) {
                     result = SUIT_ERR_REDUNDANT;
                     goto error;
                 }
@@ -1578,7 +1584,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
                 break;
 
             case SUIT_SEVERED_PAYLOAD_FETCH:
-                if (extracted.payload_fetch.ptr != NULL) {
+                if (!UsefulBuf_IsNULLOrEmptyC(extracted.payload_fetch)) {
                     result = SUIT_ERR_REDUNDANT;
                     goto error;
                 }
@@ -1586,7 +1592,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
                 break;
 
             case SUIT_SEVERED_TEXT:
-                if (extracted.text.ptr != NULL) {
+                if (!UsefulBuf_IsNULLOrEmptyC(extracted.text)) {
                     result = SUIT_ERR_REDUNDANT;
                     goto error;
                 }
@@ -1594,7 +1600,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
                 break;
 
             case SUIT_SEVERED_COSWID:
-                if (extracted.coswid.ptr != NULL) {
+                if (!UsefulBuf_IsNULLOrEmptyC(extracted.coswid)) {
                     result = SUIT_ERR_REDUNDANT;
                     goto error;
                 }
@@ -1620,74 +1626,129 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     }
 
     result = suit_extract_manifest(&extracted);
-
+    if (result != SUIT_SUCCESS) {
+        goto error;
+    }
     /* TODO: check digests */
 
-    if (suit_inputs->dependency_depth == 0 &&
-        extracted.manifest_component_id.len > 0) {
-        suit_store_args_t store = {0};
-        store.report.val = 0;
-        store.dst = extracted.manifest_component_id;
-        store.src_buf = suit_inputs->manifest;
-        store.operation = SUIT_STORE;
-        result = suit_store_callback(store);
-        if (result != SUIT_SUCCESS) {
+    if (suit_inputs->process_flags.manifest_component_id) {
+        manifest_key = SUIT_MANIFEST_COMPONENT_ID;
+        if (extracted.manifest_component_id.len > 0) {
+            suit_store_args_t store = {0};
+            store.report.val = 0;
+            store.dst = extracted.manifest_component_id;
+            store.src_buf = suit_inputs->manifest;
+            store.operation = SUIT_STORE;
+            result = suit_store_callback(store);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
 
     /* dependency-resolution */
     if (suit_inputs->process_flags.dependency_resolution) {
-        result = suit_process_common_and_command_sequence(&extracted, SUIT_DEPENDENCY_RESOLUTION, suit_inputs);
-        if (result != SUIT_SUCCESS) {
+        manifest_key = SUIT_DEPENDENCY_RESOLUTION;
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.dependency_resolution)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_DEPENDENCY_RESOLUTION, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
 
     /* payload-fetch */
     if (suit_inputs->process_flags.payload_fetch) {
-        result = suit_process_common_and_command_sequence(&extracted, SUIT_PAYLOAD_FETCH, suit_inputs);
-        if (result != SUIT_SUCCESS) {
+        manifest_key = SUIT_PAYLOAD_FETCH;
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.payload_fetch)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_PAYLOAD_FETCH, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
 
     /* install */
     if (suit_inputs->process_flags.install) {
-        result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
-        if (result != SUIT_SUCCESS) {
+        manifest_key = SUIT_INSTALL;
+        if (UsefulBuf_IsNULLOrEmptyC(extracted.install)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
 
     /* uninstall */
     if (suit_inputs->process_flags.uninstall) {
-        result = suit_process_common_and_command_sequence(&extracted, SUIT_UNINSTALL, suit_inputs);
-        if (result != SUIT_SUCCESS) {
+        manifest_key = SUIT_UNINSTALL;
+        if (UsefulBuf_IsNULLOrEmptyC(extracted.uninstall)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_UNINSTALL, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
 
     /* validate */
     if (suit_inputs->process_flags.validate) {
-        result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
-        if (result != SUIT_SUCCESS) {
+        manifest_key = SUIT_VALIDATE;
+        if (UsefulBuf_IsNULLOrEmptyC(extracted.validate)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
 
     /* load */
     if (suit_inputs->process_flags.load) {
-        result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
-        if (result != SUIT_SUCCESS) {
+        if (UsefulBuf_IsNULLOrEmptyC(extracted.load)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
 
     /* invoke */
     if (suit_inputs->process_flags.invoke) {
-        result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
-        if (result != SUIT_SUCCESS) {
+        if (UsefulBuf_IsNULLOrEmptyC(extracted.invoke)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
             goto error;
         }
     }
