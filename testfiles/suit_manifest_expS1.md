@@ -12,7 +12,20 @@
 
 ~~~~
 / SUIT_Envelope_Tagged / 107({
-  / suit-authentication-wrapper /
+  / authentication-wrapper / 2: << [
+    << [
+      / digest-algorithm-id: / -16 / SHA256 /,
+      / digest-bytes: / h'E9F48BCC78567721524DF20720F3D161F3801C7674D9FC4CDE502F7BB0EFB5D9'
+    ] >>,
+    << / COSE_Sign1_Tagged / 18([
+      / protected: / << {
+        / algorithm-id / 1: -7 / ES256 /
+      } >>,
+      / unprotected: / {},
+      / payload: / null,
+      / signature: / h'02A3C26EAE57CF482F5DDC1898EBEDE33DCD85AA102FEBC7FFA8126FFB50499A4137E7D49E23994F72C977E21BAFAFB5CFCA0E1E95B961914CFA5F01D4D28BCC'
+    ]) >>
+  ] >>,
   / manifest / 3: << {
     / manifest-version / 1: 1,
     / manifest-sequence-number / 2: 0,
