@@ -4,7 +4,7 @@
  SPDX-License-Identifier: BSD-2-Clause
 -->
 
-## Example 2: Basic Integrated Dependency Example
+## Example 3: Is Dependency Example
 {: numbered='no'}
 
 ### CBOR Diagnostic Notation of SUIT Manifest

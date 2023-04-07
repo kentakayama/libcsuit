@@ -323,8 +323,12 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
     QCBORError error;
     QCBORDecode_PeekNext(context, &item);
     switch (item.uDataType) {
-    case QCBOR_TYPE_UINT64:
     case QCBOR_TYPE_INT64:
+        if (item.val.int64 < 0) {
+            return SUIT_ERR_INVALID_VALUE;
+        }
+        // fallthrough
+    case QCBOR_TYPE_UINT64:
         QCBORDecode_GetUInt64(context, &val.u64);
         if (val.u64 > UINT8_MAX) {
             return SUIT_ERR_INVALID_TYPE_OF_VALUE;
@@ -541,7 +545,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                                   suit_con_dir_key_t condition,
                                   suit_parameter_args_t parameters[],
                                   const suit_index_t *suit_index,
-                                  suit_rep_policy_t report)
+                                  suit_rep_policy_t report,
+                                  bool in_try_each)
 {
     suit_err_t result = SUIT_SUCCESS;
 
@@ -650,6 +655,9 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
 
         case SUIT_CONDITION_IS_DEPENDENCY:
             result = suit_index_is_dependency(extracted, suit_index, tmp_index);
+            if (in_try_each) {
+                return (result == SUIT_SUCCESS) ? SUIT_SUCCESS : SUIT_ERR_ABORT;
+            }
             break;
 
         /* draft-ietf-suit-trust-domains */
@@ -661,11 +669,11 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
         }
         if (result != SUIT_SUCCESS) {
             /* already handled without callback */
-            return SUIT_ERR_CONDITION_MISMATCH;
+            return (in_try_each) ? SUIT_ERR_ABORT : result;
         }
         result = suit_condition_callback(args);
         if (result != SUIT_SUCCESS) {
-            return result;
+            return (in_try_each) ? SUIT_ERR_ABORT : result;
         }
     }
     return result;
@@ -785,15 +793,78 @@ suit_err_t suit_process_unlink(const suit_extracted_t *extracted,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
+                                             const suit_manifest_key_t command_key,
+                                             suit_parameter_args_t parameters[],
+                                             UsefulBufC buf,
+                                             suit_index_t *suit_index,
+                                             suit_inputs_t *suit_inputs,
+                                             bool in_try_each);
+
+suit_err_t suit_process_try_each(QCBORDecodeContext *context,
+                                 suit_extracted_t *extracted,
+                                 const suit_manifest_key_t command_key,
+                                 suit_parameter_args_t parameters[],
+                                 const suit_rep_policy_t report,
+                                 suit_index_t *suit_index,
+                                 suit_inputs_t *suit_inputs)
+{
+    suit_err_t result;
+    QCBORItem item;
+    QCBORDecode_EnterArray(context, &item);
+    if (item.uDataType != QCBOR_TYPE_ARRAY) {
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+    }
+    const size_t try_count = item.val.uCount;
+
+    bool done_any = false;
+    for (size_t i = 0; i < try_count; i++) {
+        bool done = false;
+        QCBORDecode_GetNext(context, &item);
+        if (i + 1 == try_count) {
+            /* the last element */
+            if (item.uDataType == QCBOR_TYPE_NULL) {
+                // see https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest#name-suit-directive-try-each
+                done_any = true;
+                done = true;
+                break;
+            }
+        }
+
+        for (size_t j = 0; j < suit_index->len; j++) {
+            if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+                if (!done) {
+                    suit_index_t tmp_suit_index;
+                    tmp_suit_index.len = 1;
+                    tmp_suit_index.index[0] = suit_index->index[j];
+                    result = suit_process_command_sequence_buf(extracted, command_key, parameters, item.val.string, &tmp_suit_index, suit_inputs, true);
+                    if (result == SUIT_SUCCESS) {
+                        done_any = true;
+                        done = true;
+                    }
+                    else if (!parameters[suit_index->index[j]].soft_failure) {
+                        return SUIT_ERR_TRY_OUT;
+                    }
+                }
+            }
+            else {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+        }
+    }
+    QCBORDecode_ExitArray(context);
+    return (done_any) ? SUIT_SUCCESS : SUIT_ERR_TRY_OUT;
+}
 
 suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                                              const suit_manifest_key_t command_key,
-                                             UsefulBufC buf,
                                              suit_parameter_args_t parameters[],
-                                             suit_inputs_t *suit_inputs)
+                                             UsefulBufC buf,
+                                             suit_index_t *suit_index,
+                                             suit_inputs_t *suit_inputs,
+                                             bool in_try_each)
 {
     suit_err_t result = SUIT_SUCCESS;
-    suit_index_t suit_index = {.len = 1, .index[0] = 0};
     suit_con_dir_key_t condition_directive_key = SUIT_CONDITION_INVALID;
     suit_rep_policy_t report;
     union {
@@ -823,89 +894,51 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 
         switch (condition_directive_key) {
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
-            result = suit_set_index(&context, extracted, &suit_index);
+            result = suit_set_index(&context, extracted, suit_index);
             break;
 
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, &suit_index, parameters);
+            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, suit_index, parameters);
             break;
         case SUIT_DIRECTIVE_SET_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, &suit_index, parameters);
+            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, suit_index, parameters);
             break;
 
         case SUIT_DIRECTIVE_INVOKE:
             QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_invoke(extracted, parameters, report, &suit_index);
+            result = suit_process_invoke(extracted, parameters, report, suit_index);
             break;
 
         case SUIT_DIRECTIVE_FETCH:
             QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_fetch(extracted, parameters, report, &suit_index, suit_inputs);
+            result = suit_process_fetch(extracted, parameters, report, suit_index, suit_inputs);
             break;
 
         case SUIT_DIRECTIVE_WRITE:
             QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_write(extracted, parameters, report, &suit_index, suit_inputs);
+            result = suit_process_write(extracted, parameters, report, suit_index, suit_inputs);
             break;
         case SUIT_DIRECTIVE_COPY:
             QCBORDecode_GetUInt64(&context, &val.u64);
-            result = suit_process_copy_swap(extracted, parameters, report, &suit_index, false, suit_inputs);
+            result = suit_process_copy_swap(extracted, parameters, report, suit_index, false, suit_inputs);
             break;
         case SUIT_DIRECTIVE_SWAP:
             QCBORDecode_GetUInt64(&context, &val.u64);
-            result = suit_process_copy_swap(extracted, parameters, report, &suit_index, true, suit_inputs);
+            result = suit_process_copy_swap(extracted, parameters, report, suit_index, true, suit_inputs);
             break;
         case SUIT_DIRECTIVE_UNLINK:
             QCBORDecode_GetUInt64(&context, &val.u64);
-            result = suit_process_unlink(extracted, parameters, report, &suit_index, suit_inputs);
+            result = suit_process_unlink(extracted, parameters, report, suit_index, suit_inputs);
             break;
 
         case SUIT_DIRECTIVE_TRY_EACH:
-            QCBORDecode_EnterArray(&context, &item);
-            if (item.uDataType != QCBOR_TYPE_ARRAY) {
-                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
-                goto error;
-            }
-            const size_t try_count = item.val.uCount;
-            bool orig_soft_failures[SUIT_MAX_INDEX_NUM];
-            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
-                orig_soft_failures[j] = parameters[j].soft_failure;
-            }
-            bool done = false;
-            for (size_t j = 0; j < try_count; j++) {
-                QCBORDecode_GetNext(&context, &item);
-                if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
-                    if (!done) {
-                        result = suit_process_command_sequence_buf(extracted, SUIT_COMMON, item.val.string, parameters, NULL);
-                        if (result == SUIT_SUCCESS) {
-                            done = true;
-                        }
-                    }
-                }
-                else if (item.uDataType == QCBOR_TYPE_NULL && j + 1 == try_count) {
-                    /* continue without error, see #8.7.7.3 */
-                    done = true;
-                    break;
-                }
-                else {
-                    result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
-                    goto error;
-                }
-            }
-            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
-                parameters[j].soft_failure = orig_soft_failures[j];
-            }
-            QCBORDecode_ExitArray(&context);
-            if (!done) {
-                result = SUIT_ERR_TRY_OUT;
-                goto error;
-            }
+            result = suit_process_try_each(&context, extracted, command_key, parameters, report, suit_index, suit_inputs);
             break;
 
         case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
             QCBORDecode_GetUInt64(&context, &val.u64);
-            for (size_t j = 0; j < suit_index.len; j++) {
-                const uint8_t tmp_index = suit_index.index[j];
+            for (size_t j = 0; j < suit_index->len; j++) {
+                const uint8_t tmp_index = suit_index->index[j];
 
                 suit_inputs_t tmp_inputs = *suit_inputs;
                 tmp_inputs.process_flags = suit_manifest_key_to_process_flag(command_key);
@@ -936,7 +969,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
             QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_condition(extracted, condition_directive_key, parameters, &suit_index, report);
+            result = suit_process_condition(extracted, condition_directive_key, parameters, suit_index, report, in_try_each);
             break;
 
         case SUIT_DIRECTIVE_WAIT:
@@ -980,10 +1013,8 @@ error:
         return SUIT_ERR_ABORT;
     }
     return result;
-
 }
 
-suit_index_t suit_index = {.len = 1, .index[0] = 0};
 suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
                                         suit_parameter_args_t parameters[])
 {
@@ -1049,55 +1080,20 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
         case SUIT_CONDITION_IMAGE_MATCH:
         case SUIT_CONDITION_USE_BEFORE:
         case SUIT_CONDITION_COMPONENT_SLOT:
+        case SUIT_CONDITION_CHECK_CONTENT:
         case SUIT_CONDITION_ABORT:
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        case SUIT_CONDITION_IS_DEPENDENCY:
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
         case SUIT_CONDITION_MINIMUM_BATTERY:
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
             QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_condition(extracted, condition_directive_key, parameters, &suit_index, report);
+            result = suit_process_condition(extracted, condition_directive_key, parameters, &suit_index, report, false);
             break;
         case SUIT_DIRECTIVE_TRY_EACH:
-            QCBORDecode_EnterArray(&context, &item);
-            if (item.uDataType != QCBOR_TYPE_ARRAY) {
-                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
-                goto error;
-            }
-            const size_t try_count = item.val.uCount;
-            bool orig_soft_failures[SUIT_MAX_INDEX_NUM];
-            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
-                orig_soft_failures[j] = parameters[j].soft_failure;
-            }
-            bool done = false;
-            for (size_t j = 0; j < try_count; j++) {
-                QCBORDecode_GetNext(&context, &item);
-                if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
-                    if (!done) {
-                        result = suit_process_command_sequence_buf(extracted, SUIT_COMMON, item.val.string, parameters, NULL);
-                        if (result == SUIT_SUCCESS) {
-                            done = true;
-                        }
-                    }
-                }
-                else if (item.uDataType == QCBOR_TYPE_NULL && j + 1 == try_count) {
-                    /* continue without error, see #8.7.7.3 */
-                    done = true;
-                    break;
-                }
-                else {
-                    result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
-                    goto error;
-                }
-            }
-            for (size_t j = 0; j < SUIT_MAX_INDEX_NUM; j++) {
-                parameters[j].soft_failure = orig_soft_failures[j];
-            }
-            QCBORDecode_ExitArray(&context);
-            if (!done) {
-                result = SUIT_ERR_TRY_OUT;
-                goto error;
-            }
+            result = suit_process_try_each(&context, extracted, SUIT_COMMON, parameters, report, &suit_index, NULL);
             break;
         case SUIT_DIRECTIVE_RUN_SEQUENCE:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -1142,6 +1138,9 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
 {
     suit_err_t result = SUIT_SUCCESS;
     suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM] = {0};
+    for (size_t i = 0; i < SUIT_MAX_INDEX_NUM; i++) {
+        parameters[i].soft_failure = true;
+    }
 
     UsefulBufC command_buf;
     switch (command_key) {
@@ -1179,7 +1178,8 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
         goto error;
     }
 
-    result = suit_process_command_sequence_buf(extracted, command_key, command_buf, parameters, suit_inputs);
+    suit_index_t suit_index = {.len = 1, .index[0] = 0};
+    result = suit_process_command_sequence_buf(extracted, command_key, parameters, command_buf, &suit_index, suit_inputs, false);
     if (result != SUIT_SUCCESS) {
         goto error;
     }
@@ -1714,21 +1714,6 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
         }
     }
 
-    /* uninstall */
-    if (suit_inputs->process_flags.uninstall) {
-        manifest_key = SUIT_UNINSTALL;
-        if (!UsefulBuf_IsNULLOrEmptyC(extracted.uninstall)) {
-            result = suit_process_common_and_command_sequence(&extracted, SUIT_UNINSTALL, suit_inputs);
-            if (result != SUIT_SUCCESS) {
-                goto error;
-            }
-        }
-        else if (!suit_inputs->process_flags.allow_missing) {
-            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
-            goto error;
-        }
-    }
-
     /* validate */
     if (suit_inputs->process_flags.validate) {
         manifest_key = SUIT_VALIDATE;
@@ -1762,6 +1747,21 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     if (suit_inputs->process_flags.invoke) {
         if (!UsefulBuf_IsNULLOrEmptyC(extracted.invoke)) {
             result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
+            goto error;
+        }
+    }
+
+    /* uninstall */
+    if (suit_inputs->process_flags.uninstall) {
+        manifest_key = SUIT_UNINSTALL;
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.uninstall)) {
+            result = suit_process_common_and_command_sequence(&extracted, SUIT_UNINSTALL, suit_inputs);
             if (result != SUIT_SUCCESS) {
                 goto error;
             }

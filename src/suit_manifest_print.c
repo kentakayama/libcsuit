@@ -880,8 +880,6 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
 
-
-        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
         case SUIT_DIRECTIVE_WRITE:
         case SUIT_DIRECTIVE_FETCH:
         case SUIT_DIRECTIVE_COPY:
@@ -895,6 +893,29 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
         case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
         case SUIT_DIRECTIVE_UNLINK:
             printf("%lu", cmd_seq->commands[i].value.uint64);
+            break;
+
+        /* IndexArg = uint // true // [ +uint ] */
+        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
+            if (cmd_seq->commands[i].value.index_arg.len == 0) {
+                printf("true");
+            }
+            else if (cmd_seq->commands[i].value.index_arg.len == 1) {
+                printf("%u", cmd_seq->commands[i].value.index_arg.index[0]);
+            }
+            else if (cmd_seq->commands[i].value.index_arg.len < SUIT_MAX_INDEX_NUM) {
+                printf("[");
+                for (size_t j = 0; j < cmd_seq->commands[i].value.index_arg.len; j++) {
+                    printf(" %u", cmd_seq->commands[i].value.index_arg.index[j]);
+                    if (j + 1 != cmd_seq->commands[i].value.index_arg.len) {
+                        printf(",");
+                    }
+                }
+                printf(" ]");
+            }
+            else {
+                return SUIT_ERR_INVALID_VALUE;
+            }
             break;
 
         /* $$SUIT_Parameters */

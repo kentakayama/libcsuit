@@ -294,7 +294,6 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
         case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
         case SUIT_CONDITION_IS_DEPENDENCY:
 
-        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
         case SUIT_DIRECTIVE_WRITE:
         case SUIT_DIRECTIVE_FETCH:
         case SUIT_DIRECTIVE_COPY:
@@ -311,6 +310,29 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             QCBOREncode_AddUInt64(&context, item->value.uint64);
             break;
 
+        /* uint, true, [ + uint ] */
+        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
+            if (item->value.index_arg.len == 0) {
+                QCBOREncode_AddUInt64(&context, item->label);
+                QCBOREncode_AddBool(&context, true);
+            }
+            else if (item->value.index_arg.len == 1) {
+                QCBOREncode_AddUInt64(&context, item->label);
+                QCBOREncode_AddUInt64(&context, item->value.index_arg.index[0]);
+            }
+            else if (item->value.index_arg.len < SUIT_MAX_INDEX_NUM) {
+                QCBOREncode_AddUInt64(&context, item->label);
+                QCBOREncode_OpenArray(&context);
+                for (size_t j = 0; j < item->value.index_arg.len; j++) {
+                    QCBOREncode_AddUInt64(&context, item->value.index_arg.index[j]);
+                }
+                QCBOREncode_CloseArray(&context);
+            }
+            else {
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            break;
+
         /* $$SUIT_Parameters */
         case SUIT_DIRECTIVE_SET_PARAMETERS:
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
@@ -321,14 +343,19 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
         case SUIT_DIRECTIVE_TRY_EACH:
             QCBOREncode_AddUInt64(&context, item->label);
             QCBOREncode_OpenArray(&context);
-            for (size_t j = i; j < cmd_seq->len; j++) {
-                if (cmd_seq->commands[j].label != SUIT_DIRECTIVE_TRY_EACH) {
-                    continue;
+            size_t j;
+            for (j = 0; j < cmd_seq->len; j++) {
+                if (cmd_seq->commands[i + j].label != SUIT_DIRECTIVE_TRY_EACH) {
+                    break;
                 }
-                QCBOREncode_AddBytes(&context, (UsefulBufC){.ptr = cmd_seq->commands[j].value.string.ptr, .len = cmd_seq->commands[j].value.string.len});
-                cmd_seq->commands[j].label = SUIT_CONDITION_INVALID;;
+                QCBOREncode_AddBytes(&context, (UsefulBufC){
+                    .ptr = cmd_seq->commands[i + j].value.string.ptr,
+                    .len = cmd_seq->commands[i + j].value.string.len}
+                );
+                cmd_seq->commands[i + j].label = SUIT_CONDITION_INVALID;;
             }
             QCBOREncode_CloseArray(&context);
+            i += j - 1;
             break;
 
         case SUIT_DIRECTIVE_RUN_SEQUENCE:

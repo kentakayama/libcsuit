@@ -276,7 +276,6 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
 
-        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
         case SUIT_DIRECTIVE_WRITE:
         case SUIT_DIRECTIVE_FETCH:
         case SUIT_DIRECTIVE_COPY:
@@ -295,6 +294,47 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             }
             cmd_seq->commands[cmd_seq->len].label = label;
             cmd_seq->commands[cmd_seq->len].value.uint64 = item->val.uint64;
+            cmd_seq->len++;
+            break;
+
+        /* uint, true, [ + uint ] */
+        case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
+            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ANY);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+
+            cmd_seq->commands[cmd_seq->len].label = label;
+            switch (item->uDataType) {
+            case QCBOR_TYPE_INT64:
+                if (item->val.int64 < 0) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
+                // fallthrough
+            case QCBOR_TYPE_UINT64:
+                if (item->val.uint64 > SUIT_MAX_INDEX_NUM) {
+                    return SUIT_ERR_INVALID_VALUE;
+                }
+                cmd_seq->commands[cmd_seq->len].value.index_arg.len = 1;
+                cmd_seq->commands[cmd_seq->len].value.index_arg.index[0] = item->val.uint64;
+                break;
+            case QCBOR_TYPE_ARRAY:
+                if (item->val.uCount == 0) {
+                    return SUIT_ERR_INVALID_VALUE;
+                }
+                cmd_seq->commands[cmd_seq->len].value.index_arg.len = item->val.uCount;
+                for (size_t j = 0; j < cmd_seq->commands[cmd_seq->len].value.index_arg.len; j++) {
+                    if (item->val.uint64 > SUIT_MAX_INDEX_NUM) {
+                        return SUIT_ERR_INVALID_VALUE;
+                    }
+                    cmd_seq->commands[cmd_seq->len].value.index_arg.index[j] = item->val.uint64;
+                }
+            case QCBOR_TYPE_TRUE:
+                cmd_seq->commands[cmd_seq->len].value.index_arg.len = 0;
+                break;
+            default:
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
             cmd_seq->len++;
             break;
 
@@ -986,6 +1026,9 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 
         default:
             return SUIT_ERR_NOT_IMPLEMENTED;
+        }
+        if (result != SUIT_SUCCESS) {
+            return result;
         }
     }
     return result;

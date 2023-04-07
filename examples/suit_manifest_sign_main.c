@@ -63,12 +63,21 @@ int main(int argc,
 
     // Decode manifest file.
     printf("main : Decode Manifest file.\n");
-    suit_decode_mode_t mode = SUIT_DECODE_MODE_SKIP_ANY_ERROR;
+    suit_decode_mode_t mode;
+    mode.SKIP_AUTHENTICATION_FAILURE = 1;
     suit_envelope_t envelope = {0};
     suit_buf_t buf = {.ptr = manifest_buf, .len = manifest_len};
     result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to parse Manifest file. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+
+    // Print manifest.
+    printf("\nmain : Print Decoded Manifest.\n");
+    result = suit_print_envelope(mode, &envelope, indent, tabstop);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to print Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
 
@@ -89,12 +98,14 @@ int main(int argc,
     printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
 
     // Print manifest.
-    printf("\nmain : Print Manifest.\n");
+    /*
+    printf("\nmain : Print Signed Manifest.\n");
     result = suit_print_envelope(mode, &envelope, indent, tabstop);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to print Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
+    */
 
     write_to_file(output_file, ret_pos, encode_len);
     ret = EXIT_SUCCESS;
@@ -106,5 +117,6 @@ out:
         free(encode_buf);
     }
     suit_free_key(&mechanisms[0].key);
+    printf("\n");
     return ret;
 }

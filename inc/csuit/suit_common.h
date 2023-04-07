@@ -404,6 +404,14 @@ typedef struct suit_parameters_list {
 } suit_parameters_list_t;
 
 /*
+ * IndexArg = uint // true // [+ uint ]
+ */
+typedef struct suit_index {
+    uint8_t len;
+    uint8_t index[SUIT_MAX_COMPONENT_NUM + SUIT_MAX_DEPENDENCY_NUM];
+} suit_index_t;
+
+/*
  * (SUIT_Condition // SUIT_Directive // SUIT_Command_Custom)
  */
 typedef struct suit_command_sequence_item {
@@ -413,6 +421,7 @@ typedef struct suit_command_sequence_item {
         int64_t                     int64;
         uint64_t                    uint64;
         bool                        isNull;
+        suit_index_t                index_arg;
         suit_parameters_list_t      params_list;
     } value;
 } suit_command_sequence_item_t;
@@ -537,11 +546,6 @@ typedef struct suit_manifest {
     suit_severable_members_digests_t    sev_mem_dig;
     suit_unseverable_members_t          unsev_mem;
 } suit_manifest_t;
-
-typedef struct suit_index {
-    uint8_t len;
-    uint8_t index[SUIT_MAX_COMPONENT_NUM + SUIT_MAX_DEPENDENCY_NUM];
-} suit_index_t;
 
 typedef struct suit_payload {
     UsefulBufC key;
