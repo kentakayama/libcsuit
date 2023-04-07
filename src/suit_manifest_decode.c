@@ -199,7 +199,7 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
-bool is_suit_directive_only(uint64_t label)
+bool is_suit_directive_only(int64_t label)
 {
     /* NOTE:
      * SUIT_Common_Commands is a subset of SUIT_Directive
@@ -265,13 +265,16 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
         case SUIT_CONDITION_ABORT:
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
 
+        /* in draft-ietf-suit-trust-domains */
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        case SUIT_CONDITION_IS_DEPENDENCY:
+
         /* in draft-ietf-suit-update-management */
         case SUIT_CONDITION_USE_BEFORE:
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
         case SUIT_CONDITION_MINIMUM_BATTERY:
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
-
 
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
         case SUIT_DIRECTIVE_WRITE:
@@ -300,7 +303,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
             result = suit_decode_parameters_list_from_item(mode, context, item, true, &cmd_seq->commands[cmd_seq->len].value.params_list);
             if (result != SUIT_SUCCESS) {
-                break;
+                return result;
             }
             cmd_seq->commands[cmd_seq->len].label = label;
             cmd_seq->len++;
@@ -311,7 +314,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             /* XXX: should not extract here? */
             result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ARRAY);
             if (result != SUIT_SUCCESS) {
-                break;
+                return result;
             }
             size_t try_index = item->val.uCount;
             /* store unpacked array items */
@@ -333,6 +336,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
         // TODO
         /* SUIT_Command_Sequence */
         case SUIT_DIRECTIVE_RUN_SEQUENCE:
+            return SUIT_ERR_NOT_IMPLEMENTED;
 
         /* SUIT_Override_Mult_Arg */
         //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
@@ -340,6 +344,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
         /* SUIT_Directive_Copy_Params */
         //case SUIT_DIRECTIVE_COPY_PARAMS:
 
+        case SUIT_CONDITION_INVALID:
         default:
             return SUIT_ERR_NOT_IMPLEMENTED;
         }

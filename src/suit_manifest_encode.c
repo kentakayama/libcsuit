@@ -290,6 +290,9 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
 
+        /* in draft-ietf-suit-trust-domains */
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        case SUIT_CONDITION_IS_DEPENDENCY:
 
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
         case SUIT_DIRECTIVE_WRITE:
@@ -330,7 +333,10 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
 
         case SUIT_DIRECTIVE_RUN_SEQUENCE:
         default:
-            result = SUIT_ERR_NOT_IMPLEMENTED;
+            return SUIT_ERR_NOT_IMPLEMENTED;
+        }
+        if (result != SUIT_SUCCESS) {
+            return result;
         }
     }
     QCBOREncode_CloseArray(&context);

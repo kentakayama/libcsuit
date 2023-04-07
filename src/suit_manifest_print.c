@@ -869,6 +869,10 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
         case SUIT_CONDITION_ABORT:
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
 
+        /* in draft-ietf-suit-trust-comains */
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        case SUIT_CONDITION_IS_DEPENDENCY:
+
         /* in draft-ietf-suit-update-management */
         case SUIT_CONDITION_USE_BEFORE:
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
@@ -941,7 +945,8 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
         /* SUIT_Directive_Copy_Params */
         //case SUIT_DIRECTIVE_COPY_PARAMS:
 
-        default:
+        case SUIT_CONDITION_INVALID:
+        //default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
             break;
         }

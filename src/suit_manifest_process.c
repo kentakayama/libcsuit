@@ -525,6 +525,18 @@ suit_err_t suit_process_invoke(const suit_extracted_t *extracted,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_index_is_dependency(const suit_extracted_t *extracted,
+                                    const suit_index_t *suit_index,
+                                    uint8_t index)
+{
+    for (size_t i = 0; i < extracted->dependencies.len; i++) {
+        if (extracted->dependencies.dependency[i].index == index) {
+            return SUIT_SUCCESS;
+        }
+    }
+    return SUIT_ERR_NOT_FOUND;
+}
+
 suit_err_t suit_process_condition(suit_extracted_t *extracted,
                                   suit_con_dir_key_t condition,
                                   suit_parameter_args_t parameters[],
@@ -615,7 +627,6 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
         /* suit-digest */
         case SUIT_CONDITION_IMAGE_MATCH:
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
-        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
             if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE) {
                 args.expected.image_size = parameters[tmp_index].image_size;
             }
@@ -629,12 +640,16 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
             }
             break;
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+            result = SUIT_ERR_NOT_IMPLEMENTED;
+            break;
 
         case SUIT_CONDITION_ABORT:
+            result = SUIT_ERR_ABORT;
             break;
 
         case SUIT_CONDITION_IS_DEPENDENCY:
-            result = (tmp_index > SUIT_MAX_INDEX_NUM) ? SUIT_SUCCESS : SUIT_ERR_ABORT;
+            result = suit_index_is_dependency(extracted, suit_index, tmp_index);
             break;
 
         /* draft-ietf-suit-trust-domains */

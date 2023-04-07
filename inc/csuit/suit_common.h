@@ -56,18 +56,21 @@ typedef enum {
 
 /*! \brief abort immediately on any error */
 
-typedef struct {
-    /*! \brief through but report on verification failure */
-    uint8_t SKIP_SIGN_FAILURE: 1;
-    /*! \brief through unknown or unimplemented element(key or value) */
-    uint8_t SKIP_UNKNOWN_ELEMENT: 1;
-    /*! \brief ignore missing authentication-wrapper */
-    uint8_t SKIP_AUTHENTICATION_FAILURE: 1;
-    /*! \brief allow not well-formed SUIT Manifest */
-    uint8_t ALLOW_NOT_CANONICAL_CBOR: 1;
+typedef union {
+    uint8_t val;
+    struct {
+        /*! \brief through but report on verification failure */
+        uint8_t SKIP_SIGN_FAILURE: 1;
+        /*! \brief through unknown or unimplemented element(key or value) */
+        uint8_t SKIP_UNKNOWN_ELEMENT: 1;
+        /*! \brief ignore missing authentication-wrapper */
+        uint8_t SKIP_AUTHENTICATION_FAILURE: 1;
+        /*! \brief allow not well-formed SUIT Manifest */
+        uint8_t ALLOW_NOT_CANONICAL_CBOR: 1;
+    };
 } suit_decode_mode_t;
-#define SUIT_DECODE_MODE_STRICT ((suit_decode_mode_t){0x00})
-#define SUIT_DECODE_MODE_SKIP_ANY_ERROR ((suit_decode_mode_t){0xFF})
+#define SUIT_DECODE_MODE_STRICT ((suit_decode_mode_t){0})
+#define SUIT_DECODE_MODE_SKIP_ANY_ERROR ((suit_decode_mode_t){(uint8_t)UINT8_MAX})
 
 #ifndef SUIT_MAX_ARRAY_LENGTH
 #define SUIT_MAX_ARRAY_LENGTH           20

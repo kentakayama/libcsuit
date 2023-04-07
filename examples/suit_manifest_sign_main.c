@@ -63,7 +63,7 @@ int main(int argc,
 
     // Decode manifest file.
     printf("main : Decode Manifest file.\n");
-    uint8_t mode = SUIT_DECODE_MODE_SKIP_ANY_ERROR;
+    suit_decode_mode_t mode = SUIT_DECODE_MODE_SKIP_ANY_ERROR;
     suit_envelope_t envelope = {0};
     suit_buf_t buf = {.ptr = manifest_buf, .len = manifest_len};
     result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
