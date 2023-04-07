@@ -654,13 +654,14 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
 
         /* draft-ietf-suit-trust-domains */
         case SUIT_CONDITION_VERSION:
-            break;
+
+        case SUIT_CONDITION_INVALID:
         default:
             return SUIT_ERR_NOT_IMPLEMENTED;
         }
         if (result != SUIT_SUCCESS) {
             /* already handled without callback */
-            return result;
+            return SUIT_ERR_CONDITION_MISMATCH;
         }
         result = suit_condition_callback(args);
         if (result != SUIT_SUCCESS) {
@@ -925,8 +926,11 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
         case SUIT_CONDITION_IMAGE_MATCH:
         case SUIT_CONDITION_USE_BEFORE:
         case SUIT_CONDITION_COMPONENT_SLOT:
+        case SUIT_CONDITION_CHECK_CONTENT:
         case SUIT_CONDITION_ABORT:
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
+        case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        case SUIT_CONDITION_IS_DEPENDENCY:
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
         case SUIT_CONDITION_MINIMUM_BATTERY:
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
@@ -937,7 +941,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 
         case SUIT_DIRECTIVE_WAIT:
         case SUIT_DIRECTIVE_RUN_SEQUENCE:
-        default:
+        case SUIT_DIRECTIVE_INVALID:
             result = SUIT_ERR_NOT_IMPLEMENTED;
         }
         if (result != SUIT_SUCCESS) {
@@ -1698,7 +1702,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     /* install */
     if (suit_inputs->process_flags.install) {
         manifest_key = SUIT_INSTALL;
-        if (UsefulBuf_IsNULLOrEmptyC(extracted.install)) {
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.install)) {
             result = suit_process_common_and_command_sequence(&extracted, SUIT_INSTALL, suit_inputs);
             if (result != SUIT_SUCCESS) {
                 goto error;
@@ -1713,7 +1717,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     /* uninstall */
     if (suit_inputs->process_flags.uninstall) {
         manifest_key = SUIT_UNINSTALL;
-        if (UsefulBuf_IsNULLOrEmptyC(extracted.uninstall)) {
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.uninstall)) {
             result = suit_process_common_and_command_sequence(&extracted, SUIT_UNINSTALL, suit_inputs);
             if (result != SUIT_SUCCESS) {
                 goto error;
@@ -1728,7 +1732,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     /* validate */
     if (suit_inputs->process_flags.validate) {
         manifest_key = SUIT_VALIDATE;
-        if (UsefulBuf_IsNULLOrEmptyC(extracted.validate)) {
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.validate)) {
             result = suit_process_common_and_command_sequence(&extracted, SUIT_VALIDATE, suit_inputs);
             if (result != SUIT_SUCCESS) {
                 goto error;
@@ -1742,7 +1746,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
 
     /* load */
     if (suit_inputs->process_flags.load) {
-        if (UsefulBuf_IsNULLOrEmptyC(extracted.load)) {
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.load)) {
             result = suit_process_common_and_command_sequence(&extracted, SUIT_LOAD, suit_inputs);
             if (result != SUIT_SUCCESS) {
                 goto error;
@@ -1756,7 +1760,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
 
     /* invoke */
     if (suit_inputs->process_flags.invoke) {
-        if (UsefulBuf_IsNULLOrEmptyC(extracted.invoke)) {
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.invoke)) {
             result = suit_process_common_and_command_sequence(&extracted, SUIT_INVOKE, suit_inputs);
             if (result != SUIT_SUCCESS) {
                 goto error;
