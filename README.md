@@ -126,7 +126,10 @@ git clone https://github.com/laurencelundblade/QCBOR.git
 git clone https://github.com/laurencelundblade/t_cose.git
 git clone https://github.com/ARMmbed/mbedtls.git
 git clone https://github.com/kentakayama/libcsuit.git
-cd libcsuit
+cd QCBOR
+make
+sudo make install
+cd ../libcsuit
 ```
 
 Next, build the code using cmake
@@ -135,7 +138,7 @@ Next, build the code using cmake
 mkdir build
 cd build
 cmake -DMBEDTLS=1 ..
-make 
+make
 ```
 
 If you want to build the code for OpenSSL then omit the '-DMBEDTLS=1' parameter from the cmake invocation.
