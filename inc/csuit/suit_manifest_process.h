@@ -252,7 +252,7 @@ typedef struct suit_inputs {
     uint8_t dependency_depth;
 
     uint8_t *ptr;
-    uint8_t buf[0];
+    uint8_t buf[];
 } suit_inputs_t;
 
 typedef struct suit_extracted {
