@@ -26,15 +26,9 @@ This implementation offers the functionality defined in
 Example programs are offered for testing.
 
 ## Getting started
-
-This library uses two build systems, namely cmake and classical makefiles.
-To build with makefile you can use docker environment and we recommend you to use it.
-
-### Using Docker(RECOMMENDED)
-
-Currently the example codes require some features which corresponding cryptographic library packages (such as libssl-dev or libmbedtls-dev in Debian) do not contain.
-If you download their latest and stable version of source code and build it, your building environment might changed.
-Preventing this, we recommend you to build libcsuit examples with docker.
+We recommend you to execute examples with docker
+because it may install some files into your file system
+depends on the input SUIT Manifest.
 
 ```bash
 git clone https://github.com/kentakayama/libcsuit
@@ -43,145 +37,24 @@ cd ./libcsuit
 
 **(a) Use OpenSSL**
 ```
-docker build -t libcsuit_ossl -f ossl3.Dockerfile .
-docker run -t libcsuit_ossl
+docker build -t libcsuit_ossl -f ossl.Dockerfile .
+docker run -t libcsuit_ossl ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
 ```
 
 **(b) Use Mbed TLS**
 ```
 docker build -t libcsuit_psa -f psa.Dockerfile .
-docker run -t libcsuit_psa
+docker run -t libcsuit_psa ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
 ```
 
 **(c) Use OpenSSL 3**
 ```
 docker build -t libcsuit_ossl3 -f ossl3.Dockerfile .
-docker run -t libcsuit_ossl3
+docker run -t libcsuit_ossl3 ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
 ```
 
-### Using Makefiles
-
-```bash
-git clone --recurse-submodules https://github.com/kentakayama/libcsuit
-cd ./libcsuit/QCBOR
-make install
-cd ../t_cose
-make -f Makefile.ossl install
-```
-
-Make and run sample codes you need.
-
-- suit_manifest_parser (extract values and print it, and then re-generate the same binary)
-```bash
-make -f Makefile.parser test
-```
-
-- suit_manifest_encoder (generate a manifest)
-```bash
-make -f Makefile.encode test
-# generates ./testfiles/suit_manifest_expX.cbor
-```
-
-- suit_manifest_encrypt (generate encrypted payload)
-```bash
-make -f Makefile.cncrypt run
-```
-
-- suit_manifest_process (extract values and call appropriate callbacks)
-```bash
-make -f Makefile.process test
-```
-
-
-
-To install libcsuit.a use the following command:
-```
-make install
-```
-
-To install libcsuit.so use the following command:
-```
-make install_so
-```
-
-To generate Doxygen document use the following command:
-```
-make doc
-```
-and open `html/index.html`.
-
-### Using CMake
-
-The cmake file allows building code for OpenSSL and for Mbed TLS based on a parameter passed to cmake.
-If you decide to use OpenSSL then you need to download and install it before building this library.
-The OpenSSL library and the include files need to be included in the search path.
-
-First, create a directory for the entire project. Inside this directory put the code of qcbor, t_cose,
-mbedtls (if used), and libcsuit.
-
-Here are the commands:
-
-```
-git clone https://github.com/laurencelundblade/QCBOR.git
-git clone https://github.com/laurencelundblade/t_cose.git
-git clone https://github.com/ARMmbed/mbedtls.git
-git clone https://github.com/kentakayama/libcsuit.git
-cd QCBOR
-make
-sudo make install
-cd ../libcsuit
-```
-
-Next, build the code using cmake
-
-```
-mkdir build
-cd build
-cmake -DMBEDTLS=1 ..
-make
-```
-
-If you want to build the code for OpenSSL then omit the '-DMBEDTLS=1' parameter from the cmake invocation.
-
-
-## SUIT Protocol Message Examples
-The following description Markdown and CBOR files are compliant with each document.
-
-- [draft-ietf-suit-manifest-22](https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest-22)
-
-Example | Human Readable | Binary
-----|----|----
-Example 0: Secure Boot | [suit_manifest_exp0.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.md) | [suit_manifest_exp0.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.cbor)
-Example 1: Simultaneous Download and Installation of Payload | [suit_manifest_exp1.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.md) | [suit_manifest_exp1.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp1.cbor)
-Example 2: Simultaneous Download, Installation, Secure Boot, Severed Fields | [suit_manifest_exp2.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.md) | [suit_manifest_exp2.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp2.cbor)
-Example 3: A/B images | [suit_manifest_exp3.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.md) | [suit_manifest_exp3.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp3.cbor)
-Example 4: Load from External Storage | [suit_manifest_exp4.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.md) | [suit_manifest_exp4.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp4.cbor)
-Example 5: Two Images | [suit_manifest_exp5.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.md) | [suit_manifest_exp5.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp5.cbor)
-
-- [draft-ietf-suit-trust-domains-02](https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02)
-
-Example | Human Readable | Binary
-----|----|----
-Example 0 | Write Plaintext Payload | [suit_manifest_expS0.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS0.md) | [suit_manifest_exp_S0.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS0.cbor)
-Example 1 | Process Dependency | [suit_manifest_expS1.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS1.md) | [suit_manifest_exp_S1.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS1.cbor)
-Example 0 | Integrated Dependency | [suit_manifest_expS2.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS2.md) | [suit_manifest_exp_S2.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS2.cbor)
-
-- [draft-ietf-suit-firmware-encryption-11](https://datatracker.ietf.org/doc/html/draft-ietf-suit-firmware-encryption-11)
-
-Example | Human Readable | Binary
-----|----|----
-Example 0: Write and Decrypt Encrypted Payload | [suit_manifest_exp_EW.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEW.md) | [suit_manifest_exp_EW.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEW.cbor)
-Example 1: Fetch and Decrypt Encrypted Payload | [suit_manifest_exp_EF.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEF.md) | [suit_manifest_exp_EF.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expEF.cbor)
-
-- [draft-ietf-teep-protocol-12](https://datatracker.ietf.org/doc/html/draft-ietf-teep-protocol-12)
-
-Example | Human Readable | Binary
-----|----|----
-Example 1: Fetch from URI | [suit_manifest_expU.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.md) | [suit_manifest_expU.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expU.cbor)
-Example 2: Fetch from Integrated Payload | [suit_manifest_expI.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expI.md) | [suit_manifest_expI.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expI.cbor)
-Example 3: Personalization Data | [suit_manifest_expD.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expD.md) | [suit_manifest_expD.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expD.cbor)
-Example 4: Unlink | [suit_manifest_expR.md](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expR.md) | [suit_manifest_expR.cbor](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expR.cbor)
-
+See [example SUIT Manifest](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS3.md) and [this tutorial](./libcsuit_progress_afterIETF116.pdf).  
+See [INSTALL.md](./INSTALL.md) for other usages.
 
 ## License and Copyright
 BSD 2-Clause License
