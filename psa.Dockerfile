@@ -16,7 +16,7 @@ WORKDIR /root/QCBOR
 RUN make libqcbor.a install
 
 RUN git clone --depth 1 --branch dev https://github.com/laurencelundblade/t_cose.git /root/t_cose
-COPY deterministic_ecdsa.patch /root/t_cose/
+COPY misc/deterministic_ecdsa.patch /root/t_cose/
 WORKDIR /root/t_cose
 RUN git apply < deterministic_ecdsa.patch
 RUN make -f Makefile.psa libt_cose.a install
