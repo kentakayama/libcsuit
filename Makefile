@@ -4,19 +4,35 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-NAME				= libcsuit
-CFLAGS				= -Wall -fPIC
-LDFLAGS				= -lt_cose -lqcbor -lm
-INC					= -I ./inc
-SRCS				= src/suit_common.c src/suit_manifest_process.c src/suit_manifest_decode.c src/suit_manifest_encode.c src/suit_manifest_print.c src/suit_cose.c src/suit_digest.c
-PUBLIC_INTERFACE	= inc/csuit/csuit.h inc/csuit/suit_common.h inc/csuit/suit_manifest_data.h inc/csuit/suit_manifest_process.h inc/csuit/suit_manifest_print.h inc/csuit/suit_cose.h inc/csuit/suit_digest.h
-OBJDIR				= ./obj
-OBJS				= $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+NAME = libcsuit
+CFLAGS = -Wall -fPIC
+LDFLAGS = -lt_cose -lqcbor -lm
+INC = -I ./inc
+SRCS = \
+	src/suit_common.c \
+	src/suit_manifest_process.c \
+	src/suit_manifest_decode.c \
+	src/suit_manifest_encode.c \
+	src/suit_manifest_print.c \
+	src/suit_cose.c \
+	src/suit_digest.c
+PUBLIC_INTERFACE = \
+	inc/csuit/csuit.h \
+	inc/csuit/suit_common.h \
+	inc/csuit/suit_cose.h \
+	inc/csuit/suit_digest.h \
+	inc/csuit/suit_manifest_data.h \
+	inc/csuit/suit_manifest_process.h \
+	inc/csuit/suit_manifest_print.h
+
+OBJDIR = ./obj
+OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
-    CFLAGS	+= -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS	+= -lmbedtls -lmbedx509 -lmbedcrypto
+    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
+    #LDFLAGS += -lmbedtls -lmbedx509
+    LDFLAGS += -lmbedcrypto
 else
     # use OpenSSL
     MBEDTLS=0

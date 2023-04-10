@@ -4,37 +4,39 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS	= -Wall -g
-LDFLAGS	= -lt_cose -lqcbor -lm
-INC		= -I ./inc -I ./examples/inc
-TARGET	= ./bin/suit_manifest_parser
-SRCS	=	examples/suit_manifest_parser_main.c \
-			examples/suit_examples_common.c \
-			examples/suit_examples_cose.c \
-			src/suit_common.c \
-			src/suit_digest.c \
-			src/suit_cose.c \
-			src/suit_manifest_encode.c \
-			src/suit_manifest_decode.c \
-			src/suit_manifest_print.c
+CFLAGS = -Wall -g
+LDFLAGS = -lt_cose -lqcbor -lm
+INC = -I ./inc -I ./examples/inc
+TARGET = ./bin/suit_manifest_parser
+SRCS = \
+	examples/suit_manifest_parser_main.c \
+	examples/suit_examples_common.c \
+	examples/suit_examples_cose.c \
+	src/suit_common.c \
+	src/suit_digest.c \
+	src/suit_cose.c \
+	src/suit_manifest_encode.c \
+	src/suit_manifest_decode.c \
+	src/suit_manifest_print.c
 
-OBJDIR	= ./obj
-OBJS	= $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+OBJDIR = ./obj
+OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
-    CFLAGS	+= -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS	+= -lmbedtls -lmbedx509 -lmbedcrypto
+    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
+    #LDFLAGS += -lmbedtls -lmbedx509
+    LDFLAGS += -lmbedcrypto
 else
     # use OpenSSL
     LDFLAGS += -lcrypto
 endif
 
-$(TARGET):	$(OBJS)
+$(TARGET): $(OBJS)
 	mkdir -p ./bin
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(OBJDIR)/%.o:	%.c
+$(OBJDIR)/%.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
@@ -42,8 +44,8 @@ $(OBJDIR)/%.o:	%.c
 
 all: $(TARGET)
 
-TEST_NUM	:= 0 1 2A 2B 3 4 5 U I D R S0 S1 S2 S3
-EXPS		:= $(foreach num,$(TEST_NUM),./testfiles/suit_manifest_exp$(num).cbor)
+TEST_NUM := 0 1 2A 2B 3 4 5 U I D R S0 S1 S2 S3
+EXPS := $(foreach num,$(TEST_NUM),./testfiles/suit_manifest_exp$(num).cbor)
 define test-one
 	$(TARGET) $1 2 || exit 1
 
