@@ -53,7 +53,7 @@ docker build -t libcsuit_ossl3 -f ossl3.Dockerfile .
 docker run -t libcsuit_ossl3 ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
 ```
 
-See [example SUIT Manifest](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS3.md) and [this tutorial](./libcsuit_progress_afterIETF116.pdf).  
+See [SUIT Manifest S1 Example](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS1.md) and [this tutorial](./libcsuit_progress_afterIETF116.pdf).  
 See [INSTALL.md](./INSTALL.md) for other usages.
 
 ## License and Copyright
