@@ -72,11 +72,10 @@ jobs:
 
     - run: |
         git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git
-        make install -C QCBOR
+        make -C QCBOR
         git clone --branch dev --depth 1 https://github.com/laurencelundblade/t_cose.git
-        git apply --directory t_cose < misc/deterministic_ecdsa.patch
-        make install -C t_cose -f Makefile.ossl
-        make
+        make -C t_cose -f Makefile.ossl
+        make INC="-I ./inc -I ../QCBOR/inc -I ../t_cose/inc" LDFLAGS="-L ../QCBOR -L ../t_cose -lt_cose -lqcbor -lm"
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
