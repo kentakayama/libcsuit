@@ -71,6 +71,11 @@ jobs:
     #     ./location_of_script_within_repo/buildscript.sh
 
     - run: |
+        git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git
+        make install -C QCBOR
+        git clone --branch dev --depth 1 https://github.com/laurencelundblade/t_cose.git
+        git apply --directory t_cose < misc/deterministic_ecdsa.patch
+        make install -C t_cose -f Makefile.ossl
         make
 
     - name: Perform CodeQL Analysis
