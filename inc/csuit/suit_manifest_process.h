@@ -41,6 +41,9 @@
 /* draft-suit-trust-domains */
 #define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
 
+/*!
+ *  \brief  Describes SUIT_Rep_Policy
+ */
 typedef union suit_rep_policy {
     uint64_t val;
     struct {
@@ -130,70 +133,93 @@ typedef enum suit_store_key {
 } suit_store_key_t;
 
 /*!
- * Request to store data as component identifier.
- * This feature is used on fetching integrated-payload or integrated-dependency.
- * The memory object is integrated into the manifest, so there is no need to fetch actually.
+ * \brief   Parameters to request storing data as component identifier.
+ *
+ * Used on suit-directive-write, suit-directive-copy, suit-directive-swap,
+ * suit-directive-unlink and suit-directive-fetch (only for integrated payloads).
  */
 typedef struct suit_store_args {
     suit_rep_policy_t report;
 
+    /*! Destination SUIT_Component_Identifier */
     suit_component_identifier_t dst;
-    suit_component_identifier_t src; // used by SUIT_COPY and SUIT_SWAP
+    /*! Used if \ref operation is SUIT_COPY or SUIT_SWAP */
+    suit_component_identifier_t src;
+    /*! Pointer and length to the content to be written */
     UsefulBufC src_buf;
 
+    /*! Pointer and length to the COSE_Encrypt */
     UsefulBufC encryption_info;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 
-    /* store, copy, swap, unlink */
+    /*! SUIT_STORE, SUIT_COPY, SUIT_SWAP, or SUIT_UNLINK */
     suit_store_key_t operation;
 } suit_store_args_t;
 
 /*!
- * Request to fetch and store data as component identifier.
+ * \brief   Parameters to request fetching and storing data as component identifier.
+ *
+ * Used on suit-directive-fetch.
  */
 typedef struct suit_fetch_args {
+    suit_rep_policy_t report;
+
+    /*! Destination SUIT_Component_Identifier */
     suit_component_identifier_t dst;
+    /*! Length of uri */
     size_t uri_len;
+    /*! URI terminated with '\0' */
     char uri[SUIT_MAX_URI_LENGTH];
 
-    /**
+    /*!
      *  Pointer to allocated memory in the caller.
      *  This could be NULL if the caller wants callee
      *  to allocate space corresponding to the component identifier.
      */
     void *ptr;
-    /**
+    /*!
      *  The length of the allocated buffer.
-     *  Should be overwritten as the actual length of the fetched object.
      */
     size_t buf_len;
 
-    suit_rep_policy_t report;
-
+    /*!
+     *  Set by suit-parameter-fetch-args.
+     */
     UsefulBufC args;
+
     /* in draft-ietf-suit-firmware-encryption */
+    /*! Pointer and length to the COSE_Encrypt */
     UsefulBufC                  encryption_info;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 } suit_fetch_args_t;
 
+/*!
+ * \brief   Returned value from fetch callback.
+ *
+ * Used by suit_fetch_callback().
+ */
 typedef struct suit_fetch_ret {
-    /**
-     *  Pointer to fetched payload.
-     */
-    void *ptr;
-
     /**
      *  The length of the fetched payload.
      */
     size_t buf_len;
 } suit_fetch_ret_t;
 
+/*!
+ * \brief   Parameters to request checking condition.
+ *
+ * 
+ */
 typedef struct suit_condition_args {
     suit_rep_policy_t report;
 
+    /*! Destination SUIT_Component_Identifier */
     suit_component_identifier_t dst;
+
+    /*! suit-condition-* label */
     suit_con_dir_key_t condition;
 
+    /*! To be expected values */
     union {
         uint64_t        u64;
         UsefulBufC      str;
@@ -215,11 +241,13 @@ typedef struct suit_parameter_args {
     uint64_t                    use_before;
     uint64_t                    component_slot;
 
-    /* default True */
+    /*! default True */
     suit_parameter_bool_t       strict_order;
 
-    /* default True if suit-directive-try-each is invoked,
-       default False if suit-directive-run-sequence is invoked */
+    /*!
+     * default True if suit-directive-try-each is invoked,
+     * default False if suit-directive-run-sequence is invoked
+     */
     suit_parameter_bool_t       soft_failure;
 
     uint64_t                    image_size;
@@ -229,21 +257,21 @@ typedef struct suit_parameter_args {
 
     uint64_t                    source_component;
 
-    /* used in suit-directive-fetch */
+    /*! used in suit-directive-fetch */
     UsefulBufC                  fetch_arguments;
 
-    /* used in suit-directive-invoke */
+    /*! used in suit-directive-invoke */
     UsefulBufC                  invoke_args;
 
 
     /* in draft-ietf-suit-update-management */
-    /* positive minimum battery level in mWh */
+    /*! positive minimum battery level in mWh */
     uint64_t                     minimum_battery;
 
-    /* the value is not defined, though 0 means "NOT GIVEN" here */
+    /*! the value is not defined, though 0 means "NOT GIVEN" here */
     uint64_t                     update_priority;
 
-    /* processed if suit-condition-version is specified */
+    /*! processed if suit-condition-version is specified */
     UsefulBufC                  version;
 
     //??                        wait_info;
@@ -252,28 +280,54 @@ typedef struct suit_parameter_args {
 
 
     /* in draft-ietf-suit-firmware-encryption */
+    /*! Pointer and length to the COSE_Encrypt */
     UsefulBufC                  encryption_info;
 } suit_parameter_args_t;
 
 typedef union {
     uint16_t all;
     struct {
-        /* NOTE: must be false inside process-dependency
+        /*!
+         * \brief 1: Skip if the requested section is missing.
+         *
+         * 0: libcsuit returns \ref SUIT_ERR_MANIFEST_KEY_NOT_FOUND.
+         * NOTE: must be 0 inside process-dependency
          * see https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02#name-suit-directive-process-depe
          */
         uint16_t allow_missing          : 1;
 
+        /*!
+         * 1: Request libcsuit to trigger suit_store_callback()
+         * if suit-manifest-component-id is specified.
+         */
         uint16_t manifest_component_id  : 1;
+        /*! 1: Request libcsuit to process suit-dependency-resolution section. */
         uint16_t dependency_resolution  : 1;
+        /*! 1: Request libcsuit to process suit-payload-fetch section. */
         uint16_t payload_fetch          : 1;
+        /*! 1: Request libcsuit to process suit-install section. */
         uint16_t install                : 1;
+        /*! 1: Request libcsuit to process suit-uninstall section. */
         uint16_t uninstall              : 1;
 
+        /*! 1: Request libcsuit to process suit-validate section. */
         uint16_t validate               : 1;
+        /*! 1: Request libcsuit to process suit-load section. */
         uint16_t load                   : 1;
+        /*! 1: Request libcsuit to process suit-invoke section. */
         uint16_t invoke                 : 1;
 
+        /*!
+         * \brief 1: Request libcsuit to process suit-text section.
+         *
+         * This parameter is ignored now.
+         */
         uint16_t text                   : 1;
+        /*!
+         * \brief 1: Request libcsuit to process suit-coswid section.
+         *
+         * This parameter is ignored now.
+         */
         uint16_t coswid                 : 1;
     };
 } suit_process_flag_t;
@@ -320,7 +374,7 @@ typedef struct suit_extracted {
     suit_digest_t coswid_digest;
 } suit_extracted_t;
 
-void suit_process_digest(QCBORDecodeContext *context, suit_digest_t *digest);
+//void suit_process_digest(QCBORDecodeContext *context, suit_digest_t *digest);
 
 /*!
     \brief  Decode & Process SUIT binary
