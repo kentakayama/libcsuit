@@ -4,6 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+/*!
+    \file   suit_common.c
+
+    \brief  This implements core utility functions.
+ */
+
 #include "csuit/suit_common.h"
 #include "csuit/suit_digest.h"
 

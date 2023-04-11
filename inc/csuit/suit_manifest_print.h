@@ -48,7 +48,7 @@ suit_err_t suit_print_envelope(suit_decode_mode_t mode, const suit_envelope_t *e
     Triggered on \ref SUIT_DIRECTIVE_FETCH.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
-suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
+suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
 
 /*!
     \brief Print SUIT store callback
@@ -56,27 +56,27 @@ suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *f
     Triggered on \ref SUIT_DIRECTIVE_FETCH of integrated-payload or integrated-dependency.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
-suit_err_t suit_store_callback(suit_store_args_t store_args);
+suit_err_t suit_print_store(suit_store_args_t store_args);
 
 /*!
     \brief Print SUIT invoke callback
     \param[in]      invoke_args        Invoke and suit-report arguments. See \ref suit_invoke_args_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
-suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
+suit_err_t suit_print_invoke(suit_invoke_args_t invoke_args);
 
 /*!
     \brief Print SUIT report callback
     \param[in]      condition_args     Condition and suit-report arguments. See \ref suit_condition_args_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
-suit_err_t suit_condition_callback(suit_condition_args_t condition_args);
+suit_err_t suit_print_condition(suit_condition_args_t condition_args);
 
 /*!
     \brief Print SUIT report callback
     \param[in]      report_args     Suit-report arguments and errors. See \ref suit_report_args_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
-suit_err_t suit_report_callback(suit_report_args_t report_args);
+suit_err_t suit_print_report(suit_report_args_t report_args);
 
 #endif  /* SUIT_MANIFEST_PRINT_H */

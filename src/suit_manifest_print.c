@@ -1617,11 +1617,6 @@ suit_err_t suit_print_invoke(suit_invoke_args_t invoke_args)
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args)
-{
-    return suit_print_invoke(invoke_args);
-}
-
 char* suit_store_key_to_str(suit_store_key_t operation)
 {
     switch (operation) {
@@ -1661,11 +1656,6 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
     return ret;
 }
 
-suit_err_t suit_store_callback(suit_store_args_t store_args)
-{
-    return suit_print_store(store_args);
-}
-
 suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
                             suit_fetch_ret_t *fetch_ret)
 {
@@ -1683,12 +1673,6 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
     printf("}\n\n");
 
     return ret;
-}
-
-suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args,
-                               suit_fetch_ret_t *fetch_ret)
-{
-    return suit_print_fetch(fetch_args, fetch_ret);
 }
 
 suit_err_t suit_print_condition(suit_condition_args_t condition_args)
@@ -1755,11 +1739,6 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     return result;
 }
 
-suit_err_t suit_condition_callback(suit_condition_args_t condition_args)
-{
-    return suit_print_condition(condition_args);
-}
-
 suit_err_t suit_print_report(suit_report_args_t report_args)
 {
     printf("report callback : {\n");
@@ -1816,10 +1795,5 @@ suit_err_t suit_print_report(suit_report_args_t report_args)
     printf("}\n\n");
 
     return SUIT_ERR_FATAL;
-}
-
-suit_err_t suit_report_callback(suit_report_args_t report_args)
-{
-    return suit_print_report(report_args);
 }
 

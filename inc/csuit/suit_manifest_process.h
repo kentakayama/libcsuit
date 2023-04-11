@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef SUIT_MANIFEST_PROCESS_H
-#define SUIT_MANIFEST_PROCESS_H
-
-#include "t_cose/t_cose_common.h"
-#include "suit_manifest_data.h"
-
 /*!
     \file   suit_manifest_process.h
 
     \brief  Declarations of structures and functions
  */
+
+#ifndef SUIT_MANIFEST_PROCESS_H
+#define SUIT_MANIFEST_PROCESS_H
+
+#include "t_cose/t_cose_common.h"
+#include "suit_manifest_data.h"
 
 #define BIT(nr) (1UL << (nr))
 /* draft-suit-manifest */
@@ -41,7 +41,6 @@
 /* draft-suit-trust-domains */
 #define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
 
-
 typedef union suit_rep_policy {
     uint64_t val;
     struct {
@@ -53,7 +52,40 @@ typedef union suit_rep_policy {
     };
 } suit_rep_policy_t;
 
+typedef struct suit_reference {
+    UsefulBufC      manifest_uri;
+    suit_digest_t   manifest_digest;
+} suit_reference_t;
+
+typedef struct suit_record {
+    suit_component_identifier_t     manifest_id;
+    int64_t                         manifest_section;
+    uint64_t                        section_offset;
+    uint64_t                        component_index;
+    suit_parameters_list_t          parameters;
+} suit_record_t;
+
+typedef struct suit_report_recoreds {
+    size_t          len;
+    suit_record_t   suit_records[SUIT_MAX_ARRAY_LENGTH];
+} suit_report_records_t;
+
+typedef struct suit_report_result {
+    int64_t         result_code;
+    suit_record_t   result_record;
+} suit_report_result_t;
+
+/*!
+ * This passes enough data to construct SUIT_Report.
+ */
 typedef struct suit_report_args {
+    /* SUIT_Report */
+    suit_reference_t suit_reference;
+    UsefulBufC suit_nonce;
+    suit_report_records_t suit_report_records;
+    bool success;
+    suit_report_result_t suit_report_result;
+
     suit_envelope_key_t level0;
     union {
         suit_manifest_key_t manifest_key;
@@ -78,6 +110,9 @@ typedef struct suit_report_args {
     suit_rep_policy_t report;
 } suit_report_args_t;
 
+/*!
+ * This passes enough data to invoke a component.
+ */
 typedef struct suit_invoke_args {
     suit_component_identifier_t component_identifier;
     /* basically byte-string value, so may not '\0' terminated */
@@ -94,7 +129,7 @@ typedef enum suit_store_key {
     SUIT_UNLINK = 3,
 } suit_store_key_t;
 
-/**
+/*!
  * Request to store data as component identifier.
  * This feature is used on fetching integrated-payload or integrated-dependency.
  * The memory object is integrated into the manifest, so there is no need to fetch actually.
@@ -113,7 +148,7 @@ typedef struct suit_store_args {
     suit_store_key_t operation;
 } suit_store_args_t;
 
-/**
+/*!
  * Request to fetch and store data as component identifier.
  */
 typedef struct suit_fetch_args {
@@ -249,6 +284,7 @@ typedef struct suit_inputs {
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
     suit_process_flag_t process_flags;
+    UsefulBufC suit_nonce;
     uint8_t dependency_depth;
 
     uint8_t *ptr;
@@ -264,8 +300,9 @@ typedef struct suit_extracted {
     suit_payloads_t payloads;
 
     UsefulBufC manifest;
+    suit_digest_t manifest_digest;
     UsefulBufC shared_sequence;
-    // UsefulBufC reference_uri;
+    UsefulBufC reference_uri;
     UsefulBufC dependency_resolution;
     suit_digest_t dependency_resolution_digest;
     UsefulBufC payload_fetch;
@@ -293,46 +330,117 @@ void suit_process_digest(QCBORDecodeContext *context, suit_digest_t *digest);
 
     Process one or more SUIT_Envelope(s) like below.
     Libcsuit parse suit-install, suit-invoke, ... and call some callback functions respectively.
-    If any error occurred, report callback function will be called if set.
-    There are callbacks just printing the argument in the library, you can overwrite it
-    with linker options (see Makefile.process for example).
+    If any error occurred, report callback function will be called.
+    By default, libcsuit just calls suit_print_store, suit_print_fetch, etc.
+    You can overwrite it with linker options (see Makefile.process for example).
 
-    The figure below describes the program flow in pseudocode.
+    The figure below describes the flow in the process in pseudocode.
     Note that the arguments and function names are not the same as the actual.
 
-    Triggerd on SUIT_CONDITION_* arguments match the policy (Rec|Sys)-(Pass|Fail) \ref suit_rep_policy_t,
-    or any error occurred.
-    QCBOR and libcsuit error codes are set in qcbor_error and suit_error respectively.
-
     \code{.unparsed}
-    +-App---------------------------+
-    | main() {                      |
-    |   init_keys();                |
-    |   init_manifest();            |
-    |   while {                     |
-    |     fetch_manifests();        |
-    |     update_suit_process();    |    +-libcsuit-------------------------+
-    |     suit_process_envelope();  |===>| suit_process_envelope() {        |
-    |   }                           |    |   check_digest_and_extract();    |
-    | }                             |    |   dependency_resolution();       |
-    |                               |    |   install() {                    |
-    | suit_fetch_callback() {       |<===|     err = suit_fetch_callback(); |
-    |   http_get(uri, ptr);         |    |     (wait)                       |
-    |   return SUIT_SUCCESS;        |===>|     if (!err)                    |
-    | }                             |    |       suit_report_callback(err); |
-    |                               |    |     check_image_digest(m, ptr);  |
-    | report_callback() {           |    |     ...                          |
-    |   suit_report();              |    |   }                              |
-    |   if (err)                    |    | }                                |
-    |     recover_error();          |    +----------------------------------+
-    |   if (fatal)                  |
-    |     return SUIT_ERR_FATAL;    |
-    |   return SUIT_SUCCESS;        |
-    | }                             |
-    +-------------------------------+
+    +-App-------------------------------+    +-libcsuit--------------------------------------+
+    | main() {                          |    |                                               |
+    |   keys = init_keys();             |    |                                               |
+    |   m = get_manifest();             |    |                                               |
+    |   suit_process_envelope(m, keys); |===>| suit_process_envelope() {                     |
+    |   }                               |    |   check_digests(keys, m);                     |
+    | }                                 |    |   install(m) {                                |
+    |                                   |    |     p = extract_params(m.shared, m.install);  |
+    | suit_fetch_callback() {           |<===|     err = suit_fetch_callback(p.dst, p.uri);  |
+    |   http_get(uri, ptr);             |    |                                               |
+    |   return SUIT_SUCCESS;            |===>|                                               |
+    | }                                 |    |     if (report_condition(p.report, err)) {    |
+    | suit_report_callback() {          |<===|       suit_report_callback(err, at);          |
+    |   report = create_suit_report();  |    |     }                                         |
+    |   http_post(report, uri);         |    |                                               |
+    |   return SUIT_SUCCESS;            |===>|     if (err) {                                |
+    | }                                 |    |       return SUIT_ERR_ABORT;                  |
+    |                                   |    |     }                                         |
+    | suit_condition_callback() {       |<===|     err = suit_condition_callback(p.class_id) |
+    |   class_id = get_class_id();      |    |                                               |
+    |   if (class_id != p.class_id) {   |    |                                               |
+    |     suit_report_callback();       |    |                                               |
+    |     return SUIT_ERR_CONDITION;    |    |                                               |
+    |   }                               |    |                                               |
+    |   return SUIT_SUCCESS;            |===>|  }                                            |
+    | }                                 |    |  invoke(m) {                                  |
+    |                                   |    |    p = extract_params(m.shared, m.invoke);    |
+    | suit_invoke_callback() {          |<===|    err = suit_invoke_callback(p.dst, p.args); |
+    |   return system(args);            |===>|    if (report_condition(p.report, err)) {     |
+    | }                                 |    |      suit_report_callback(err, at);           |
+    |                                   |    |    }                                          |
+    |                                   |    |  }                                            |
+    +-----------------------------------+    +-----------------------------------------------+
     \endcode
  */
 suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs);
+
+/*!
+    \brief  SUIT fetch callback triggerd in libcsuit
+
+    \param[in]      fetch_args      Fetch and suit-report arguments. See \ref suit_fetch_args_t.
+    \param[out]     fetch_ret       Fetch result. See \ref suit_fetch_ret_t.
+    Triggered on \ref SUIT_DIRECTIVE_FETCH.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+
+    This function is expected to be replaced by user defined function
+    using -Xlinker --wrap suit_fetch_callback. See Makefile.process as an example.
+    The libcsuit triggers this function at suit-directive-fetch
+    requesting to fetch an image and dependent SUIT Manifest into component.
+*/
+suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
+
+/*!
+    \brief  SUIT store callback triggerd in libcsuit
+    \param[in]      store_args      Store and suit-report arguments. See \ref suit_store_args_t.
+    Triggered on \ref SUIT_DIRECTIVE_FETCH of integrated-payload or integrated-dependency.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+
+    This function is expected to be replaced by user defined function
+    using -Xlinker --wrap suit_store_callback. See Makefile.process as an example.
+    The libcsuit triggers this function at suit-directive-write, suit-directive-copy,
+    suit-directive-swap and suit-directive-unlink against component(s),
+    and at suit-directive-fetch against integrated payload,
+    requesting to store an image and dependent SUIT Manifest into component or
+    to unlink a component.
+*/
+suit_err_t suit_store_callback(suit_store_args_t store_args);
+
+/*!
+    \brief  SUIT invoke callback triggerd in libcsuit
+    \param[in]      invoke_args        Invoke and suit-report arguments. See \ref suit_invoke_args_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+
+    This function is expected to be replaced by user defined function
+    using -Xlinker --wrap suit_invoke_callback. See Makefile.process as an example.
+    The libcsuit triggers this function at suit-directive-invoke
+    requesting to invoke a component.
+*/
+suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
+
+/*!
+    \brief  SUIT report callback triggerd in libcsuit
+    \param[in]      condition_args     Condition and suit-report arguments. See \ref suit_condition_args_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+
+    This function is expected to be replaced by user defined function
+    using -Xlinker --wrap suit_condition_callback. See Makefile.process as an example.
+    The libcsuit may trigger this function at suit-condition-*
+    requesting to check the condition.
+*/
+suit_err_t suit_condition_callback(suit_condition_args_t condition_args);
+
+/*!
+    \brief  SUIT report callback trigged in libcsuit
+    \param[in]      report_args     Suit-report arguments and errors. See \ref suit_report_args_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+
+    This function is expected to be replaced by user defined function
+    using -Xlinker --wrap suit_report_callback.
+    The libcsuit may trigger this function based on SUIT_Rep_Policy.
+    requesting to check the condition.
+*/
+suit_err_t suit_report_callback(suit_report_args_t report_args);
 
 #endif /* SUIT_MANIFEST_PROCESS_H */
 
