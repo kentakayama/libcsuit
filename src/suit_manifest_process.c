@@ -444,7 +444,7 @@ suit_err_t suit_process_fetch(suit_extracted_t *extracted,
 
             memcpy(fetch.uri, parameters[tmp_index].uri.ptr, parameters[tmp_index].uri.len);
             fetch.uri[parameters[tmp_index].uri.len] = '\0';
-            fetch.uri_len = parameters[tmp_index].uri.len;
+            fetch.uri_len = parameters[tmp_index].uri.len + 1;
 
             fetch.args = parameters[tmp_index].fetch_arguments;
 

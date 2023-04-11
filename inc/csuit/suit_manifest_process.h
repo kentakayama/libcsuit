@@ -169,7 +169,7 @@ typedef struct suit_fetch_args {
     /*! Length of uri */
     size_t uri_len;
     /*! URI terminated with '\0' */
-    char uri[SUIT_MAX_URI_LENGTH];
+    char uri[SUIT_MAX_URI_LENGTH + 1];
 
     /*!
      *  Pointer to allocated memory in the caller.
