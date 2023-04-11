@@ -11,6 +11,7 @@ INC = -I ./inc
 SRCS = \
 	src/suit_common.c \
 	src/suit_manifest_process.c \
+	src/suit_manifest_callbacks.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_encode.c \
 	src/suit_manifest_print.c \
@@ -23,6 +24,7 @@ PUBLIC_INTERFACE = \
 	inc/csuit/suit_digest.h \
 	inc/csuit/suit_manifest_data.h \
 	inc/csuit/suit_manifest_process.h \
+	inc/csuit/suit_manifest_callbacks.h \
 	inc/csuit/suit_manifest_print.h
 
 OBJDIR = ./obj

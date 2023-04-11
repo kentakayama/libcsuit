@@ -6,7 +6,7 @@
 
 CFLAGS = -Wall -g
 LDFLAGS = -lt_cose -lqcbor -lm
-LDFLAGS += \
+LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \
 	-Xlinker --wrap=suit_store_callback \
 	-Xlinker --wrap=suit_invoke_callback \
@@ -22,6 +22,7 @@ SRCS = \
 	src/suit_digest.c \
 	src/suit_cose.c \
 	src/suit_manifest_process.c \
+	src/suit_manifest_callbacks.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_encode.c \
 	src/suit_manifest_print.c
@@ -44,7 +45,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	mkdir -p ./bin
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) $(LDWRAP) -o $@ $^ $(LDFLAGS)
 
 $(OBJDIR)/%.o:	%.c
 	mkdir -p $(dir $@)

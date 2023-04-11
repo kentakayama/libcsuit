@@ -14,7 +14,7 @@
  */
 
 #include "csuit/suit_manifest_process.h"
-#include "csuit/suit_manifest_print.h"
+#include "csuit/suit_manifest_callbacks.h"
 #include "qcbor/qcbor_spiffy_decode.h"
 
 suit_err_t suit_set_parameters(QCBORDecodeContext *context,
@@ -140,6 +140,10 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
             QCBORDecode_GetTextString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 uint8_t tmp_index = suit_index->index[j];
+                if (val.str.len > SUIT_MAX_URI_LENGTH) {
+                    result = SUIT_ERR_NO_MEMORY;
+                    goto error;
+                }
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_URI) || directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
                     parameters[tmp_index].uri = val.str;
@@ -442,6 +446,7 @@ suit_err_t suit_process_fetch(suit_extracted_t *extracted,
                 }
             }
 
+            /* the size of uri is already checked at suit-directive-override-parameters */
             memcpy(fetch.uri, parameters[tmp_index].uri.ptr, parameters[tmp_index].uri.len);
             fetch.uri[parameters[tmp_index].uri.len] = '\0';
             fetch.uri_len = parameters[tmp_index].uri.len + 1;
@@ -1795,44 +1800,4 @@ error:
     return result;
 }
 
-/*
- *  Public callback function for suit-condition-*. See csuit/suit_manifest_process.h
- */
-suit_err_t suit_condition_callback(suit_condition_args_t condition_args)
-{
-    return suit_print_condition(condition_args);
-}
-
-/*
- *  Public callback function for such as suit-directive-write. See csuit/suit_manifest_process.h
- */
-suit_err_t suit_store_callback(suit_store_args_t store_args)
-{
-    return suit_print_store(store_args);
-}
-
-/*
- *  Public callback function for suit-directive-fetch. See csuit/suit_manifest_process.h
- */
-suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args,
-                               suit_fetch_ret_t *fetch_ret)
-{
-    return suit_print_fetch(fetch_args, fetch_ret);
-}
-
-/*
- *  Public callback function for such as suit-directive-invoke. See csuit/suit_manifest_process.h
- */
-suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args)
-{
-    return suit_print_invoke(invoke_args);
-}
-
-/*
- *  Public callback function to create SUIT Report. See csuit/suit_manifest_process.h
- */
-suit_err_t suit_report_callback(suit_report_args_t report_args)
-{
-    return suit_print_report(report_args);
-}
 

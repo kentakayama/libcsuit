@@ -227,8 +227,8 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
 
     size_t i = 0;
     for (i = 0; i < SUIT_NAME_DATA_LEN; i++) {
-        if (name_data[i].name_len == fetch_args.uri_len &&
-            memcmp(name_data[i].name, fetch_args.uri, fetch_args.uri_len) == 0) {
+        if (name_data[i].name_len == fetch_args.uri_len - 1 &&
+            memcmp(name_data[i].name, fetch_args.uri, fetch_args.uri_len - 1) == 0) {
             if (fetch_args.buf_len < name_data[i].data_len) {
                 return SUIT_ERR_NO_MEMORY;
             }
