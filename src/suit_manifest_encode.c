@@ -842,7 +842,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
 }
 
 /*
-    Public function. See suit_manifest_data.h
+    Public function. See suit_manifest_encode.h
  */
 suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
                                 const suit_envelope_t *envelope,

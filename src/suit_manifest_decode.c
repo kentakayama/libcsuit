@@ -1351,7 +1351,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 }
 
 /*
-    Public function. See suit_manifest_data.h
+    Public function. See suit_manifest_decode.h
  */
 suit_err_t suit_decode_envelope(const suit_decode_mode_t mode,
                                 suit_buf_t *buf,
