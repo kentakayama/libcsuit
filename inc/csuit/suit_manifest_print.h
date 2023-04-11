@@ -15,8 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "suit_common.h"
-#include "suit_manifest_data.h"
-#include "suit_manifest_process.h"
+#include "suit_manifest_decode.h"
 
 #define SUIT_MAX_PRINT_BYTE_COUNT        64
 #define SUIT_MAX_PRINT_TEXT_COUNT        64

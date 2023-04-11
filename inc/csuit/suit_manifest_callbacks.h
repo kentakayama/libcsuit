@@ -13,6 +13,8 @@
 #ifndef SUIT_MANIFEST_CALLBACKS_H
 #define SUIT_MANIFEST_CALLBACKS_H
 
+#include "suit_common.h"
+
 /*!
     \brief  SUIT fetch callback triggerd in libcsuit
 

@@ -16,29 +16,35 @@
 /*
     Public function. See suit_cose.h
  */
-cose_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose)
+cbor_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose)
 {
     /* judge authentication object
-     * [ COSE_Sign_Tagged, COSE_Sign1_Tagged, COSE_Mac_Tagged, COSE_Mac0_Tagged ]
+     * [ COSE_Sign, COSE_Sign1, COSE_Mac, COSE_Mac0, COSE_Encrypt, COSE_Encrypt0 ]
      */
-    cose_tag_key_t result = COSE_TAG_INVALID;
+    cbor_tag_key_t result = COSE_TAG_INVALID;
     uint8_t tag0 = ((uint8_t *)signed_cose.ptr)[0];
     uint8_t tag1;
     switch (tag0) {
+    case 0xd0: // Tag(16)
+        result = COSE_ENCRYPT0_TAG;
+        break;
     case 0xd1: // Tag(17)
-        result = COSE_MAC0_TAGGED;
+        result = COSE_MAC0_TAG;
         break;
     case 0xd2: // Tag(18)
-        result = COSE_SIGN1_TAGGED;
+        result = COSE_SIGN1_TAG;
         break;
     case 0xe8:
         tag1 = ((uint8_t *)signed_cose.ptr)[1];
         switch (tag1) {
-        case 0x61: // Tag(97)
-            result = COSE_MAC_TAGGED;
+        case COSE_ENCRYPT_TAG:
+            result = COSE_ENCRYPT_TAG;
             break;
-        case 0x62: // Tag(98)
-            result = COSE_SIGN_TAGGED;
+        case COSE_MAC_TAG:
+            result = COSE_MAC_TAG;
+            break;
+        case COSE_SIGN_TAG:
+            result = COSE_SIGN_TAG;
             break;
         }
     default:
