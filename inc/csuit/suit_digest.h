@@ -28,6 +28,10 @@ struct suit_buf;
     \brief  SHA-2 and SHA-3 functions to generate and verify the hash
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
     \brief      Generate SHA-224 digest
 
@@ -298,5 +302,8 @@ suit_err_t suit_generate_digest_using_encode_buf(const uint8_t *ptr,
                                                  suit_encode_t *suit_encode,
                                                  suit_digest_t *digest);
 
-#endif /* SUIT_DIGEST_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* SUIT_DIGEST_H */

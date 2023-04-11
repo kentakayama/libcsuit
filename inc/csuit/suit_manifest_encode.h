@@ -4,17 +4,21 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+/*!
+    \file   suit_manifest_encode.h
+
+    \brief  Declarations of structures and functions
+ */
+
 #ifndef SUIT_MANIFEST_ENCODE_H
 #define SUIT_MANIFEST_ENCODE_H
 
 #include "suit_common.h"
 #include "suit_cose.h"
 
-/*!
-    \file   suit_manifest_encode.h
-
-    \brief  Declarations of structures and functions
- */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 suit_err_t suit_use_suit_encode_buf(suit_encode_t *suit_encode,
                                     size_t len,
@@ -63,5 +67,9 @@ suit_err_t suit_encode_envelope(suit_decode_mode_t mode,
                                 const suit_mechanism_t *mechanism,
                                 uint8_t **buf,
                                 size_t *len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_MANIFEST_ENCODE_H */

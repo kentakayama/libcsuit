@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+/*!
+    \file   suit_common.h
+    \brief  Declarations of common parameters and functions.
+ */
+
 #ifndef SUIT_COMMON_H
 #define SUIT_COMMON_H
 
@@ -11,13 +16,12 @@
 #include "qcbor/qcbor_spiffy_decode.h"
 #include "t_cose/t_cose_key.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern uint64_t LIBCSUIT_SUPPORTED_VERSIONS[];
 extern size_t LIBCSUIT_SUPPORTED_VERSIONS_LEN;
-
-/*!
-    \file   suit_common.h
-    \brief  Declarations of common parameters and functions.
- */
 
 /*!
     \brief  libcsuit SUCCESS/ERROR result
@@ -992,4 +996,9 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context,
 size_t suit_qcbor_calc_rollback(QCBORItem *item);
 bool suit_continue(suit_decode_mode_t mode,
                    suit_err_t result);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif  // SUIT_COMMON_H

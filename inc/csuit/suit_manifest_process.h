@@ -16,6 +16,10 @@
 #include "suit_common.h"
 #include "suit_manifest_decode.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define BIT(nr) (1UL << (nr))
 /* draft-suit-manifest */
 #define SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER BIT(SUIT_PARAMETER_VENDOR_IDENTIFIER)
@@ -94,6 +98,8 @@
  */
 suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs);
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* SUIT_MANIFEST_PROCESS_H */
-
-

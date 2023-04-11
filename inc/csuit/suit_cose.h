@@ -5,6 +5,15 @@
  *
  */
 
+/*!
+    \file   suit_cose.h
+
+    \brief  Sign and Verify the COSE.
+
+    SUIT supports only COSE_Sign, COSE_Sign1, COSE_Mac, and COSE_Mac0.
+    Currently libcsuit only supports COSE_Sign1 signing and verification.
+ */
+
 #ifndef SUIT_COSE_H
 #define SUIT_COSE_H
 
@@ -34,14 +43,9 @@
 
 #endif /* LIBCSUIT_PSA_CRYPTO_C */
 
-/*!
-    \file   suit_cose.h
-
-    \brief  Sign and Verify the COSE.
-
-    SUIT supports only COSE_Sign, COSE_Sign1, COSE_Mac, and COSE_Mac0.
-    Currently libcsuit only supports COSE_Sign1 signing and verification.
- */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!
     \brief  Generate COSE_Sign1 sined payload.
@@ -159,5 +163,8 @@ suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
                                      UsefulBufC *encrypted_payload,
                                      UsefulBufC *encryption_info);
 
-#endif  /* SUIT_COSE_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif  /* SUIT_COSE_H */

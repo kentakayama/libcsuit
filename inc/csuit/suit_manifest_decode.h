@@ -4,17 +4,21 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+/*!
+    \file   suit_manifest_decode.h
+
+    \brief  Declarations of structures and functions
+ */
+
 #ifndef SUIT_MANIFEST_DECODE_H
 #define SUIT_MANIFEST_DECODE_H
 
 #include "suit_common.h"
 #include "suit_cose.h"
 
-/*!
-    \file   suit_manifest_decode.h
-
-    \brief  Declarations of structures and functions
- */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!
     \brief  Decode SUIT binary.
@@ -81,5 +85,9 @@ suit_err_t suit_decode_digest_from_item(suit_decode_mode_t mode,
                                         QCBORItem *item,
                                         bool next,
                                         suit_digest_t *digest);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SUIT_MANIFEST_DECODE_H
