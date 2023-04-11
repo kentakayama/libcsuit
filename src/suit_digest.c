@@ -5,12 +5,9 @@
  *
  */
 
-
-#include <stdio.h>
-#include <string.h>
 #include "csuit/suit_common.h"
-#include "csuit/suit_manifest_data.h"
 #include "csuit/suit_digest.h"
+#include "csuit/suit_manifest_encode.h"
 
 /*
     Public function. See suit_digest.h

@@ -4,19 +4,22 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef SUIT_MANIFEST_PRINT_H
-#define SUIT_MANIFEST_PRINT_H
-
 /*!
     \file   suit_manifest_print.h
     \brief  Declarations of print functions and string values.
  */
 
+#ifndef SUIT_MANIFEST_PRINT_H
+#define SUIT_MANIFEST_PRINT_H
+
 #include <stdio.h>
 #include <string.h>
 #include "suit_common.h"
-#include "suit_manifest_data.h"
-#include "suit_manifest_process.h"
+#include "suit_manifest_decode.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SUIT_MAX_PRINT_BYTE_COUNT        64
 #define SUIT_MAX_PRINT_TEXT_COUNT        64
@@ -78,5 +81,9 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args);
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
 suit_err_t suit_print_report(suit_report_args_t report_args);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* SUIT_MANIFEST_PRINT_H */

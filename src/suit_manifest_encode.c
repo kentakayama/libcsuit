@@ -4,12 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <stdlib.h>
-#include "qcbor/qcbor.h"
-#include "t_cose/t_cose_common.h"
-#include "csuit/suit_common.h"
-#include "csuit/suit_manifest_data.h"
-#include "csuit/suit_cose.h"
+#include "csuit/suit_manifest_encode.h"
 #include "csuit/suit_digest.h"
 
 /*!
@@ -847,7 +842,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
 }
 
 /*
-    Public function. See suit_manifest_data.h
+    Public function. See suit_manifest_encode.h
  */
 suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
                                 const suit_envelope_t *envelope,
@@ -901,12 +896,14 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         }
 
         switch (mechanisms[i].cose_tag) {
-        case CBOR_TAG_COSE_SIGN1:
+        case COSE_SIGN1_TAG:
             result = suit_sign_cose_sign1(UsefulBuf_Const(digest), &mechanisms[i].key, &signatures[num_signatures]);
             break;
-        case CBOR_TAG_SIGN:
-        case CBOR_TAG_MAC:
-        case CBOR_TAG_COSE_MAC0:
+        case COSE_SIGN_TAG:
+        case COSE_MAC_TAG:
+        case COSE_MAC0_TAG:
+        case COSE_ENCRYPT_TAG:
+        case COSE_ENCRYPT0_TAG:
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
         }
@@ -929,7 +926,7 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
     QCBOREncodeContext context;
     QCBOREncode_Init(&context, suit_envelope);
     if (envelope->tagged) {
-        QCBOREncode_AddTag(&context, SUIT_ENVELOPE_CBOR_TAG);
+        QCBOREncode_AddTag(&context, SUIT_ENVELOPE_TAG);
     }
     QCBOREncode_OpenMap(&context);
     /* TODO

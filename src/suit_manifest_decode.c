@@ -4,12 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "qcbor/qcbor.h"
-#include "qcbor/qcbor_spiffy_decode.h"
-#include "csuit/suit_common.h"
-#include "csuit/suit_manifest_data.h"
-#include "csuit/suit_cose.h"
-#include "csuit/suit_digest.h"
+#include "csuit/suit_manifest_decode.h"
 
 /*!
     \file   suit_manifest_decode.c
@@ -634,11 +629,11 @@ suit_err_t suit_decode_authentication_block(const suit_decode_mode_t mode,
 {
     UsefulBufC signed_cose = {buf->ptr, buf->len};
     suit_err_t result;
-    cose_tag_key_t cose_tag = suit_judge_cose_tag_from_buf(signed_cose);
+    cbor_tag_key_t cose_tag = suit_judge_cose_tag_from_buf(signed_cose);
 
     UsefulBufC returned_payload = {.ptr = digest_buf->ptr, .len = digest_buf->len};
     switch (cose_tag) {
-    case COSE_SIGN1_TAGGED:
+    case COSE_SIGN1_TAG:
         result = suit_verify_cose_sign1(signed_cose, public_key, returned_payload);
         break;
     default:
@@ -1157,7 +1152,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
     QCBORTagListOut Out = {0, 1, puTags};
     QCBORDecode_GetNextWithTags(context, item, &Out);
     if (Out.uNumUsed > 0) {
-        if (puTags[0] == SUIT_ENVELOPE_CBOR_TAG) {
+        if (puTags[0] == SUIT_ENVELOPE_TAG) {
             envelope->tagged = true;
         }
         else {
@@ -1356,7 +1351,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 }
 
 /*
-    Public function. See suit_manifest_data.h
+    Public function. See suit_manifest_decode.h
  */
 suit_err_t suit_decode_envelope(const suit_decode_mode_t mode,
                                 suit_buf_t *buf,

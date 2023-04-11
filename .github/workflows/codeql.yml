@@ -57,8 +57,8 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+    #- name: Autobuild
+    #  uses: github/codeql-action/autobuild@v2
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
@@ -69,6 +69,13 @@ jobs:
     # - run: |
     #     echo "Run, Build Application using script"
     #     ./location_of_script_within_repo/buildscript.sh
+
+    - run: |
+        git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git
+        make -C QCBOR libqcbor.a
+        git clone --branch dev --depth 1 https://github.com/laurencelundblade/t_cose.git
+        make -C t_cose -f Makefile.ossl CMD_LINE="-I ../QCBOR/inc" libt_cose.a
+        make INC="-I ./inc -I ./QCBOR/inc -I ./t_cose/inc" LDFLAGS="-L ../QCBOR -L ../t_cose -lt_cose -lqcbor -lm"
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

@@ -12,10 +12,7 @@
     Call these functions if you want to print the decoded structures and definitions.
  */
 
-#include "qcbor/qcbor.h"
-#include "qcbor/qcbor_spiffy_decode.h"
 #include "csuit/suit_manifest_print.h"
-
 
 char* suit_err_to_str(suit_err_t error)
 {

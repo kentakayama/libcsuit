@@ -5,6 +5,15 @@
  *
  */
 
+/*!
+    \file   suit_cose.h
+
+    \brief  Sign and Verify the COSE.
+
+    SUIT supports only COSE_Sign, COSE_Sign1, COSE_Mac, and COSE_Mac0.
+    Currently libcsuit only supports COSE_Sign1 signing and verification.
+ */
+
 #ifndef SUIT_COSE_H
 #define SUIT_COSE_H
 
@@ -34,54 +43,9 @@
 
 #endif /* LIBCSUIT_PSA_CRYPTO_C */
 
-/*!
-    \file   suit_cose.h
-
-    \brief  Sign and Verify the COSE.
-
-    SUIT supports only COSE_Sign, COSE_Sign1, COSE_Mac, and COSE_Mac0.
-    Currently libcsuit only supports COSE_Sign1 signing and verification.
- */
-
-typedef enum cose_tag_key {
-    COSE_TAG_INVALID    = 0,
-    COSE_SIGN_TAGGED    = 98,
-    COSE_SIGN1_TAGGED   = 18,
-    COSE_ENCRYPT        = 96,
-    COSE_ENCRYPT0       = 16,
-    COSE_MAC_TAGGED     = 97,
-    COSE_MAC0_TAGGED    = 17,
-    COSE_KEY            = 101,
-    COSE_KEY_SET        = 102,
-} cose_tag_key_t;
-
-
-
-
-/*!
-    \brief      Distinguish the TAG of the COSE binary.
-
-    \param[in]  signed_cose     Pointer and length of COSE signed cbor.
-
-    \return     This returns one of the error codes defined by \ref cose_tag_key_t.
- */
-cose_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose);
-
-typedef struct suit_key {
-    const unsigned char *private_key;
-    size_t private_key_len;
-    const unsigned char *public_key;
-    size_t public_key_len;
-    int cose_algorithm_id;
-    struct t_cose_key cose_key;
-} suit_key_t;
-
-typedef struct suit_mechanism {
-    int cose_tag; // COSE_Sign1, COSE_Sign, COSE_Encrypt0, COSE_Encrypt, etc.
-    suit_key_t key;
-    UsefulBufC kid;
-    bool use;
-} suit_mechanism_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!
     \brief  Generate COSE_Sign1 sined payload.
@@ -199,5 +163,8 @@ suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
                                      UsefulBufC *encrypted_payload,
                                      UsefulBufC *encryption_info);
 
-#endif  /* SUIT_COSE_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif  /* SUIT_COSE_H */

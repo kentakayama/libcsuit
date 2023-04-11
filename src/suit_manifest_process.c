@@ -15,7 +15,6 @@
 
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_callbacks.h"
-#include "qcbor/qcbor_spiffy_decode.h"
 
 suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                                const suit_con_dir_key_t directive,

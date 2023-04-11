@@ -13,6 +13,12 @@
 #ifndef SUIT_MANIFEST_CALLBACKS_H
 #define SUIT_MANIFEST_CALLBACKS_H
 
+#include "suit_common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
     \brief  SUIT fetch callback triggerd in libcsuit
 
@@ -80,5 +86,8 @@ suit_err_t suit_condition_callback(suit_condition_args_t condition_args);
 */
 suit_err_t suit_report_callback(suit_report_args_t report_args);
 
-#endif /* SUIT_MANIFEST_CALLBACKS_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* SUIT_MANIFEST_CALLBACKS_H */
