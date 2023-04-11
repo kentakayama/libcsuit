@@ -75,7 +75,7 @@ jobs:
         make -C QCBOR libqcbor.a
         git clone --branch dev --depth 1 https://github.com/laurencelundblade/t_cose.git
         make -C t_cose -f Makefile.ossl CMD_LINE="-I ../QCBOR/inc" libt_cose.a
-        make INC="-I ./inc -I ../QCBOR/inc -I ../t_cose/inc" LDFLAGS="-L ../QCBOR -L ../t_cose -lt_cose -lqcbor -lm"
+        make INC="-I ./inc -I ./QCBOR/inc -I ./t_cose/inc" LDFLAGS="-L ../QCBOR -L ../t_cose -lt_cose -lqcbor -lm"
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
