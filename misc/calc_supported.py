@@ -111,7 +111,7 @@ def calc_suit_report():
     return ret_str
 
 
-w = open("SUPPORTED.md", "w")
+w = open("../SUPPORTED.md", "w")
 head = """# Supported features by libcsuit
 
 ## Summary
