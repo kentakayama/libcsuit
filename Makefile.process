@@ -5,14 +5,14 @@
 #
 
 CFLAGS = -Wall -g
-LDFLAGS = -lt_cose -lqcbor -lm
+LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
 LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \
 	-Xlinker --wrap=suit_store_callback \
 	-Xlinker --wrap=suit_invoke_callback \
 	-Xlinker --wrap=suit_condition_callback
 
-INC = -I ./inc -I ./examples/inc
+INC = $(CMD_INC) -I ./inc -I ./examples/inc
 TARGET = ./bin/suit_manifest_process
 SRCS = \
 	examples/suit_manifest_process_main.c \

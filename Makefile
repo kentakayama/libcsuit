@@ -31,7 +31,7 @@ OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
-    CFLAGS	+= -DLIBTEEP_PSA_CRYPTO_C=1
+    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
 else
     # use OpenSSL
     MBEDTLS=0
@@ -86,7 +86,7 @@ uninstall:
 		$(NAME).a $(NAME).so $(NAME).so.1 $(NAME).so.1.0.0)
 
 build_test:
-	$(MAKE) -C test MBEDTLS=$(MBEDTLS)
+	$(MAKE) -C test MBEDTLS=$(MBEDTLS) CMD_INC="$(CMD_INC)" CMD_LD="$(CMD_LD)"
 
 test: ./bin/$(NAME).a build_test
 	$(MAKE) -C test MBEDTLS=$(MBEDTLS) run

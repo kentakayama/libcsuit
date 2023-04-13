@@ -4,16 +4,17 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS	= -Wall
-LDFLAGS	= -L../bin -lcsuit -lt_cose -lqcbor -lcunit -lm
-INC		= -I ../inc/
-TARGET	= ./libcsuit_test
-RESULT	= result.txt
+CFLAGS = -Wall
+LDFLAGS = $(CMD_LD) -L ../bin -lcsuit -lt_cose -lqcbor -lcunit -lm
+INC = $(CMD_INC) -I ../inc/
+TARGET = ./libcsuit_test
+RESULT = result.txt
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
-    CFLAGS	+= -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS	+= -lmbedtls -lmbedx509 -lmbedcrypto
+    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
+    #LDFLAGS += -lmbedtls -lmbedx509
+    LDFLAGS += -lmbedcrypto
 else
     # use OpenSSL
     LDFLAGS += -lcrypto

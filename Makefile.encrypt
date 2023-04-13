@@ -4,21 +4,21 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS	= -Wall -g
-LDFLAGS	= -lt_cose -lqcbor -lm
-INC		= -I ./inc -I ./examples/inc
-TARGET	= ./bin/suit_manifest_encrypt
-SRCS	=	examples/suit_manifest_encrypt_main.c \
-			examples/suit_examples_common.c \
-			examples/suit_examples_cose.c \
-			src/suit_common.c \
-			src/suit_digest.c \
-			src/suit_cose.c \
-			src/suit_manifest_encode.c \
-			src/suit_manifest_decode.c \
-			src/suit_manifest_print.c
-OBJDIR	= ./obj
-OBJS	= $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+CFLAGS = -Wall -g
+LDFLAGS = -lt_cose -lqcbor -lm
+INC = -I ./inc -I ./examples/inc
+TARGET = ./bin/suit_manifest_encrypt
+SRCS = \
+	examples/suit_manifest_encrypt_main.c \
+	examples/suit_examples_common.c \
+	src/suit_common.c \
+	src/suit_digest.c \
+	src/suit_cose.c \
+	src/suit_manifest_encode.c \
+	src/suit_manifest_decode.c \
+	src/suit_manifest_print.c
+OBJDIR = ./obj
+OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
