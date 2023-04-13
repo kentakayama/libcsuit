@@ -47,6 +47,14 @@
 extern "C" {
 #endif
 
+#define PRIME256V1_PRIVATE_KEY_LENGTH       32
+#define PRIME256V1_PUBLIC_KEY_LENGTH        65
+#define SECP384R1_PRIVATE_KEY_LENGTH        48
+#define SECP384R1_PUBLIC_KEY_LENGTH         97
+#define SECP521R1_PRIVATE_KEY_LENGTH        66
+#define SECP521R1_PUBLIC_KEY_LENGTH         133
+#define A128GCM_KEY_CHAR_LENGTH             16
+
 /*!
     \brief  Generate COSE_Sign1 sined payload.
 
@@ -162,6 +170,35 @@ suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
                                      UsefulBuf encryption_info_buf,
                                      UsefulBufC *encrypted_payload,
                                      UsefulBufC *encryption_info);
+
+/*!
+    \brief  Create ES256 public key
+
+    \param[in]  public_key          Pointer of char array type of public key.
+    \param[out] cose_public_key     Pointer of suit_key_t type of public key.
+
+    \return     This returns SUIT_SUCCESS or SUIT_ERR_FATAL.
+
+    The length of the char array public key is estimated from the algorithm and library.
+ */
+
+suit_err_t suit_key_init_es256_key_pair(const unsigned char *private_key, const unsigned char *public_key, suit_key_t *cose_key_pair);
+
+/*!
+    \brief  Create ES256 key pair
+
+    \param[in]  public_key          Pointer of char array type of public key.
+    \param[out] cose_public_key     Pointer of suit_key_t type of public key.
+
+    \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
+
+    The length of the char array public key is estimated from the algorithm and library.
+ */
+suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key, suit_key_t *cose_key_pair);
+
+suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key, suit_key_t *cose_secret_key);
+
+suit_err_t suit_free_key(const suit_key_t *key);
 
 #ifdef __cplusplus
 }

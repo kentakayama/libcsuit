@@ -942,6 +942,11 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
             for (size_t j = 0; j < suit_index->len; j++) {
                 const uint8_t tmp_index = suit_index->index[j];
 
+                /*
+                 * Calls "second manifest processor" defined in
+                 * https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02#section-6.4.1-3
+                 * by limiting set of operations (command_key).
+                 */
                 suit_inputs_t tmp_inputs = *suit_inputs;
                 tmp_inputs.process_flags = suit_manifest_key_to_process_flag(command_key);
                 tmp_inputs.dependency_depth++;

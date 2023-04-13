@@ -45,6 +45,9 @@ extern "C" {
 /* draft-suit-trust-domains */
 #define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
 
+void suit_process_digest(QCBORDecodeContext *context,
+                         suit_digest_t *digest);
+
 /*!
     \brief  Decode & Process SUIT binary
 
