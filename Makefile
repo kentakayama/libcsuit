@@ -6,8 +6,7 @@
 
 NAME = libcsuit
 CFLAGS = -Wall -fPIC
-LDFLAGS = -lt_cose -lqcbor -lm
-INC = -I ./inc
+INC = $(CMD_INC) -I ./inc
 SRCS = \
 	src/suit_common.c \
 	src/suit_manifest_process.c \
@@ -32,13 +31,10 @@ OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    #LDFLAGS += -lmbedtls -lmbedx509
-    LDFLAGS += -lmbedcrypto
+    CFLAGS	+= -DLIBTEEP_PSA_CRYPTO_C=1
 else
     # use OpenSSL
     MBEDTLS=0
-    LDFLAGS += -lcrypto
 endif
 
 .PHONY: all so doc install uninstall test clean
