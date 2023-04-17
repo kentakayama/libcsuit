@@ -7,6 +7,25 @@
 #include "csuit/suit_manifest_encode.h"
 #include "csuit/suit_digest.h"
 
+suit_err_t suit_encode_append_delegation(const suit_delegation_t *delegation,
+                                         QCBOREncodeContext *context)
+{
+    if (delegation->delegation_chain_num > 0) {
+        QCBOREncode_BstrWrapInMapN(context, SUIT_DELEGATION);
+        QCBOREncode_OpenArray(context);
+        for (size_t i = 0; i < delegation->delegation_chain_num; i++) {
+            QCBOREncode_OpenArray(context);
+            for (size_t j = 0; j < delegation->delegation_chains[i].len; j++) {
+                QCBOREncode_AddBytes(context, delegation->delegation_chains[i].chain[j]);
+            }
+            QCBOREncode_CloseArray(context);
+        }
+        QCBOREncode_CloseArray(context);
+        QCBOREncode_CloseBstrWrap(context, NULL);
+    }
+    return SUIT_SUCCESS;
+}
+
 /*!
     \file   suit_manifest_encode.c
 
@@ -929,12 +948,11 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         QCBOREncode_AddTag(&context, SUIT_ENVELOPE_TAG);
     }
     QCBOREncode_OpenMap(&context);
-    /* TODO
+
     result = suit_encode_append_delegation(&envelope->delegation, &context);
     if (result != SUIT_SUCCESS) {
         goto out;
     }
-    */
 
     result = suit_encode_append_authentication_wrapper(mode, UsefulBuf_Const(digest), signatures, num_signatures, &context);
     if (result != SUIT_SUCCESS) {

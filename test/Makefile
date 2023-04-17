@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS = -Wall
+CFLAGS = $(CMD_C) -Wall
 LDFLAGS = $(CMD_LD) -L ../bin -lcsuit -lt_cose -lqcbor -lcunit -lm
 INC = $(CMD_INC) -I ../inc/
 TARGET = ./libcsuit_test

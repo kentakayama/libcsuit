@@ -5,7 +5,7 @@
 #
 
 NAME = libcsuit
-CFLAGS = -Wall -fPIC
+CFLAGS = $(CMD_C) -Wall -fPIC
 INC = $(CMD_INC) -I ./inc
 SRCS = \
 	src/suit_common.c \
@@ -85,10 +85,10 @@ uninstall:
 	$(RM) $(addprefix $(DESTDIR)$(PREFIX)/lib/, \
 		$(NAME).a $(NAME).so $(NAME).so.1 $(NAME).so.1.0.0)
 
-build_test:
+build_test: ./bin/$(NAME).a
 	$(MAKE) -C test MBEDTLS=$(MBEDTLS) CMD_INC="$(CMD_INC)" CMD_LD="$(CMD_LD)"
 
-test: ./bin/$(NAME).a build_test
+test: build_test
 	$(MAKE) -C test MBEDTLS=$(MBEDTLS) run
 
 clean:

@@ -18,7 +18,7 @@ RUN make -f Makefile.ossl libt_cose.a install
 RUN ldconfig
 COPY . /root/libcsuit
 WORKDIR /root/libcsuit
-RUN make
+RUN make build_test
 RUN make -f Makefile.encode
 RUN make -f Makefile.parser
 RUN make -f Makefile.encrypt

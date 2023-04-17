@@ -55,11 +55,9 @@ cbor_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose)
 
 suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
                                   const suit_key_t *public_key,
-                                  UsefulBufC returned_payload)
+                                  UsefulBufC *returned_payload)
 {
-    suit_err_t result = SUIT_SUCCESS;
     struct t_cose_sign1_verify_ctx verify_ctx;
-    struct t_cose_parameters parameters;
     enum t_cose_err_t cose_result;
 
     if (public_key == NULL) {
@@ -68,15 +66,23 @@ suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
 
     t_cose_sign1_verify_init(&verify_ctx, 0);
     t_cose_sign1_set_verification_key(&verify_ctx, public_key->cose_key);
-    cose_result = t_cose_sign1_verify_detached(&verify_ctx,
-                                               signed_cose,
-                                               NULL_Q_USEFUL_BUF_C,
-                                               returned_payload,
-                                               &parameters);
-    if (cose_result != T_COSE_SUCCESS) {
-        result = SUIT_ERR_FAILED_TO_VERIFY;
+    if (UsefulBuf_IsNULLOrEmptyC(*returned_payload)) {
+        cose_result = t_cose_sign1_verify(&verify_ctx,
+                                           signed_cose,
+                                           returned_payload,
+                                           NULL);
     }
-    return result;
+    else {
+        cose_result = t_cose_sign1_verify_detached(&verify_ctx,
+                                                    signed_cose,
+                                                    NULL_Q_USEFUL_BUF_C,
+                                                   *returned_payload,
+                                                    NULL);
+    }
+    if (cose_result != T_COSE_SUCCESS) {
+        return SUIT_ERR_FAILED_TO_VERIFY;
+    }
+    return SUIT_SUCCESS;
 }
 
 suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
@@ -99,6 +105,7 @@ suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
     return SUIT_SUCCESS;
 }
 
+#ifndef LIBCSUIT_DISABLE_ENCRYPTION
 suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
                                      const UsefulBufC encryption_info,
                                      UsefulBuf working_buf,
@@ -156,6 +163,7 @@ suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
     }
     return SUIT_SUCCESS;
 }
+#endif /* LIBCSUIT_DISABLE_ENCRYPTION */
 
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
 suit_err_t suit_create_es_key(suit_key_t *key)
@@ -438,6 +446,7 @@ suit_err_t suit_key_init_es521_public_key(const unsigned char *public_key,
     return suit_create_es_key(cose_public_key);
 }
 
+#ifndef LIBCSUIT_DISABLE_ENCRYPTION
 suit_err_t suit_create_aes_key(suit_key_t *cose_secret_key)
 {
     UsefulBufC symmetric_key = (UsefulBufC) {.ptr = cose_secret_key->private_key, .len = cose_secret_key->private_key_len};
@@ -458,6 +467,7 @@ suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key,
     cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
     return suit_create_aes_key(cose_secret_key);
 }
+#endif /* LIBCSUIT_DISABLE_ENCRYPTION */
 
 suit_err_t suit_free_key(const suit_key_t *key)
 {
@@ -468,4 +478,205 @@ suit_err_t suit_free_key(const suit_key_t *key)
 #endif
     return SUIT_SUCCESS;
 }
+
+suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *context,
+                                                      QCBORItem *item,
+                                                      suit_mechanism_t *mechanism)
+{
+    suit_err_t result;
+    QCBORError error;
+    if (item->uDataType != QCBOR_TYPE_MAP) {
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+    }
+    UsefulBuf_MAKE_STACK_UB(private_key, SUIT_MAX_PRIVATE_KEY_LEN);
+    UsefulBuf_MAKE_STACK_UB(public_key, SUIT_MAX_PUBLIC_KEY_LEN);
+    int64_t crv = 0;
+    int64_t kty = 0;
+
+    UsefulBufC y = NULLUsefulBufC;
+    UsefulBufC x = NULLUsefulBufC;
+    UsefulBufC d = NULLUsefulBufC;
+    QCBORDecode_EnterMap(context, item);
+    const size_t cose_key_map_len = item->val.uCount;
+    for (size_t k = 0; k < cose_key_map_len; k++) {
+        result = suit_qcbor_get(context, item, true, QCBOR_TYPE_ANY);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        if (item->uLabelType != QCBOR_TYPE_INT64) {
+            return SUIT_ERR_INVALID_TYPE_OF_KEY;
+        }
+        switch (item->label.int64) {
+        case SUIT_COSE_KTY:
+            if (item->uDataType != QCBOR_TYPE_INT64) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            kty = item->val.int64;
+            break;
+        case SUIT_COSE_CRV:
+            if (item->uDataType != QCBOR_TYPE_INT64) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            crv = item->val.int64;
+            break;
+        case SUIT_COSE_X:
+            if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            x = item->val.string;
+            break;
+        case SUIT_COSE_Y:
+            if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            y = item->val.string;
+            break;
+        case SUIT_COSE_D:
+            if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            d = item->val.string;
+            break;
+        default:
+            suit_qcbor_skip_any(context, item);
+            break;
+        }
+    }
+    QCBORDecode_ExitMap(context);
+    error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        return suit_error_from_qcbor_error(error);
+    }
+
+    /* check kty */
+    switch (kty) {
+    case SUIT_COSE_KTY_EC2:
+        switch (crv) {
+        case SUIT_COSE_CRV_P256:
+            if ((x.len == 32) &&
+                (y.len == 32)) {
+                /* POINT_CONVERSION_UNCOMPRESSED */
+                ((uint8_t *)public_key.ptr)[0] = 0x04;
+                memcpy(&((uint8_t *)public_key.ptr)[1], x.ptr, 32);
+                memcpy(&((uint8_t *)public_key.ptr)[33], y.ptr, 32);
+                public_key.len = PRIME256V1_PUBLIC_KEY_LENGTH;
+            }
+            else {
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            if (d.len == 32) {
+                memcpy(private_key.ptr, d.ptr, 32);
+                private_key.len = PRIME256V1_PRIVATE_KEY_LENGTH;
+                result = suit_key_init_es256_key_pair(private_key.ptr, public_key.ptr, &mechanism->key);
+            }
+            else if (d.len == 0) {
+                result = suit_key_init_es256_public_key(public_key.ptr, &mechanism->key);
+            }
+            else {
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            break; /* COSE_KEY_CRV_P256 */
+
+        default:
+            return SUIT_ERR_NOT_IMPLEMENTED;
+        }
+        break; /* SUIT_COSE_KTY_EC2 */
+
+    default:
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+    }
+    error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        return suit_error_from_qcbor_error(error);
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_set_mechanism_from_cose_key(UsefulBufC buf,
+                                            suit_mechanism_t *mechanism)
+{
+    QCBORDecodeContext decode_context;
+    QCBORItem item;
+    QCBORDecode_Init(&decode_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    QCBORDecode_PeekNext(&decode_context, &item);
+    suit_err_t result = suit_set_mechanism_from_cose_key_from_item(&decode_context, &item, mechanism);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    QCBORError error = QCBORDecode_Finish(&decode_context);
+    if (error != QCBOR_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_set_mechanism_from_cwt_payload(UsefulBufC cwt_payload,
+                                               suit_mechanism_t *mechanism)
+{
+    suit_err_t result;
+    QCBORDecodeContext context;
+    QCBORItem item;
+    QCBORError error;
+    QCBORDecode_Init(&context, cwt_payload, QCBOR_DECODE_MODE_NORMAL);
+    QCBORDecode_EnterMap(&context, &item);
+
+    const size_t cbor_map_len = item.val.uCount;
+    for (size_t i = 0; i < cbor_map_len; i++) {
+        error = QCBORDecode_PeekNext(&context, &item);
+        if (error != QCBOR_SUCCESS) {
+            return suit_error_from_qcbor_error(error);
+        }
+        if (item.uLabelType != QCBOR_TYPE_INT64) {
+            return SUIT_ERR_INVALID_TYPE_OF_KEY;
+        }
+        switch (item.label.int64) {
+        case SUIT_COSE_CNF:
+            if (item.uDataType != QCBOR_TYPE_MAP) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            QCBORDecode_EnterMap(&context, &item);
+            const size_t cnf_map_len = item.val.uCount;
+            for (size_t j = 0; j < cnf_map_len; j++) {
+                error = QCBORDecode_PeekNext(&context, &item);
+                if (error != QCBOR_SUCCESS) {
+                    return suit_error_from_qcbor_error(error);
+                }
+                if (item.uLabelType != QCBOR_TYPE_INT64) {
+                    return SUIT_ERR_INVALID_TYPE_OF_KEY;
+                }
+
+                switch (item.label.int64) {
+                case SUIT_COSE_COSE_KEY:
+                    result = suit_set_mechanism_from_cose_key_from_item(&context, &item, mechanism);
+                    if (result != SUIT_SUCCESS) {
+                        return result;
+                    }
+                    break;
+
+                default:
+                    return SUIT_ERR_NOT_IMPLEMENTED;
+                }
+            }
+            QCBORDecode_ExitMap(&context);
+            error = QCBORDecode_GetError(&context);
+            if (error != QCBOR_SUCCESS) {
+                return suit_error_from_qcbor_error(error);
+            }
+            break; /* SUIT_COSE_CNF */
+
+        default:
+            return SUIT_ERR_NOT_IMPLEMENTED;
+        }
+    }
+    QCBORDecode_ExitMap(&context);
+    error = QCBORDecode_Finish(&context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
+}
+
 

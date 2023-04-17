@@ -5,8 +5,8 @@
 #
 
 CFLAGS = -Wall -g
-LDFLAGS = -lt_cose -lqcbor -lm
-INC = -I ./inc -I ./examples/inc
+LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
+INC = $(CMD_INC) -I ./inc -I ./examples/inc
 TARGET = ./bin/suit_manifest_sign
 SRCS = \
 	examples/suit_manifest_sign_main.c \
@@ -31,6 +31,13 @@ else
     LDFLAGS += -lcrypto
 endif
 
+ifeq ($(SIGNER),TAM)
+    CFLAGS += "-DSUIT_MANIFEST_SIGNER_TAM=1"
+    TARGET = ./bin/suit_manifest_sign_delegate
+else
+    CFLAGS += "-DSUIT_MANIFEST_SIGNER_TRUST_ANCHOR=1"
+endif
+
 $(TARGET): $(OBJS)
 	mkdir -p ./bin
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -39,9 +46,9 @@ $(OBJDIR)/%.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
-.PHONY: all test clean
-
+.PHONY: all
 all: $(TARGET)
 
+.PHONY: clean
 clean:
 	$(RM) $(OBJS) $(TARGET)

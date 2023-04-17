@@ -18,6 +18,7 @@
 #define SUIT_COSE_H
 
 #include "csuit/suit_common.h"
+#include "qcbor/qcbor_decode.h"
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/t_cose_sign1_sign.h"
 
@@ -47,6 +48,24 @@
 extern "C" {
 #endif
 
+#define SUIT_COSE_CNF                   (8)
+#define SUIT_COSE_COSE_KEY              (1)
+#define SUIT_COSE_ENCRYPTED_COSE_KEY    (2)
+#define SUIT_COSE_KID                   (3)
+#define SUIT_COSE_X                     (-2)
+#define SUIT_COSE_Y                     (-3)
+#define SUIT_COSE_D                     (-4)
+#define SUIT_COSE_CRV                   (-1)
+#define SUIT_COSE_CRV_P256              (1)
+#define SUIT_COSE_CRV_P384              (2)
+#define SUIT_COSE_CRV_P521              (3)
+#define SUIT_COSE_CRV_X25519            (4)
+#define SUIT_COSE_CRV_X448              (5)
+#define SUIT_COSE_CRV_ED25519           (6)
+#define SUIT_COSE_CRV_ED448             (7)
+#define SUIT_COSE_KTY                   (1)
+#define SUIT_COSE_KTY_EC2               (2)
+
 #define PRIME256V1_PRIVATE_KEY_LENGTH       32
 #define PRIME256V1_PUBLIC_KEY_LENGTH        65
 #define SECP384R1_PRIVATE_KEY_LENGTH        48
@@ -54,6 +73,9 @@ extern "C" {
 #define SECP521R1_PRIVATE_KEY_LENGTH        66
 #define SECP521R1_PUBLIC_KEY_LENGTH         133
 #define A128GCM_KEY_CHAR_LENGTH             16
+
+#define SUIT_MAX_PRIVATE_KEY_LEN            SECP521R1_PRIVATE_KEY_LENGTH
+#define SUIT_MAX_PUBLIC_KEY_LEN             SECP521R1_PUBLIC_KEY_LENGTH
 
 /*!
     \brief  Generate COSE_Sign1 sined payload.
@@ -82,7 +104,7 @@ suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
  */
 suit_err_t suit_verify_cose_sign(const UsefulBufC signed_cose,
                                  const suit_key_t *public_key,
-                                 UsefulBufC returned_payload);
+                                 UsefulBufC *returned_payload);
 
 /*!
     \brief  Verify COSE_Sign1 signed payload.
@@ -107,7 +129,7 @@ suit_err_t suit_verify_cose_sign(const UsefulBufC signed_cose,
  */
 suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
                                   const suit_key_t *public_key,
-                                  UsefulBufC returned_payload);
+                                  UsefulBufC *returned_payload);
 
 /*!
     \brief  Verify COSE_Mac signed payload.
@@ -199,6 +221,14 @@ suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key, suit_
 suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key, suit_key_t *cose_secret_key);
 
 suit_err_t suit_free_key(const suit_key_t *key);
+
+suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *context,
+                                                      QCBORItem *item,
+                                                      suit_mechanism_t *mechanism);
+suit_err_t suit_set_mechanism_from_cose_key(UsefulBufC buf,
+                                            suit_mechanism_t *mechanism);
+suit_err_t suit_set_mechanism_from_cwt_payload(UsefulBufC payload,
+                                               suit_mechanism_t *mechanism);
 
 #ifdef __cplusplus
 }

@@ -9,14 +9,18 @@
 #include "qcbor/qcbor_spiffy_decode.h"
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
+#include "../examples/inc/trust_anchor_prime256v1_cose_key_private.h"
 
 void test_csuit_rollback(void);
 void test_csuit_get_digest(void);
 void test_csuit_suit_encode_buf(void);
 void test_csuit_canonical_cbor(void);
 void test_csuit_without_authentication_wrapper(void);
+void test_csuit_cose_key(void);
 
-int main(int argc, char *argv[]) {
+
+int main(int argc, char *argv[])
+{
     CU_pSuite suite;
     CU_initialize_registry();
     suite = CU_add_suite("SUIT", NULL, NULL);
@@ -25,13 +29,15 @@ int main(int argc, char *argv[]) {
     CU_add_test(suite, "test_csuit_suit_encode_buf", test_csuit_suit_encode_buf);
     CU_add_test(suite, "test_csuit_without_authentication_wrapper", test_csuit_without_authentication_wrapper);
     CU_add_test(suite, "test_csuit_canonical_cbor", test_csuit_canonical_cbor);
+    CU_add_test(suite, "test_csuit_cose_key", test_csuit_cose_key);
     CU_basic_set_mode(CU_BRM_SILENT);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return 0;
 }
 
-size_t test_csuit_rollback_buf(const uint8_t *buf, const size_t len) {
+size_t test_csuit_rollback_buf(const uint8_t *buf, const size_t len)
+{
     QCBORDecodeContext context;
     QCBORItem item;
     QCBORDecode_Init(&context, (UsefulBufC){buf, len}, QCBOR_DECODE_MODE_NORMAL);
@@ -42,7 +48,8 @@ size_t test_csuit_rollback_buf(const uint8_t *buf, const size_t len) {
     return suit_qcbor_calc_rollback(&item) - cursor;
 }
 
-void test_csuit_rollback(void) {
+void test_csuit_rollback(void)
+{
     uint8_t bufu0[] = {0x17}; // unsigned(23)
     CU_ASSERT(test_csuit_rollback_buf(bufu0, sizeof(bufu0)) == 0);
     uint8_t bufu1[] = {0x18, 0x18}; // unsigned(24)
@@ -117,7 +124,8 @@ void test_csuit_rollback(void) {
     CU_ASSERT(test_csuit_rollback_buf(bufa0, 26) == 0);
 }
 
-void test_csuit_get_digest(void) {
+void test_csuit_get_digest(void)
+{
     QCBORDecodeContext context;
     QCBORError error;
     suit_digest_t digest;
@@ -140,24 +148,24 @@ void test_csuit_get_digest(void) {
         0x55, 0xEC, 0x9A, 0xF3, 0xE9, 0xED, 0xDB, 0x99
     };
     QCBORDecode_Init(&context, (UsefulBufC){.ptr = suit_digest_buf, .len = sizeof(suit_digest_buf)}, QCBOR_DECODE_MODE_NORMAL);
-    suit_process_digest(&context, &digest);
+    suit_process_digest(&context, &digest, NULL);
     error = QCBORDecode_Finish(&context);
     CU_ASSERT_EQUAL(error, QCBOR_SUCCESS);
     CU_ASSERT_EQUAL(digest.bytes.len, 32);
 
     uint8_t suit_authentication_buf[] = {
-        0x58, 0x73, 0x82, 0x58, 0x24, 0x82, 0x02, 0x58, 0x20, 0x5C, 0x09, 0x7E,
-        0xF6, 0x4B, 0xF3, 0xBB, 0x9B, 0x49, 0x4E, 0x71, 0xE1, 0xF2,
-        0x41, 0x8E, 0xEF, 0x8D, 0x46, 0x6C, 0xC9, 0x02, 0xF6, 0x39,
-        0xA8, 0x55, 0xEC, 0x9A, 0xF3, 0xE9, 0xED, 0xDB, 0x99, 0x58,
-        0x4A, 0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA0, 0xF6, 0x58,
-        0x40, 0xA1, 0x9F, 0xD1, 0xF2, 0x3B, 0x17, 0xBE, 0xED, 0x32,
-        0x1C, 0xEC, 0xE7, 0x42, 0x3D, 0xFB, 0x48, 0xC4, 0x57, 0xB8,
-        0xF1, 0xF6, 0xAC, 0x83, 0x57, 0x7A, 0x3C, 0x10, 0xC6, 0x77,
-        0x3F, 0x6F, 0x3A, 0x79, 0x02, 0x37, 0x6B, 0x59, 0x54, 0x09,
-        0x20, 0xB6, 0xC5, 0xF5, 0x7B, 0xAC, 0x5F, 0xC8, 0x54, 0x3D,
-        0x8F, 0x5D, 0x3D, 0x97, 0x4F, 0xAA, 0x2E, 0x6D, 0x03, 0xDA,
-        0xA5, 0x34, 0xB4, 0x43, 0xA7
+        0x58, 0x73, 0x82, 0x58, 0x24, 0x82, 0x02, 0x58, 0x20, 0x5C,
+        0x09, 0x7E, 0xF6, 0x4B, 0xF3, 0xBB, 0x9B, 0x49, 0x4E, 0x71,
+        0xE1, 0xF2, 0x41, 0x8E, 0xEF, 0x8D, 0x46, 0x6C, 0xC9, 0x02,
+        0xF6, 0x39, 0xA8, 0x55, 0xEC, 0x9A, 0xF3, 0xE9, 0xED, 0xDB,
+        0x99, 0x58, 0x4A, 0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA0,
+        0xF6, 0x58, 0x40, 0xA1, 0x9F, 0xD1, 0xF2, 0x3B, 0x17, 0xBE,
+        0xED, 0x32, 0x1C, 0xEC, 0xE7, 0x42, 0x3D, 0xFB, 0x48, 0xC4,
+        0x57, 0xB8, 0xF1, 0xF6, 0xAC, 0x83, 0x57, 0x7A, 0x3C, 0x10,
+        0xC6, 0x77, 0x3F, 0x6F, 0x3A, 0x79, 0x02, 0x37, 0x6B, 0x59,
+        0x54, 0x09, 0x20, 0xB6, 0xC5, 0xF5, 0x7B, 0xAC, 0x5F, 0xC8,
+        0x54, 0x3D, 0x8F, 0x5D, 0x3D, 0x97, 0x4F, 0xAA, 0x2E, 0x6D,
+        0x03, 0xDA, 0xA5, 0x34, 0xB4, 0x43, 0xA7
     };
     UsefulBufC tmp;
 
@@ -173,7 +181,7 @@ void test_csuit_get_digest(void) {
     QCBORDecode_ExitArray(&context);
     QCBORDecode_ExitBstrWrapped(&context);
     */
-    suit_process_digest(&context, &digest);
+    suit_process_digest(&context, &digest, NULL);
 
     QCBORDecode_GetByteString(&context, &tmp);
     QCBORDecode_ExitArray(&context);
@@ -221,7 +229,8 @@ void test_csuit_suit_encode_buf(void) {
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
 }
 
-void test_csuit_without_authentication_wrapper(void) {
+void test_csuit_without_authentication_wrapper(void)
+{
     uint8_t mini_manifest[] = {
         0xd8, 0x6b,                                                     // 107(
               0xa1,                                                     // map(1){
@@ -256,7 +265,8 @@ void test_csuit_without_authentication_wrapper(void) {
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
 }
 
-void test_csuit_canonical_cbor(void) {
+void test_csuit_canonical_cbor(void)
+{
     uint8_t mini_manifest[] = {
         0xd8, 0x6b,                                                     // 107(
               0xa1,                                                     // map(1){
@@ -291,4 +301,77 @@ void test_csuit_canonical_cbor(void) {
     mode.ALLOW_NOT_CANONICAL_CBOR = 1;
     result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+}
+
+void test_csuit_cose_key(void)
+{
+    suit_err_t result = SUIT_SUCCESS;
+    suit_mechanism_t mechanism;
+
+    uint8_t cose_key_buf[] = {
+        0xA5,                                 //# map(5)
+           0x01,                              //# unsigned(1) / 1 = kty /
+           0x02,                              //# unsigned(2) / 2 = EC2 /
+           0x20,                              //# negative(0) / -1 = crv /
+           0x01,                              //# unsigned(1) / 1 = P-256 /
+           0x21,                              //# negative(1) / -2 = x /
+           0x58, 0x20,                        //# bytes(32)
+              0x84, 0x96, 0x81, 0x1A, 0xAE, 0x0B, 0xAA, 0xAB,
+              0xD2, 0x61, 0x57, 0x18, 0x9E, 0xEC, 0xDA, 0x26,
+              0xBE, 0xAA, 0x8B, 0xF1, 0x1B, 0x6F, 0x3F, 0xE6,
+              0xE2, 0xB5, 0x65, 0x9C, 0x85, 0xDB, 0xC0, 0xAD,
+           0x22,                              //# negative(2) / -3 = y /
+           0x58, 0x20,                        //# bytes(32)
+              0x3B, 0x1F, 0x2A, 0x4B, 0x6C, 0x09, 0x81, 0x31,
+              0xC0, 0xA3, 0x6D, 0xAC, 0xD1, 0xD7, 0x8B, 0xD3,
+              0x81, 0xDC, 0xDF, 0xB0, 0x9C, 0x05, 0x2D, 0xB3,
+              0x39, 0x91, 0xDB, 0x73, 0x38, 0xB4, 0xA8, 0x96,
+           0x23,                              //# negative(3) / -4 = d /
+           0x58, 0x20,                        //# bytes(32)
+              0x02, 0x96, 0x58, 0x8D, 0x90, 0x94, 0x18, 0xB3,
+              0x39, 0xD1, 0x50, 0x42, 0x0A, 0x36, 0x12, 0xB5,
+              0x7F, 0xB4, 0xF6, 0x31, 0xA6, 0x9F, 0x22, 0x4F,
+              0xAE, 0x90, 0xCB, 0x4F, 0x3F, 0xE1, 0x89, 0x73,
+    };
+    UsefulBufC cose_key = {
+        .ptr = cose_key_buf,
+        .len = sizeof(cose_key_buf)
+    };
+    result = suit_set_mechanism_from_cose_key(cose_key, &mechanism);
+    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+    CU_ASSERT_EQUAL(mechanism.key.private_key_len, 32);
+    CU_ASSERT_EQUAL(mechanism.key.public_key_len, 65);
+
+    uint8_t cwt_payload_buf[] = {
+        0xA1,                                       //# map(1)
+           0x08,                                    //# unsigned(8) / 8 = cnf /
+           0xA1,                                    //# map(1)
+              0x01,                                 //# unsigned(1) / 1 = COSE_Key /
+              0xA4,                                 //# map(4)
+                 0x01,                              //# unsigned(1) / 1 = kty /
+                 0x02,                              //# unsigned(2) / 2 = EC2 /
+                 0x20,                              //# negative(0) / -1 = crv /
+                 0x01,                              //# unsigned(1) / 1 = P-256 /
+                 0x21,                              //# negative(1) / -2 = x /
+                 0x58, 0x20,                        //# bytes(32)
+                    0x84, 0x96, 0x81, 0x1A, 0xAE, 0x0B, 0xAA, 0xAB,
+                    0xD2, 0x61, 0x57, 0x18, 0x9E, 0xEC, 0xDA, 0x26,
+                    0xBE, 0xAA, 0x8B, 0xF1, 0x1B, 0x6F, 0x3F, 0xE6,
+                    0xE2, 0xB5, 0x65, 0x9C, 0x85, 0xDB, 0xC0, 0xAD,
+                 0x22,                              //# negative(2) / -3 = y /
+                 0x58, 0x20,                        //# bytes(32)
+                    0x3B, 0x1F, 0x2A, 0x4B, 0x6C, 0x09, 0x81, 0x31,
+                    0xC0, 0xA3, 0x6D, 0xAC, 0xD1, 0xD7, 0x8B, 0xD3,
+                    0x81, 0xDC, 0xDF, 0xB0, 0x9C, 0x05, 0x2D, 0xB3,
+                    0x39, 0x91, 0xDB, 0x73, 0x38, 0xB4, 0xA8, 0x96,
+    };
+    UsefulBufC cwt_payload = {
+        .ptr = cwt_payload_buf,
+        .len = sizeof(cwt_payload_buf)
+    };
+
+    result = suit_set_mechanism_from_cwt_payload(cwt_payload, &mechanism);
+    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+    CU_ASSERT_EQUAL(mechanism.key.private_key_len, 0);
+    CU_ASSERT_EQUAL(mechanism.key.public_key_len, 65);
 }

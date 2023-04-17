@@ -1210,20 +1210,35 @@ error:
     return result;
 }
 
-void suit_process_digest(QCBORDecodeContext *context,
-                         suit_digest_t *digest)
+suit_err_t suit_process_digest(QCBORDecodeContext *context,
+                               suit_digest_t *digest,
+                               UsefulBufC *digest_buf)
 {
     int64_t algorithm_id;
-    UsefulBufC digest_bytes;
+    QCBORItem item;
+    QCBORDecode_PeekNext(context, &item);
+    if (item.uDataType != QCBOR_TYPE_BYTE_STRING) {
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+    }
+    if (digest_buf != NULL) {
+        *digest_buf = item.val.string;
+    }
     QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
     QCBORDecode_EnterArray(context, NULL);
     QCBORDecode_GetInt64(context, &algorithm_id);
+    UsefulBufC digest_bytes;
     QCBORDecode_GetByteString(context, &digest_bytes);
     digest->algorithm_id = algorithm_id;
     digest->bytes.ptr = (uint8_t *)digest_bytes.ptr;
     digest->bytes.len = digest_bytes.len;
     QCBORDecode_ExitArray(context);
     QCBORDecode_ExitBstrWrapped(context);
+
+    QCBORError error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        return suit_error_from_qcbor_error(error);
+    }
+    return SUIT_SUCCESS;
 }
 
 suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
@@ -1241,18 +1256,36 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
     }
 
     /* digest */
-    suit_process_digest(context, digest);
+    UsefulBufC digest_buf;
+    suit_err_t result = suit_process_digest(context, digest, &digest_buf);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
 
     /* signatures */
+    bool verified = false;
     UsefulBufC signature;
     for (size_t i = 1; i < length; i++) {
         QCBORDecode_GetByteString(context, &signature);
-        /* TODO: ignore signature for now */
+        if (verified) {
+            continue;
+        }
+        size_t j = 0;
+        for (; j < SUIT_MAX_KEY_NUM; j++) {
+            result = suit_verify_cose_sign1(signature, &suit_inputs->mechanisms[j].key, &digest_buf);
+            if (result == SUIT_SUCCESS) {
+                verified = true;
+            }
+        }
     }
     QCBORDecode_ExitArray(context);
     QCBORDecode_ExitBstrWrapped(context);
+    QCBORError error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        return suit_error_from_qcbor_error(error);
+    }
 
-    return SUIT_SUCCESS;
+    return (verified) ? SUIT_SUCCESS : SUIT_ERR_FAILED_TO_VERIFY;
 }
 
 suit_err_t suit_extract_common(QCBORDecodeContext *context,
@@ -1531,6 +1564,90 @@ error:
 
 }
 
+suit_err_t suit_process_delegation(QCBORDecodeContext *context,
+                                   suit_inputs_t *suit_inputs)
+{
+    suit_err_t result;
+    QCBORError error;
+    QCBORItem item;
+    QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+    QCBORDecode_EnterArray(context, &item);
+    if (item.val.uCount > SUIT_MAX_KEY_NUM) {
+        result = SUIT_ERR_NO_MEMORY;
+        goto error;
+    }
+    const size_t delegation_chain_num = item.val.uCount;
+    for (size_t i = 0; i < delegation_chain_num; i++) {
+        QCBORDecode_EnterArray(context, &item);
+        if (item.val.uCount > SUIT_MAX_KEY_NUM) {
+            result = SUIT_ERR_NO_MEMORY;
+            goto error;
+        }
+        const size_t num = item.val.uCount;
+        for (size_t j = 0; j < num; j++) {
+            UsefulBufC cwt;
+            QCBORDecode_GetByteString(context, &cwt);
+            UsefulBufC cwt_payload;
+            size_t k = 0;
+            for (; k < SUIT_MAX_KEY_NUM; k++) {
+                if (!suit_inputs->mechanisms[k].use) {
+                    continue;
+                }
+                cwt_payload = NULLUsefulBufC;
+                result = suit_verify_cose_sign1(cwt, &suit_inputs->mechanisms[k].key, &cwt_payload);
+                if (result == SUIT_SUCCESS) {
+                    break;
+                }
+            }
+            if (k == SUIT_MAX_KEY_NUM) {
+                result = SUIT_ERR_FAILED_TO_VERIFY_DELEGATION;
+                goto error;
+            }
+            // search empty slot
+            for (k = 0; k < SUIT_MAX_KEY_NUM; k++) {
+                if (!suit_inputs->mechanisms[k].use) {
+                    break;
+                }
+            }
+            if (k == SUIT_MAX_KEY_NUM) {
+                result = SUIT_ERR_NO_MEMORY;
+                goto error;
+            }
+            result = suit_set_mechanism_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k]);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+            suit_inputs->mechanisms[k].cose_tag = CBOR_TAG_COSE_SIGN1;
+            suit_inputs->mechanisms[k].use = true;
+        }
+        QCBORDecode_ExitArray(context);
+    }
+    QCBORDecode_ExitArray(context);
+    QCBORDecode_ExitBstrWrapped(context);
+
+    error = QCBORDecode_GetError(context);
+    if (error != QCBOR_SUCCESS) {
+        goto error;
+    }
+    return SUIT_SUCCESS;
+
+error:
+    if (result != SUIT_ERR_ABORT) {
+        suit_report_callback(
+            (suit_report_args_t) {
+                .level0 = SUIT_DELEGATION,
+                .level1.manifest_key = SUIT_MANIFEST_KEY_INVALID,
+                .level2.condition_directive = SUIT_CONDITION_INVALID,
+                .level3.parameter = SUIT_PARAMETER_INVALID,
+                .qcbor_error = error,
+                .suit_error = result
+            }
+        );
+        return SUIT_ERR_ABORT;
+    }
+    return result;
+}
+
 /*
     Public function. See suit_manifest_process.h
  */
@@ -1572,11 +1689,17 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
             envelope_key = item.label.int64;
             switch (envelope_key) {
             case SUIT_DELEGATION:
-                result = SUIT_ERR_NOT_IMPLEMENTED;
-                goto error;
+                result = suit_process_delegation(&context, suit_inputs);
+                if (result != SUIT_SUCCESS) {
+                    goto error;
+                }
+                break;
 
             case SUIT_AUTHENTICATION:
                 result = suit_process_authentication_wrapper(&context, suit_inputs, &manifest_digest);
+                if (result != SUIT_SUCCESS) {
+                    goto error;
+                }
                 break;
 
             case SUIT_MANIFEST:

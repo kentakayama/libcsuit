@@ -4,7 +4,7 @@
  SPDX-License-Identifier: BSD-2-Clause
 -->
 
-## Example 1: Basic Dependency Example
+## Example 1: SUIT Delegation Example
 {: numbered='no'}
 
 ### CBOR Diagnostic Notation of SUIT Manifest
@@ -12,10 +12,35 @@
 
 ~~~~
 / SUIT_Envelope_Tagged / 107({
+  / delegation / 1: << [
+    [
+      / NOTE: signed by trust anchor /
+      << 18([
+        / protected: / << {
+          / alg / 1: -7 / ES256 /
+        } >>,
+        / unprotected / {
+        },
+        / payload: / << {
+          / cnf / 8: {
+            / NOTE: public key of delegated authority /
+            / COSE_Key / 1: {
+              / cty / 1: 2 / EC2 /,
+              / crv / -1: 1 / P-256 /,
+              / x / -2: h'0E908AA8F066DB1F084E0C3652C63952BD99F2A5BDB22F9E01367AAD03ABA68B',
+              / y / -3: h'77DA1BD8AC4F0CB490BA210648BF79AB164D49AD3551D71D314B2749EE42D29A'
+            }
+          }
+        } >>,
+        / signature: / h'FB2D5ACF66B9C8573CE92E13BFB8D113F798715CC10B5A0010B11925C155E7245A64E131073B87AC50CAC71650A21315B82D06CA2298CD1A95519AAE4C4B5315'
+      ]) >>
+    ]
+  ] >>,
+  / NOTE: signed by delegated authority /
   / authentication-wrapper / 2: << [
     << [
       / digest-algorithm-id: / -16 / SHA256 /,
-      / digest-bytes: / h'E9F48BCC78567721524DF20720F3D161F3801C7674D9FC4CDE502F7BB0EFB5D9'
+      / digest-bytes: / h'6EA128D7BB19B86F77C4227F2A29F22026A41958ACC45CC0A35BA388B13E2F51'
     ] >>,
     << / COSE_Sign1_Tagged / 18([
       / protected: / << {
@@ -23,56 +48,31 @@
       } >>,
       / unprotected: / {},
       / payload: / null,
-      / signature: / h'02A3C26EAE57CF482F5DDC1898EBEDE33DCD85AA102FEBC7FFA8126FFB50499A4137E7D49E23994F72C977E21BAFAFB5CFCA0E1E95B961914CFA5F01D4D28BCC'
+      / signature: / h'99F949043701D7BDBA38904A0B49F004DED6B64A4900DECA5C66AE8A9EBA913576DEF136B74EA89C14FA64624DBD33B4C0BB41C153CA51548C73FF71A2BAF274'
     ]) >>
   ] >>,
   / manifest / 3: << {
     / manifest-version / 1: 1,
     / manifest-sequence-number / 2: 0,
     / common / 3: << {
-      / dependencies / 1: {
-        / component-index / 1: {
-          / dependency-prefix / 1: [
-            'dependent.suit'
-          ]
-        }
-      },
       / components / 2: [
         [
-          '10'
+          '00'
         ]
       ]
     } >>,
     / manifest-component-id / 5: [
-      'depending.suit'
+      'dependent.suit'
     ],
     / invoke / 9: << [
-      / directive-set-component-index / 12, 0,
       / directive-override-parameters / 20, {
-        / parameter-invoke-args / 23: 'cat 00 10'
+        / parameter-invoke-args / 23: 'cat 00'
       },
       / directive-invoke / 23, 15
     ] >>,
-    / dependency-resolution / 15: << [
-      / directive-set-component-index / 12, 1,
-      / directive-override-parameters / 20, {
-        / parameter-image-digest / 3: << [
-          / digest-algorithm-id: / -16 / SHA256 /,
-          / digest-bytes: / h'9971271881eddc8e7ac42c0107b07dac84de8f5165edc9ce0d7efd4d0586feda'
-        ] >>,
-        / parameter-image-size / 14: 190,
-        / parameter-uri / 21: "http://example.com/dependent.suit"
-      },
-      / directive-fetch / 21, 2,
-      / condition-image-match / 3, 15
-    ] >>,
     / install / 17: << [
-      / directive-set-component-index / 12, 1,
-      / directive-process-dependency / 11, 0,
-
-      / directive-set-component-index / 12, 0,
       / directive-override-parameters / 20, {
-        / parameter-content / 18: ' in multiple trust domains'
+        / parameter-content / 18: 'hello world'
       },
       / directive-write / 18, 15
     ] >>
@@ -85,15 +85,16 @@
 {: numbered='no'}
 
 ~~~~
-D86BA2025873825824822F5820E9F48BCC78567721524DF20720F3D161F3
-801C7674D9FC4CDE502F7BB0EFB5D9584AD28443A10126A0F6584002A3C2
-6EAE57CF482F5DDC1898EBEDE33DCD85AA102FEBC7FFA8126FFB50499A41
-37E7D49E23994F72C977E21BAFAFB5CFCA0E1E95B961914CFA5F01D4D28B
-CC0358CEA70101020003581CA201A101A101814E646570656E64656E742E
-7375697402818142313005814E646570656E64696E672E73756974095286
-0C0014A11749636174203030203130170F0F5857880C0114A3035824822F
-58209971271881EDDC8E7AC42C0107B07DAC84DE8F5165EDC9CE0D7EFD4D
-0586FEDA0E18BE157821687474703A2F2F6578616D706C652E636F6D2F64
-6570656E64656E742E737569741502030F1158288A0C010B000C0014A112
-581A20696E206D756C7469706C6520747275737420646F6D61696E73120F
+D86BA301589E8181589AD28443A10126A0584FA108A101A4010220012158
+200E908AA8F066DB1F084E0C3652C63952BD99F2A5BDB22F9E01367AAD03
+ABA68B22582077DA1BD8AC4F0CB490BA210648BF79AB164D49AD3551D71D
+314B2749EE42D29A5840FB2D5ACF66B9C8573CE92E13BFB8D113F798715C
+C10B5A0010B11925C155E7245A64E131073B87AC50CAC71650A21315B82D
+06CA2298CD1A95519AAE4C4B5315025874835824822F58206EA128D7BB19
+B86F77C4227F2A29F22026A41958ACC45CC0A35BA388B13E2F51584AD284
+43A10126A0F6584099F949043701D7BDBA38904A0B49F004DED6B64A4900
+DECA5C66AE8A9EBA913576DEF136B74EA89C14FA64624DBD33B4C0BB41C1
+53CA51548C73FF71A2BAF27440035842A6010102000347A1028181423030
+05814E646570656E64656E742E73756974094D8414A11746636174203030
+170F11528414A1124B68656C6C6F20776F726C64120F
 ~~~~

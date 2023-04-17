@@ -8,13 +8,11 @@
 #include "qcbor/qcbor.h"
 #include "csuit/suit_common.h"
 #include "csuit/suit_manifest_decode.h"
+#include "csuit/suit_manifest_encode.h"
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_prime256v1.h"
-#include "trust_anchor_prime256v1_pub.h"
-#include "tam_es256_private_key.h"
-#include "tam_es256_public_key.h"
+#include "trust_anchor_prime256v1_cose_key_private.h"
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/q_useful_buf.h"
 
@@ -40,21 +38,13 @@ int main(int argc,
     char *manifest_file = argv[1];
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 
-    result = suit_key_init_es256_key_pair(trust_anchor_prime256v1_private_key, trust_anchor_prime256v1_public_key, &mechanisms[0].key);
+    result = suit_set_mechanism_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanisms[0]);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
     mechanisms[0].cose_tag = CBOR_TAG_COSE_SIGN1;
     mechanisms[0].use = false;
-
-    result = suit_key_init_es256_key_pair(tam_es256_private_key, tam_es256_public_key, &mechanisms[1].key);
-    if (result != SUIT_SUCCESS) {
-        printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
-        return EXIT_FAILURE;
-    }
-    mechanisms[1].cose_tag = CBOR_TAG_COSE_SIGN1;
-    mechanisms[1].use = false;
 
     // Read manifest file.
     printf("main : Read Manifest file.\n");
@@ -105,6 +95,10 @@ int main(int argc,
     result = suit_encode_envelope(mode, &envelope, mechanisms, &ret_pos, &encode_len);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
+        if (mechanisms[1].use) {
+            printf("main : Due to delegated public key. Skip encoding test.\n");
+            return EXIT_SUCCESS;
+        }
         return EXIT_FAILURE;
     }
     printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
@@ -139,6 +133,5 @@ int main(int argc,
     }
 
     suit_free_key(&mechanisms[0].key);
-    suit_free_key(&mechanisms[1].key);
     return EXIT_SUCCESS;
 }

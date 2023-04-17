@@ -12,10 +12,18 @@
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_prime256v1.h"
-#include "trust_anchor_prime256v1_pub.h"
-#include "tam_es256_private_key.h"
-#include "tam_es256_public_key.h"
+#if defined(SUIT_MANIFEST_SIGNER_TRUST_ANCHOR)
+#include "trust_anchor_prime256v1_cose_key_private.h"
+UsefulBufC private_key = trust_anchor_prime256v1_cose_key_private;
+UsefulBufC public_key = NULLUsefulBufC;
+#elif defined(SUIT_MANIFEST_SIGNER_TAM)
+#include "tam_es256_cose_key_private.h"
+UsefulBufC private_key = tam_es256_cose_key_private;
+#include "trust_anchor_prime256v1_cose_key_public.h"
+UsefulBufC public_key = trust_anchor_prime256v1_cose_key_public;
+#else
+#error Signing key is not specified
+#endif
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/q_useful_buf.h"
 
@@ -39,13 +47,23 @@ int main(int argc,
     uint8_t *manifest_buf = NULL;
     uint8_t *encode_buf = NULL;
 
-    result = suit_key_init_es256_key_pair(trust_anchor_prime256v1_private_key, trust_anchor_prime256v1_public_key, &mechanisms[0].key);
+    result = suit_set_mechanism_from_cose_key(private_key, &mechanisms[0]);
     if (result != SUIT_SUCCESS) {
-        printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
+        printf("main : Failed to create signing key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
     mechanisms[0].cose_tag = CBOR_TAG_COSE_SIGN1;
     mechanisms[0].use = true;
+
+    if (!UsefulBuf_IsNULLOrEmptyC(public_key)) {
+        result = suit_set_mechanism_from_cose_key(public_key, &mechanisms[1]);
+        if (result != SUIT_SUCCESS) {
+            printf("main : Failed to create verification key of trust anchor. %s(%d)\n", suit_err_to_str(result), result);
+            return EXIT_FAILURE;
+        }
+        mechanisms[1].cose_tag = CBOR_TAG_COSE_SIGN1;
+        mechanisms[1].use = true;
+    }
 
     // Read manifest file.
     printf("main : Read Manifest file.\n");

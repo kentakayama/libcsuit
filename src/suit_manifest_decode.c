@@ -634,7 +634,7 @@ suit_err_t suit_decode_authentication_block(const suit_decode_mode_t mode,
     UsefulBufC returned_payload = {.ptr = digest_buf->ptr, .len = digest_buf->len};
     switch (cose_tag) {
     case COSE_SIGN1_TAG:
-        result = suit_verify_cose_sign1(signed_cose, public_key, returned_payload);
+        result = suit_verify_cose_sign1(signed_cose, public_key, &returned_payload);
         break;
     default:
         result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -1139,6 +1139,88 @@ suit_err_t suit_decode_authentication_wrapper(const suit_decode_mode_t mode,
     return result;
 }
 
+suit_err_t suit_decode_delegation_from_item(const suit_decode_mode_t mode,
+                                            QCBORDecodeContext *context,
+                                            QCBORItem *item,
+                                            bool next,
+                                            suit_delegation_t *delegation,
+                                            suit_mechanism_t mechanisms[])
+{
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_ARRAY);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    if (item->val.uCount >= SUIT_MAX_ARRAY_LENGTH) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    delegation->delegation_chain_num = item->val.uCount;
+
+    for (size_t i = 0; i < delegation->delegation_chain_num; i++) {
+        suit_delegation_chain_t *delegation_chain = &delegation->delegation_chains[i];
+        result = suit_qcbor_get(context, item, true, QCBOR_TYPE_ARRAY);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        delegation_chain->len = item->val.uCount;
+        for (size_t j = 0; j < delegation_chain->len; j++) {
+            result = suit_qcbor_get(context, item, true, QCBOR_TYPE_BYTE_STRING);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            delegation_chain->chain[j] = item->val.string;
+            UsefulBufC cwt_payload;
+            size_t k = 0;
+            for (; k < SUIT_MAX_KEY_NUM; k++) {
+                /* NOTE: use might be false while decoding */
+                if (mechanisms[k].key.public_key == NULL) {
+                    continue;
+                }
+                cwt_payload = NULLUsefulBufC;
+                result = suit_verify_cose_sign1(delegation_chain->chain[j], &mechanisms[k].key, &cwt_payload);
+                if (result == SUIT_SUCCESS) {
+                    break;
+                }
+            }
+            if (k == SUIT_MAX_KEY_NUM) {
+                return SUIT_ERR_FAILED_TO_VERIFY_DELEGATION;
+            }
+            // search empty slot
+            for (k = 0; k < SUIT_MAX_KEY_NUM; k++) {
+                /* NOTE: use might be false while decoding */
+                if (mechanisms[k].key.public_key == NULL) {
+                    break;
+                }
+            }
+            if (k == SUIT_MAX_KEY_NUM) {
+                return SUIT_ERR_NO_MEMORY;
+            }
+            result = suit_set_mechanism_from_cwt_payload(cwt_payload, &mechanisms[k]);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            mechanisms[k].cose_tag = CBOR_TAG_COSE_SIGN1;
+            mechanisms[k].use = false; // to be true if used as verification key
+        }
+    }
+    return result;
+}
+
+suit_err_t suit_decode_delegation(const suit_decode_mode_t mode,
+                                  UsefulBufC buf,
+                                  suit_delegation_t *delegation,
+                                  suit_mechanism_t mechanisms[])
+{
+    QCBORDecodeContext delegation_context;
+    QCBORItem item;
+    QCBORDecode_Init(&delegation_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_delegation_from_item(mode, &delegation_context, &item, true, delegation, mechanisms);
+    QCBORError error = QCBORDecode_Finish(&delegation_context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
+}
+
 suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                                           QCBORDecodeContext *context,
                                           QCBORItem *item,
@@ -1199,19 +1281,25 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
             }
             label = item->label.int64;
             switch (label) {
+            case SUIT_DELEGATION:
+                if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
+                result = suit_decode_delegation(mode, item->val.string, &envelope->delegation, mechanisms);
+                break;
+
             case SUIT_AUTHENTICATION:
                 if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                     return SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 }
-                else {
-                    buf.ptr = (uint8_t *)item->val.string.ptr;
-                    buf.len = item->val.string.len;
-                    result = suit_decode_authentication_wrapper(mode, &buf, &envelope->wrapper, mechanisms);
-                    if (result == SUIT_SUCCESS) {
-                        is_authentication_set = true;
-                    }
+                buf.ptr = (uint8_t *)item->val.string.ptr;
+                buf.len = item->val.string.len;
+                result = suit_decode_authentication_wrapper(mode, &buf, &envelope->wrapper, mechanisms);
+                if (result == SUIT_SUCCESS) {
+                    is_authentication_set = true;
                 }
                 break;
+
             case SUIT_MANIFEST:
                 if (is_authentication_set || mode.SKIP_AUTHENTICATION_FAILURE) {
                     result = suit_decode_manifest_from_bstr(mode, context, item, false, &envelope->manifest, &envelope->wrapper.digest);
@@ -1224,6 +1312,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                      result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
                 }
                 break;
+
             /* SUIT_Severable_Manifest_members */
             case SUIT_SEVERED_PAYLOAD_FETCH:
                 if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
@@ -1334,7 +1423,6 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                 break;
 
             // TODO
-            case SUIT_DELEGATION:
             default:
                 return SUIT_ERR_NOT_IMPLEMENTED;
             }
