@@ -8,6 +8,7 @@
 #include "qcbor/qcbor.h"
 #include "csuit/suit_common.h"
 #include "csuit/suit_manifest_decode.h"
+#include "csuit/suit_manifest_encode.h"
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
