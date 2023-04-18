@@ -38,7 +38,6 @@ suit_err_t suit_store_callback(suit_store_args_t store_args)
 suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args,
                                suit_fetch_ret_t *fetch_ret)
 {
-    printf("not replaced\n");
     return suit_print_fetch(fetch_args, fetch_ret);
 }
 
