@@ -52,10 +52,6 @@ extern "C" {
 #define SUIT_COSE_COSE_KEY              (1)
 #define SUIT_COSE_ENCRYPTED_COSE_KEY    (2)
 #define SUIT_COSE_KID                   (3)
-#define SUIT_COSE_X                     (-2)
-#define SUIT_COSE_Y                     (-3)
-#define SUIT_COSE_D                     (-4)
-#define SUIT_COSE_CRV                   (-1)
 #define SUIT_COSE_CRV_P256              (1)
 #define SUIT_COSE_CRV_P384              (2)
 #define SUIT_COSE_CRV_P521              (3)
@@ -65,9 +61,13 @@ extern "C" {
 #define SUIT_COSE_CRV_ED448             (7)
 #define SUIT_COSE_KTY                   (1)
 #define SUIT_COSE_KTY_EC2               (2)
+#define SUIT_COSE_KTY_SYMMETRIC         (4)
+#define SUIT_COSE_KTY_HSS_LMS           (5)
 
 #define PRIME256V1_PRIVATE_KEY_LENGTH       32
 #define PRIME256V1_PUBLIC_KEY_LENGTH        65
+#define PRIME256V1_PUBLIC_KEY_X_LENGTH      32
+#define PRIME256V1_PUBLIC_KEY_Y_LENGTH      32
 #define SECP384R1_PRIVATE_KEY_LENGTH        48
 #define SECP384R1_PUBLIC_KEY_LENGTH         97
 #define SECP521R1_PRIVATE_KEY_LENGTH        66

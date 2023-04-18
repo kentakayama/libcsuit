@@ -488,17 +488,22 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
     if (item->uDataType != QCBOR_TYPE_MAP) {
         return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
-    UsefulBuf_MAKE_STACK_UB(private_key, SUIT_MAX_PRIVATE_KEY_LEN);
     UsefulBuf_MAKE_STACK_UB(public_key, SUIT_MAX_PUBLIC_KEY_LEN);
+
     int64_t crv = 0;
     int64_t kty = 0;
-
-    UsefulBufC y = NULLUsefulBufC;
-    UsefulBufC x = NULLUsefulBufC;
-    UsefulBufC d = NULLUsefulBufC;
+    union {
+        UsefulBufC k;; // k for Symmetric
+        struct {
+            UsefulBufC x; // x for EC2
+            UsefulBufC y; // y for EC2
+            UsefulBufC d; // d for EC2
+        };
+    } key_params = {0};
     QCBORDecode_EnterMap(context, item);
+    /* allows only deterministic encoded COSE_Key */
     const size_t cose_key_map_len = item->val.uCount;
-    for (size_t k = 0; k < cose_key_map_len; k++) {
+    for (size_t i = 0; i < cose_key_map_len; i++) {
         result = suit_qcbor_get(context, item, true, QCBOR_TYPE_ANY);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -511,31 +516,64 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
             if (item->uDataType != QCBOR_TYPE_INT64) {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
-            kty = item->val.int64;
-            break;
-        case SUIT_COSE_CRV:
-            if (item->uDataType != QCBOR_TYPE_INT64) {
-                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            switch (item->val.int64) {
+            case SUIT_COSE_KTY_EC2:
+            case SUIT_COSE_KTY_SYMMETRIC:
+                kty = item->val.int64;
+                break;
+            default:
+                return SUIT_ERR_NOT_IMPLEMENTED;
             }
-            crv = item->val.int64;
             break;
-        case SUIT_COSE_X:
-            if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
-                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+        case -1:
+            if (kty == SUIT_COSE_KTY_EC2) {
+                if (item->uDataType != QCBOR_TYPE_INT64) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
+                crv = item->val.int64;
             }
-            x = item->val.string;
+            else if (kty == SUIT_COSE_KTY_SYMMETRIC) {
+                if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
+                key_params.k = item->val.string;
+            }
+            else {
+                return SUIT_ERR_NOT_IMPLEMENTED;
+            }
             break;
-        case SUIT_COSE_Y:
-            if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
-                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+        case -2:
+            if (kty == SUIT_COSE_KTY_EC2) {
+                if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
+                key_params.x = item->val.string;
             }
-            y = item->val.string;
+            else {
+                return SUIT_ERR_NOT_IMPLEMENTED;
+            }
             break;
-        case SUIT_COSE_D:
-            if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
-                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+        case -3:
+            if (kty == SUIT_COSE_KTY_EC2) {
+                if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
+                key_params.y = item->val.string;
             }
-            d = item->val.string;
+            else {
+                return SUIT_ERR_NOT_IMPLEMENTED;
+            }
+            break;
+        case -4:
+            if (kty == SUIT_COSE_KTY_EC2) {
+                if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
+                key_params.d = item->val.string;
+            }
+            else {
+                return SUIT_ERR_NOT_IMPLEMENTED;
+            }
             break;
         default:
             suit_qcbor_skip_any(context, item);
@@ -553,23 +591,23 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
     case SUIT_COSE_KTY_EC2:
         switch (crv) {
         case SUIT_COSE_CRV_P256:
-            if ((x.len == 32) &&
-                (y.len == 32)) {
+            if ((key_params.x.len == PRIME256V1_PUBLIC_KEY_X_LENGTH) &&
+                (key_params.y.len == PRIME256V1_PUBLIC_KEY_Y_LENGTH)) {
                 /* POINT_CONVERSION_UNCOMPRESSED */
                 ((uint8_t *)public_key.ptr)[0] = 0x04;
-                memcpy(&((uint8_t *)public_key.ptr)[1], x.ptr, 32);
-                memcpy(&((uint8_t *)public_key.ptr)[33], y.ptr, 32);
+                memcpy(&((uint8_t *)public_key.ptr)[1], key_params.x.ptr, PRIME256V1_PUBLIC_KEY_X_LENGTH);
+                memcpy(&((uint8_t *)public_key.ptr)[1 + PRIME256V1_PUBLIC_KEY_X_LENGTH], key_params.y.ptr, PRIME256V1_PUBLIC_KEY_Y_LENGTH);
                 public_key.len = PRIME256V1_PUBLIC_KEY_LENGTH;
             }
             else {
                 return SUIT_ERR_INVALID_VALUE;
             }
-            if (d.len == 32) {
-                memcpy(private_key.ptr, d.ptr, 32);
-                private_key.len = PRIME256V1_PRIVATE_KEY_LENGTH;
-                result = suit_key_init_es256_key_pair(private_key.ptr, public_key.ptr, &mechanism->key);
+            if (key_params.d.len == PRIME256V1_PRIVATE_KEY_LENGTH) {
+                // TODO: can we limit EC P-256 for ES256?
+                result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, &mechanism->key);
             }
-            else if (d.len == 0) {
+            else if (key_params.d.len == 0) {
+                // TODO: can we limit EC P-256 for ES256?
                 result = suit_key_init_es256_public_key(public_key.ptr, &mechanism->key);
             }
             else {
@@ -585,6 +623,12 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
         }
         break; /* SUIT_COSE_KTY_EC2 */
 
+    case SUIT_COSE_KTY_SYMMETRIC:
+        if (key_params.k.len == 16) {
+            result = suit_key_init_a128kw_secret_key(key_params.k.ptr, &mechanism->key);
+        }
+        break; /* SUIT_COSE_KTY_SYMMETRIC */
+
     default:
         return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
@@ -592,7 +636,7 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
     if (error != QCBOR_SUCCESS) {
         return suit_error_from_qcbor_error(error);
     }
-    return SUIT_SUCCESS;
+    return result;
 }
 
 suit_err_t suit_set_mechanism_from_cose_key(UsefulBufC buf,
@@ -678,5 +722,3 @@ suit_err_t suit_set_mechanism_from_cwt_payload(UsefulBufC cwt_payload,
     }
     return result;
 }
-
-

@@ -24,7 +24,7 @@
 #include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
 #include "trust_anchor_prime256v1_cose_key_public.h"
-#include "trust_anchor_a128_secret_key.h"
+#include "trust_anchor_a128_cose_key_secret.h"
 
 bool is_available_char_for_filename(const char c)
 {
@@ -541,8 +541,8 @@ int main(int argc, char *argv[])
         trust_anchor_prime256v1_cose_key_public
     };
     #define NUM_SECRET_KEYS                 1
-    const unsigned char *secret_keys[NUM_SECRET_KEYS] = {
-        trust_anchor_a128_secret_key,
+    UsefulBufC secret_keys[NUM_SECRET_KEYS] = {
+        trust_anchor_a128_cose_key_secret,
     };
 
     suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
@@ -568,7 +568,7 @@ int main(int argc, char *argv[])
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys.\n");
     for (size_t j = 0; j < NUM_SECRET_KEYS; j++) {
-        result = suit_key_init_a128kw_secret_key(secret_keys[j], &suit_inputs->mechanisms[i + j].key);
+        result = suit_set_mechanism_from_cose_key(secret_keys[j], &suit_inputs->mechanisms[i + j]);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
