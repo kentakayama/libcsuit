@@ -18,13 +18,11 @@ RUN make -f Makefile.ossl libt_cose.a install
 RUN ldconfig
 COPY . /root/libcsuit
 WORKDIR /root/libcsuit
-RUN make build_test CMD_C="-g"
+RUN make build_test
 RUN make -f Makefile.encode
 RUN make -f Makefile.parser
 RUN make -f Makefile.encrypt
 RUN make -f Makefile.process
-
-RUN apt-get -y install gdb
 
 CMD make test && \
     make -f Makefile.encode test && \
