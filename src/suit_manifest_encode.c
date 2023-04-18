@@ -233,7 +233,7 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
         /* bool */
         case SUIT_PARAMETER_STRICT_ORDER:
         case SUIT_PARAMETER_SOFT_FAILURE:
-            QCBOREncode_AddBoolToMapN(context, param->label, &param->value.boolean);
+            QCBOREncode_AddBoolToMapN(context, param->label, param->value.boolean);
             break;
 
         /* SUIT_Digest */
