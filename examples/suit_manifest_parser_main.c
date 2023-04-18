@@ -36,7 +36,7 @@ int main(int argc,
     }
     suit_err_t result = 0;
     char *manifest_file = argv[1];
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
 
     result = suit_set_mechanism_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanisms[0]);
     if (result != SUIT_SUCCESS) {

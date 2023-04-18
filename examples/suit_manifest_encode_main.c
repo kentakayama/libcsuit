@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     }
     char *manifest_file = argv[1];
 
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
     const unsigned char *public_key = trust_anchor_prime256v1_public_key;
     const unsigned char *private_key = trust_anchor_prime256v1_private_key;
     suit_err_t result = suit_key_init_es256_key_pair(private_key, public_key, &mechanisms[0].key);
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     mechanisms[0].use = true;
 
     // Generate manifest
-    suit_envelope_t envelope = (suit_envelope_t){ 0 };
+    suit_envelope_t envelope = {0};
     suit_manifest_t *manifest = &envelope.manifest;
     manifest->version = 1;
     manifest->sequence_number = 2;

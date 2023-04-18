@@ -43,7 +43,7 @@ int main(int argc,
     uint8_t tabstop = 2;
     char *input_file = argv[1];
     char *output_file = argv[2];
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
     uint8_t *manifest_buf = NULL;
     uint8_t *encode_buf = NULL;
 

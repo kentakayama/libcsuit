@@ -23,21 +23,8 @@
 #include "csuit/suit_cose.h"
 #include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
-#include "tam_es256_cose_key_public.h"
-
-#define NUM_PUBLIC_KEYS                 1
-/* TC signer's public_key */
 #include "trust_anchor_prime256v1_cose_key_public.h"
-UsefulBufC public_keys[NUM_PUBLIC_KEYS] = {
-    trust_anchor_prime256v1_cose_key_public
-};
-#define NUM_SECRET_KEYS                 1
-/* TC signer's secret_key */
 #include "trust_anchor_a128_secret_key.h"
-const unsigned char *secret_keys[NUM_SECRET_KEYS] = {
-    trust_anchor_a128_secret_key,
-};
-
 
 bool is_available_char_for_filename(const char c)
 {
@@ -546,8 +533,17 @@ int main(int argc, char *argv[])
         printf("%s <manifest file path>", argv[0]);
         return EXIT_FAILURE;
     }
-    int32_t result = 0;
+    suit_err_t result = 0;
+
     int i;
+    #define NUM_PUBLIC_KEYS                 1
+    UsefulBufC public_keys[NUM_PUBLIC_KEYS] = {
+        trust_anchor_prime256v1_cose_key_public
+    };
+    #define NUM_SECRET_KEYS                 1
+    const unsigned char *secret_keys[NUM_SECRET_KEYS] = {
+        trust_anchor_a128_secret_key,
+    };
 
     suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
     if (suit_inputs == NULL) {

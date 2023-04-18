@@ -245,7 +245,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     EVP_PKEY_CTX    *ctx = NULL;
     OSSL_PARAM_BLD  *param_bld = NULL;
     OSSL_PARAM      *params = NULL;
-    BIGNUM *priv;
+    BIGNUM          *priv = NULL;
 
     const char *group_name;
     switch (key->cose_algorithm_id) {
