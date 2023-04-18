@@ -1272,9 +1272,11 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
         }
         size_t j = 0;
         for (; j < SUIT_MAX_KEY_NUM; j++) {
-            result = suit_verify_cose_sign1(signature, &suit_inputs->mechanisms[j].key, &digest_buf);
-            if (result == SUIT_SUCCESS) {
-                verified = true;
+            if (suit_inputs->mechanisms[j].cose_tag == CBOR_TAG_COSE_SIGN1) {
+                result = suit_verify_cose_sign1(signature, &suit_inputs->mechanisms[j].key, &digest_buf);
+                if (result == SUIT_SUCCESS) {
+                    verified = true;
+                }
             }
         }
     }
