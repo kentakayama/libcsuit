@@ -49,6 +49,7 @@ typedef enum {
     SUIT_ERR_FAILED_TO_SIGN,            /*! COSE signing failure */
     SUIT_ERR_FAILED_TO_DECRYPT,         /*! COSE decryption failure */
     SUIT_ERR_FAILED_TO_ENCRYPT,         /*! COSE encryption failure */
+    SUIT_ERR_FAILED_TO_VERIFY_DELEGATION,   /*! suit-delegation is not signed by trust-anchor */
     SUIT_ERR_CONDITION_MISMATCH,        /*! suit-condition-* failed */
 
     //SUIT_ERR_AUTHENTICATION_POSITION    = 7, /*! suit-authentication-block MUST come before any element, except suit-delegation */
@@ -575,6 +576,19 @@ typedef struct suit_common {
     suit_command_sequence_t         shared_seq;
 } suit_common_t;
 
+typedef struct suit_delegation_chain {
+    size_t                  len;
+    UsefulBufC              chain[SUIT_MAX_KEY_NUM];
+} suit_delegation_chain_t;
+
+/*
+ * SUIT_Delegation
+ */
+typedef struct suit_delegation {
+    size_t                  delegation_chain_num;;
+    suit_delegation_chain_t delegation_chains[SUIT_MAX_KEY_NUM];
+} suit_delegation_t;
+
 /*
  * SUIT_Manifest
  */
@@ -606,13 +620,10 @@ typedef struct suit_payloads {
  */
 typedef struct suit_envelope {
     bool                                tagged;
-    // TODO :                           suit-delegation
+    suit_delegation_t                   delegation;
     suit_authentication_wrapper_t       wrapper;
     suit_payloads_t                     payloads;
     suit_manifest_t                     manifest;
-    // TODO :                           SUIT_Severed_Fields
-    /* SUIT_Severable_Manifest_Members */
-    //suit_severable_manifest_members_t   sev_man_mem; //-> in manifest.sev_man_mem
 } suit_envelope_t;
 
 typedef struct suit_encode {

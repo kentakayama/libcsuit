@@ -4,4 +4,5 @@ suit_manifest_encode
 suit_manifest_encrypt
 suit_manifest_parser
 suit_manifest_sign
+suit_manifest_sign_delegate
 suit_manifest_process

@@ -17,14 +17,13 @@
 #include <sys/wait.h> // waitpid
 #include <unistd.h> // fork
 #include <fcntl.h> // AT_FDCWD
-#include "qcbor/qcbor.h"
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_prime256v1_pub.h"
-#include "trust_anchor_a128_secret_key.h"
+#include "trust_anchor_prime256v1_cose_key_public.h"
+#include "trust_anchor_a128_cose_key_secret.h"
 
 bool is_available_char_for_filename(const char c)
 {
@@ -65,17 +64,6 @@ suit_err_t suit_component_identifier_to_filename(const suit_component_identifier
 
     return SUIT_SUCCESS;
 }
-
-#define NUM_PUBLIC_KEYS                 1
-/* TC signer's public_key */
-const unsigned char *public_keys[NUM_PUBLIC_KEYS] = {
-    trust_anchor_prime256v1_public_key,
-};
-#define NUM_SECRET_KEYS                 1
-/* TC signer's secret_key */
-const unsigned char *secret_keys[NUM_SECRET_KEYS] = {
-    trust_anchor_a128_secret_key,
-};
 
 const uint8_t tc_uri[] = {
     0x68, 0x74, 0x74, 0x70, 0x73, 0x3A, 0x2F, 0x2F, 0x65, 0x78,
@@ -422,6 +410,7 @@ suit_err_t store_component(const char *dst,
     UsefulBuf decrypted_payload_buf = NULLUsefulBuf;
 
     if (!UsefulBuf_IsNULLOrEmptyC(encryption_info)) {
+#ifndef LIBCSUIT_DISABLE_ENCRYPTION
         decrypted_payload_buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
         decrypted_payload_buf.len = SUIT_MAX_DATA_SIZE;
         UsefulBufC tmp = NULLUsefulBufC;
@@ -436,6 +425,9 @@ suit_err_t store_component(const char *dst,
             goto out;
         }
         src = tmp;
+#else
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#endif /* LIBCSUIT_ENCRYPTION_INFO */
     }
 
     size_t len = write_to_file(dst, src.ptr, src.len);
@@ -443,7 +435,9 @@ suit_err_t store_component(const char *dst,
         result = SUIT_ERR_FATAL;
     }
 
+#ifndef LIBCSUIT_DISABLE_ENCRYPTION
 out:
+#endif /* LIBCSUIT_DISABLE_ENCRYPTION */
     if (decrypted_payload_buf.ptr != NULL) {
         free(decrypted_payload_buf.ptr);
     }
@@ -538,8 +532,17 @@ int main(int argc, char *argv[])
         printf("%s <manifest file path>", argv[0]);
         return EXIT_FAILURE;
     }
-    int32_t result = 0;
+    suit_err_t result = 0;
+
     int i;
+    #define NUM_PUBLIC_KEYS                 1
+    UsefulBufC public_keys[NUM_PUBLIC_KEYS] = {
+        trust_anchor_prime256v1_cose_key_public
+    };
+    #define NUM_SECRET_KEYS                 1
+    UsefulBufC secret_keys[NUM_SECRET_KEYS] = {
+        trust_anchor_a128_cose_key_secret,
+    };
 
     suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
     if (suit_inputs == NULL) {
@@ -552,7 +555,7 @@ int main(int argc, char *argv[])
 
     printf("\nmain : Read public keys.\n");
     for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
-        result = suit_key_init_es256_public_key(public_keys[i], &suit_inputs->mechanisms[i].key);
+        result = suit_set_mechanism_from_cose_key(public_keys[i], &suit_inputs->mechanisms[i]);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
@@ -564,13 +567,13 @@ int main(int argc, char *argv[])
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys.\n");
     for (size_t j = 0; j < NUM_SECRET_KEYS; j++) {
-        result = suit_key_init_a128kw_secret_key(secret_keys[j], &suit_inputs->mechanisms[i + j].key);
+        result = suit_set_mechanism_from_cose_key(secret_keys[j], &suit_inputs->mechanisms[i + j]);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
         }
-        suit_inputs->mechanisms[i].use = true;
-        suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_ENCRYPT;
+        suit_inputs->mechanisms[i + j].use = true;
+        suit_inputs->mechanisms[i + j].cose_tag = CBOR_TAG_COSE_ENCRYPT;
     }
 #endif
 

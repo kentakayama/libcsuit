@@ -22,7 +22,7 @@ RUN make -f Makefile.psa libt_cose.a install
 RUN ldconfig
 COPY . /root/libcsuit
 WORKDIR /root/libcsuit
-RUN make MBEDTLS=1
+RUN make MBEDTLS=1 build_test
 RUN make -f Makefile.encode MBEDTLS=1
 RUN make -f Makefile.parser MBEDTLS=1
 RUN make -f Makefile.encrypt MBEDTLS=1

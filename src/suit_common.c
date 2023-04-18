@@ -306,10 +306,7 @@ size_t suit_qcbor_calc_rollback(QCBORItem *item)
         else if (item->val.uCount < UINT16_MAX) {
             return 3;
         }
-        else if (item->val.uCount < UINT32_MAX) {
-            return 5;
-        }
-        return 9;
+        return 0; // illegal?
     }
     return 0;
 }

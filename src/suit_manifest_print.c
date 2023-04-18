@@ -55,6 +55,8 @@ char* suit_err_to_str(suit_err_t error)
         return "SUIT_ERR_FAILED_TO_DECRYPT";
     case SUIT_ERR_FAILED_TO_ENCRYPT:
         return "SUIT_ERR_FAILED_TO_ENCRYPT";
+    case SUIT_ERR_FAILED_TO_VERIFY_DELEGATION:
+        return "SUIT_ERR_FAILED_TO_VERIFY_DELEGATION";
     case SUIT_ERR_CONDITION_MISMATCH:
         return "SUIT_ERR_CONDITION_MISMATCH";
 
@@ -1484,6 +1486,30 @@ suit_err_t suit_print_integrated_payload(const suit_decode_mode_t mode,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_print_delegation(const suit_delegation_t *delegation,
+                                 const uint32_t indent_space,
+                                 const uint32_t indent_delta)
+{
+    if (delegation == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    for (size_t i = 0; i < delegation->delegation_chain_num; i++) {
+        printf("%*s[ ", indent_space, "");
+        for (size_t j = 0; j < delegation->delegation_chains[i].len; j++) {
+            suit_print_hex(delegation->delegation_chains[i].chain[j].ptr, delegation->delegation_chains[i].chain[j].len);
+            if (j + 1 != delegation->delegation_chains[i].len) {
+                printf(", ");
+            }
+        }
+        printf(" ]");
+        if (i + 1 != delegation->delegation_chain_num) {
+            printf(",");
+        }
+        printf("\n");
+    }
+    return SUIT_SUCCESS;
+}
+
 suit_err_t suit_print_envelope(const suit_decode_mode_t mode,
                                const suit_envelope_t *envelope,
                                const uint32_t indent_space,
@@ -1495,6 +1521,15 @@ suit_err_t suit_print_envelope(const suit_decode_mode_t mode,
     suit_err_t result = SUIT_SUCCESS;
     bool comma = false;
     printf("%*s/ SUIT_Envelope%s = / %s{\n", indent_space, "", envelope->tagged ? "_Tagged" : "", envelope->tagged ? "107(" : "");
+    // delegation
+    if (envelope->delegation.delegation_chain_num > 0) {
+        printf("%*s/ delegation / 1: << [\n", indent_space + indent_delta, "");
+        result = suit_print_delegation(&envelope->delegation, indent_space + 2 * indent_delta, indent_delta);
+        printf("%*s] >>,\n", indent_space + indent_delta, "");
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
     // authentication-wrapper
     printf("%*s/ authentication-wrapper / 2: << [\n", indent_space + indent_delta, "");
     printf("%*s/ digest: / << ", indent_space + 2 * indent_delta, "");
@@ -1742,6 +1777,8 @@ suit_err_t suit_print_report(suit_report_args_t report_args)
     printf("  at: %d(%s)", report_args.level0, suit_envelope_key_to_str(report_args.level0));
 
     switch (report_args.level0) {
+    case SUIT_DELEGATION:
+        break;
     case SUIT_AUTHENTICATION:
         break;
     case SUIT_MANIFEST:
@@ -1777,8 +1814,6 @@ suit_err_t suit_print_report(suit_report_args_t report_args)
         default:
             break;
         }
-        break;
-    case SUIT_DELEGATION:
         break;
     default:
         break;

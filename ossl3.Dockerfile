@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN apt-get -y install curl git gcc make libcunit1-dev libssl-dev
+RUN apt-get -y install curl git clang make libcunit1-dev libssl-dev
 
 RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
 WORKDIR /root/QCBOR
@@ -18,7 +18,7 @@ RUN make -f Makefile.ossl libt_cose.a install
 RUN ldconfig
 COPY . /root/libcsuit
 WORKDIR /root/libcsuit
-RUN make
+RUN make build_test
 RUN make -f Makefile.encode
 RUN make -f Makefile.parser
 RUN make -f Makefile.encrypt

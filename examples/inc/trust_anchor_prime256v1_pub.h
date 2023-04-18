@@ -6,6 +6,7 @@
  */
 
 #ifndef TRUST_ANCHOR_PRIME256V1_PUBLIC_KEY_H
+#define TRUST_ANCHOR_PRIME256V1_PUBLIC_KEY_H
 const unsigned char trust_anchor_prime256v1_public_key[] = {
     0x04 /* POINT_CONVERSION_UNCOMPRESSED */,
     0x84, 0x96, 0x81, 0x1a, 0xae, 0x0b, 0xaa, 0xab,

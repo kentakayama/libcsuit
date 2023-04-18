@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS = -Wall -g
+CFLAGS = $(CMD_C) -Wall -g
 LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
 LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \
@@ -56,7 +56,7 @@ define test-one
 
 endef
 
-TEST_NUM := 0 1 2A 2B 3 4 5 U I D R S0 S1 S2 S3
+TEST_NUM := 0 1 2A 2B 3 4 5 U I D R S0 S1 S2 S3 S4
 test: all
 	$(foreach num,$(TEST_NUM),$(call test-one,$(num)))
 

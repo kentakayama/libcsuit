@@ -17,3 +17,5 @@ Doxyfile
 html
 mbedtls_config.h
 tags
+*.pdf
+*.md

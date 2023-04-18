@@ -5,12 +5,9 @@
  */
 
 #include <stdio.h>
-#include "qcbor/qcbor.h"
-#include "t_cose/t_cose_encrypt_enc.h"
-#include "t_cose/t_cose_recipient_enc_keywrap.h"
-#include "trust_anchor_a128_secret_key.h"
 #include "csuit/suit_manifest_print.h"
 #include "suit_examples_common.h"
+#include "trust_anchor_a128_cose_key_secret.h"
 
 #define MAX_FILE_BUFFER_SIZE            2048
 
@@ -27,8 +24,8 @@ int main(int argc, char *argv[]) {
     printf("%s %s %s %s\n", argv[0], src_file, enc_file, encryption_info_file);
 
     // Load secret key
-    suit_mechanism_t mechanism;
-    result = suit_key_init_a128kw_secret_key(trust_anchor_a128_secret_key, &mechanism.key);
+    suit_mechanism_t mechanism = {0};
+    result = suit_set_mechanism_from_cose_key(trust_anchor_a128_cose_key_secret, &mechanism);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create A128KW secret key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
