@@ -5,16 +5,12 @@
  */
 
 #include <stdio.h>
-#include "qcbor/qcbor.h"
 #include "csuit/suit_common.h"
 #include "csuit/suit_manifest_encode.h"
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_prime256v1.h"
-#include "trust_anchor_prime256v1_pub.h"
-#include "t_cose/t_cose_sign1_verify.h"
-#include "t_cose/q_useful_buf.h"
+#include "trust_anchor_prime256v1_cose_key_private.h"
 
 #define MAX_FILE_BUFFER_SIZE            4096
 
@@ -27,9 +23,8 @@ int main(int argc, char *argv[]) {
     char *manifest_file = argv[1];
 
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
-    const unsigned char *public_key = trust_anchor_prime256v1_public_key;
-    const unsigned char *private_key = trust_anchor_prime256v1_private_key;
-    suit_err_t result = suit_key_init_es256_key_pair(private_key, public_key, &mechanisms[0].key);
+    UsefulBufC private_key = trust_anchor_prime256v1_cose_key_private;
+    suit_err_t result = suit_set_mechanism_from_cose_key(private_key, &mechanisms[0]);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create ES256 key pair. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;

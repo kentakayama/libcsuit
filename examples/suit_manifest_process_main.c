@@ -17,7 +17,6 @@
 #include <sys/wait.h> // waitpid
 #include <unistd.h> // fork
 #include <fcntl.h> // AT_FDCWD
-#include "qcbor/qcbor.h"
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"

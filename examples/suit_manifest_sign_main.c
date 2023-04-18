@@ -5,7 +5,6 @@
  */
 
 #include <stdio.h>
-#include "qcbor/qcbor.h"
 #include "csuit/suit_common.h"
 #include "csuit/suit_manifest_decode.h"
 #include "csuit/suit_manifest_encode.h"
@@ -24,8 +23,6 @@ UsefulBufC public_key = trust_anchor_prime256v1_cose_key_public;
 #else
 #error Signing key is not specified
 #endif
-#include "t_cose/t_cose_sign1_verify.h"
-#include "t_cose/q_useful_buf.h"
 
 #define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
 
