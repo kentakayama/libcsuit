@@ -532,7 +532,6 @@ suit_err_t suit_process_invoke(const suit_extracted_t *extracted,
 }
 
 suit_err_t suit_index_is_dependency(const suit_extracted_t *extracted,
-                                    const suit_index_t *suit_index,
                                     uint8_t index)
 {
     for (size_t i = 0; i < extracted->dependencies.len; i++) {
@@ -548,6 +547,7 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                                   suit_parameter_args_t parameters[],
                                   const suit_index_t *suit_index,
                                   suit_rep_policy_t report,
+                                  const suit_inputs_t *suit_inputs,
                                   bool in_try_each)
 {
     suit_err_t result = SUIT_SUCCESS;
@@ -647,8 +647,33 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
             }
             break;
+
         case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
-            result = SUIT_ERR_NOT_IMPLEMENTED;
+            result = suit_index_is_dependency(extracted, tmp_index);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+
+            suit_inputs_t tmp_inputs = *suit_inputs;
+            if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST)) {
+                return SUIT_ERR_PARAMETER_NOT_FOUND;
+            }
+            tmp_inputs.expected_manifest_digest = parameters[tmp_index].image_digest;
+
+            suit_payload_t *payload = suit_index_to_payload(extracted, tmp_index);
+            if (payload == NULL) {
+                return SUIT_ERR_NOT_FOUND;
+            }
+            tmp_inputs.manifest = payload->bytes;
+
+            // checks only suit-delegation and suit-authentication-wrapper
+            tmp_inputs.process_flags.all = 0;
+            tmp_inputs.dependency_depth++;
+
+            result = suit_process_envelope(&tmp_inputs);
+
+            // callback is not needed
+            return result;
             break;
 
         case SUIT_CONDITION_ABORT:
@@ -656,7 +681,7 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
             break;
 
         case SUIT_CONDITION_IS_DEPENDENCY:
-            result = suit_index_is_dependency(extracted, suit_index, tmp_index);
+            result = suit_index_is_dependency(extracted, tmp_index);
             if (in_try_each) {
                 return (result == SUIT_SUCCESS) ? SUIT_SUCCESS : SUIT_ERR_ABORT;
             }
@@ -941,20 +966,26 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
             QCBORDecode_GetUInt64(&context, &val.u64);
             for (size_t j = 0; j < suit_index->len; j++) {
                 const uint8_t tmp_index = suit_index->index[j];
+                result = suit_index_is_dependency(extracted, tmp_index);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+
+                suit_inputs_t tmp_inputs = *suit_inputs;
+                suit_payload_t *payload = suit_index_to_payload(extracted, tmp_index);
+                if (payload == NULL) {
+                    return SUIT_ERR_NOT_FOUND;
+                }
+                tmp_inputs.manifest = payload->bytes;
 
                 /*
                  * Calls "second manifest processor" defined in
                  * https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02#section-6.4.1-3
                  * by limiting set of operations (command_key).
                  */
-                suit_inputs_t tmp_inputs = *suit_inputs;
                 tmp_inputs.process_flags = suit_manifest_key_to_process_flag(command_key);
                 tmp_inputs.dependency_depth++;
-                suit_payload_t *payload = suit_index_to_payload(extracted, tmp_index);
-                if (payload == NULL) {
-                    return SUIT_ERR_NOT_FOUND;
-                }
-                tmp_inputs.manifest = payload->bytes;
+
                 result = suit_process_envelope(&tmp_inputs);
                 if (result != SUIT_SUCCESS) {
                     break;
@@ -976,7 +1007,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
             QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_condition(extracted, condition_directive_key, parameters, suit_index, report, in_try_each);
+            result = suit_process_condition(extracted, condition_directive_key, parameters, suit_index, report, suit_inputs, in_try_each);
             break;
 
         case SUIT_DIRECTIVE_WAIT:
@@ -1023,7 +1054,8 @@ error:
 }
 
 suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
-                                        suit_parameter_args_t parameters[])
+                                        suit_parameter_args_t parameters[],
+                                        const suit_inputs_t *suit_inputs)
 {
     if (extracted->shared_sequence.len == 0) {
         return SUIT_SUCCESS;
@@ -1097,7 +1129,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
         case SUIT_CONDITION_VERSION:
             QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_condition(extracted, condition_directive_key, parameters, &suit_index, report, false);
+            result = suit_process_condition(extracted, condition_directive_key, parameters, &suit_index, report, suit_inputs, false);
             break;
         case SUIT_DIRECTIVE_TRY_EACH:
             result = suit_process_try_each(&context, extracted, SUIT_COMMON, parameters, report, &suit_index, NULL);
@@ -1180,7 +1212,7 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
         return SUIT_SUCCESS;
     }
 
-    result = suit_process_shared_sequence(extracted, parameters);
+    result = suit_process_shared_sequence(extracted, parameters, suit_inputs);
     if (result != SUIT_SUCCESS) {
         goto error;
     }
@@ -1701,6 +1733,17 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
                 result = suit_process_authentication_wrapper(&context, suit_inputs, &manifest_digest);
                 if (result != SUIT_SUCCESS) {
                     goto error;
+                }
+
+                /*
+                 * Check with expected digest
+                 * mainly for suit-condition-dependency-integrity
+                 */
+                if (suit_inputs->expected_manifest_digest.bytes.len > 0) {
+                    if (suit_inputs->expected_manifest_digest.bytes.len != manifest_digest.bytes.len ||
+                        memcmp(suit_inputs->expected_manifest_digest.bytes.ptr, manifest_digest.bytes.ptr, manifest_digest.bytes.len) != 0) {
+                        return SUIT_ERR_FAILED_TO_VERIFY;
+                    }
                 }
                 break;
 

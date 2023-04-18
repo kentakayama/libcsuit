@@ -12,9 +12,9 @@ process | :green_square::green_square::green_square::green_square::green_square:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square: | :green_square::red_square: | :green_square::green_square::green_square: |  | 
-encode | :green_square::green_square::green_square: | :green_square::red_square: | :green_square::green_square::green_square: |  | 
-process | :green_square::green_square::green_square: | :green_square::red_square: | :green_square::green_square::green_square: |  | 
+decode | :green_square::green_square::green_square: | :green_square::green_square: | :green_square::green_square::green_square: |  | 
+encode | :green_square::green_square::green_square: | :green_square::green_square: | :green_square::green_square::green_square: |  | 
+process | :green_square::green_square::green_square: | :green_square::green_square: | :green_square::green_square::green_square: |  | 
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -64,7 +64,7 @@ SUIT features are listed below for each SUIT documents.
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
-Delegation | 1 | suit-delegation | SUIT Multiple Trust Domains | N/M | ---
+Delegation | 1 | suit-delegation | SUIT Multiple Trust Domains | N/M | RWX
 Authentication Wrapper | 2 | suit-authentication-wrapper | SUIT Manifest | N/M | RWX
 Manifest | 3 | suit-manifest | SUIT Manifest | N/M | RWX
 CoSWID (s) | 14 | suit-coswid | SUIT Update Management | RECOMMENDED | RWX
@@ -108,7 +108,7 @@ Image Match | 3 | suit-condition-image-match | SUIT Manifest | REQUIRED | RWX
 Use Before | 4 | suit-condition-use-before | SUIT Update Management | OPTIONAL | RWX
 Component Slot | 5 | suit-condition-component-slot | SUIT Manifest | N/M | RWX
 Check Content | 6 | suit-condition-check-content | SUIT Manifest | N/M | RWX
-Dependency Integrity | 7 | suit-condition-dependency-integrity | SUIT Multiple Trust Domains | N/M | ---
+Dependency Integrity | 7 | suit-condition-dependency-integrity | SUIT Multiple Trust Domains | N/M | RWX
 Is Dependency | 8 | suit-condition-is-dependency | SUIT Multiple Trust Domains | N/M | RWX
 Abort | 14 | suit-condition-abort | SUIT Manifest | N/M | RWX
 Device Identifier | 24 | suit-condition-device-identifier | SUIT Manifest | OPTIONAL | RWX

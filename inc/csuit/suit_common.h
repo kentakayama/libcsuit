@@ -939,6 +939,7 @@ typedef union {
 
 typedef struct suit_inputs {
     UsefulBufC manifest;
+    suit_digest_t expected_manifest_digest;
     size_t left_len;
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
