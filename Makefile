@@ -21,7 +21,8 @@ PUBLIC_INTERFACE = \
 	inc/csuit/suit_common.h \
 	inc/csuit/suit_cose.h \
 	inc/csuit/suit_digest.h \
-	inc/csuit/suit_manifest_data.h \
+	inc/csuit/suit_manifest_decode.h \
+	inc/csuit/suit_manifest_encode.h \
 	inc/csuit/suit_manifest_process.h \
 	inc/csuit/suit_manifest_callbacks.h \
 	inc/csuit/suit_manifest_print.h
