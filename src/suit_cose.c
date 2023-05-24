@@ -493,7 +493,7 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
     int64_t crv = 0;
     int64_t kty = 0;
     union {
-        UsefulBufC k;; // k for Symmetric
+        UsefulBufC k; // k for Symmetric
         struct {
             UsefulBufC x; // x for EC2
             UsefulBufC y; // y for EC2
