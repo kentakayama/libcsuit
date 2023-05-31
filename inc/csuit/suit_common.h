@@ -585,7 +585,7 @@ typedef struct suit_delegation_chain {
  * SUIT_Delegation
  */
 typedef struct suit_delegation {
-    size_t                  delegation_chain_num;;
+    size_t                  delegation_chain_num;
     suit_delegation_chain_t delegation_chains[SUIT_MAX_KEY_NUM];
 } suit_delegation_t;
 
