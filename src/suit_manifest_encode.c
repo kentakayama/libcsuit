@@ -366,7 +366,7 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
                     .ptr = cmd_seq->commands[i + j].value.string.ptr,
                     .len = cmd_seq->commands[i + j].value.string.len}
                 );
-                cmd_seq->commands[i + j].label = SUIT_CONDITION_INVALID;;
+                cmd_seq->commands[i + j].label = SUIT_CONDITION_INVALID;
             }
             QCBOREncode_CloseArray(&context);
             i += j - 1;
