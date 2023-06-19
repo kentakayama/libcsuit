@@ -352,13 +352,118 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             if (result != SUIT_SUCCESS) {
                 return result;
             }
+            cmd_seq->commands[cmd_seq->len].value.params_list.index = 0;
             cmd_seq->commands[cmd_seq->len].label = label;
             cmd_seq->len++;
             break;
 
+        /* SUIT_Override_Mult_Arg */
+        case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+            /*
+                Expand each override parameter directive
+                into multiple command sequence.
+
+                e.g.
+                suit-directive-override-multiple: {
+                    / index / 0: { + $$SUIT_Parameters = A },
+                    / index / 1: { + $$SUIT_Parameters = B },
+                    / index / 2: { + $$SUIT_Parameters = C }
+                }
+                =>
+                [ override-multiple, 0, A ],
+                [ override-multiple, 1, B ],
+                [ override-multiple, 2, C ]
+             */
+            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_MAP);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            size_t map_len = item->val.uCount;
+            /* store mapped parameters */
+            for (size_t j = 0; j < map_len; j++) {
+                result = suit_qcbor_get_next(context, item, QCBOR_TYPE_MAP);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                suit_command_sequence_item_t *command = &cmd_seq->commands[cmd_seq->len];
+
+                result = suit_index_from_item_label(item, &command->value.params_list.index);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                result = suit_decode_parameters_list_from_item(mode, context, item, false, &command->value.params_list);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                command->label = label;
+                cmd_seq->len++;
+            }
+            break;
+
+        /* SUIT_Directive_Copy_Params */
+        case SUIT_DIRECTIVE_COPY_PARAMS:
+            /*
+                Extract copy-params elements
+                into multiple command sequence.
+
+                e.g.
+                copy-params: {
+                    / src-index / 0: [ + int = A ],
+                    / src-index / 1: [ + int = B ],
+                    / src-index / 2: [ + int = C ]
+                }
+                =>
+                [ copy-params, 0, A ],
+                [ copy-params, 1, B ],
+                [ copy-params, 2, C ],
+             */
+            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_MAP);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            size_t map_count = item->val.uCount;
+            for (size_t j = 0 ; j < map_count; j++) {
+                result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ARRAY);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                suit_command_sequence_item_t *command = &cmd_seq->commands[cmd_seq->len];
+
+                result = suit_index_from_item_label(item, &command->value.copy_params.src_index);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+
+                command->value.copy_params.int64s.len = item->val.uCount;
+                for (size_t k = 0; k < command->value.copy_params.int64s.len; k++) {
+                    result = suit_qcbor_get_next(context, item, QCBOR_TYPE_INT64);
+                    if (result != SUIT_SUCCESS) {
+                        return result;
+                    }
+                    command->value.copy_params.int64s.int64[k] = item->val.int64;
+                }
+                command->label = label;
+                cmd_seq->len++;
+            }
+            break;
+
         /* SUIT_Directive_Try_Each_Argument */
         case SUIT_DIRECTIVE_TRY_EACH:
-            /* XXX: should not extract here? */
+            /*
+                Extract try-each sequence directives
+                into multiple command sequence.
+
+                e.g.
+                try-each: [
+                    << SUIT_Command_Sequence = A >>,
+                    << SUIT_Command_Sequence = B >>,
+                    << SUIT_Command_Sequence = C >>
+                ]
+                =>
+                [ try-each, << A >> ],
+                [ try-each, << B >> ],
+                [ try-each, << C >> ]
+             */
             result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ARRAY);
             if (result != SUIT_SUCCESS) {
                 return result;
@@ -373,18 +478,14 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
-                cmd_seq->commands[cmd_seq->len].label = label;
-                cmd_seq->commands[cmd_seq->len].value.string.len = item->val.string.len;
-                cmd_seq->commands[cmd_seq->len].value.string.ptr = (uint8_t *)item->val.string.ptr;
+                suit_command_sequence_item_t *command = &cmd_seq->commands[cmd_seq->len];
+
+                command->label = label;
+                command->value.string.len = item->val.string.len;
+                command->value.string.ptr = (uint8_t *)item->val.string.ptr;
                 cmd_seq->len++;
             }
             break;
-
-        /* SUIT_Override_Mult_Arg */
-        //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
-
-        /* SUIT_Directive_Copy_Params */
-        //case SUIT_DIRECTIVE_COPY_PARAMS:
 
         case SUIT_CONDITION_INVALID:
         default:

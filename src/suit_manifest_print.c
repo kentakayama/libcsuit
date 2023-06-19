@@ -211,13 +211,11 @@ char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
 
     case SUIT_DIRECTIVE_WAIT:
         return "directive-wait";
-
-    /* To Be Defined?
     case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
         return "directive-override-multiple";
     case SUIT_DIRECTIVE_COPY_PARAMS:
         return "directive-copy-params";
-    */
+
     case SUIT_CONDITION_INVALID:
     //case SUIT_DIRECTIVE_INVALID:
         break;

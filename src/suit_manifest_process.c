@@ -1051,6 +1051,8 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
             result = suit_process_run_sequence(&context, extracted, SUIT_COMMON, parameters, suit_index, report, suit_inputs);
             break;
 
+        case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+        case SUIT_DIRECTIVE_COPY_PARAMS:
         case SUIT_DIRECTIVE_WAIT:
         case SUIT_DIRECTIVE_INVALID:
             result = SUIT_ERR_NOT_IMPLEMENTED;

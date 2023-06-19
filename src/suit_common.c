@@ -176,6 +176,22 @@ bool suit_qcbor_value_is_uint32(QCBORItem *item)
     return true;
 }
 
+suit_err_t suit_index_from_item_label(QCBORItem *item, uint8_t *index)
+{
+    if (item->uLabelType == QCBOR_TYPE_UINT64 &&
+        item->label.uint64 < SUIT_MAX_INDEX_NUM) {
+        *index = (uint8_t)item->label.uint64;
+        return SUIT_SUCCESS;
+    }
+    else if (item->uLabelType == QCBOR_TYPE_INT64 &&
+        0 <= item->label.int64 &&
+        item->label.int64 < SUIT_MAX_INDEX_NUM) {
+        *index = (uint8_t)item->label.int64;
+        return SUIT_SUCCESS;
+    }
+    return SUIT_ERR_INVALID_TYPE_OF_KEY;
+}
+
 suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message,
                                     QCBORItem *item)
 {

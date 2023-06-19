@@ -251,8 +251,8 @@ typedef enum suit_con_dir_key {
     SUIT_CONDITION_VERSION              = 28,
 
     SUIT_DIRECTIVE_WAIT                 = 29,
-    //SUIT_DIRECTIVE_OVERRIDE_MULTIPLE    = ?,
-    //SUIT_DIRECTIVE_COPY_PARAMS          = ?,
+    SUIT_DIRECTIVE_OVERRIDE_MULTIPLE    = 34,
+    SUIT_DIRECTIVE_COPY_PARAMS          = 35,
 
     /* deprecated, to be removed */
     //SUIT_DIRECTIVE_SET_DEPENDENCY_INDEX = 13,
@@ -444,6 +444,7 @@ typedef struct suit_parameters {
  */
 typedef struct suit_parameters_list {
     size_t                          len;
+    uint8_t                         index;  // for SUIT_Override_Mult_Arg
     suit_parameters_t               params[SUIT_MAX_ARRAY_LENGTH];
 } suit_parameters_list_t;
 
@@ -456,6 +457,19 @@ typedef struct suit_index {
 } suit_index_t;
 
 /*
+ * [ + int64 ]
+ */
+typedef struct suit_int64_array {
+    size_t len;
+    int64_t int64[SUIT_MAX_ARRAY_LENGTH];
+} suit_int64_array_t;
+
+typedef struct suit_copy_params {
+    uint8_t src_index;
+    suit_int64_array_t  int64s;
+} suit_copy_params_t;
+
+/*
  * (SUIT_Condition // SUIT_Directive // SUIT_Command_Custom)
  */
 typedef struct suit_command_sequence_item {
@@ -466,6 +480,7 @@ typedef struct suit_command_sequence_item {
         uint64_t                    uint64;
         bool                        isNull;
         suit_index_t                index_arg;
+        suit_copy_params_t          copy_params;
         suit_parameters_list_t      params_list;
     } value;
 } suit_command_sequence_item_t;
@@ -984,6 +999,7 @@ typedef struct suit_extracted {
 suit_err_t suit_error_from_qcbor_error(QCBORError error);
 bool suit_qcbor_value_is_uint64(QCBORItem *item);
 bool suit_qcbor_value_is_uint32(QCBORItem *item);
+suit_err_t suit_index_from_item_label(QCBORItem *item, uint8_t *index);
 suit_err_t suit_qcbor_get_next_uint(QCBORDecodeContext *message,
                                     QCBORItem *item);
 suit_err_t suit_qcbor_get_next(QCBORDecodeContext *message,
