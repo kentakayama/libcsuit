@@ -113,13 +113,21 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         label = item->label.int64;
         params_list->params[i].label = label;
         switch (label) {
+        /* int */
+        case SUIT_PARAMETER_UPDATE_PRIORITY:
+            if (item->uDataType != QCBOR_TYPE_INT64) {
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                break;
+            }
+            params_list->params[i].value.int64 = item->val.int64;
+            break;
+
         /* uint */
         case SUIT_PARAMETER_COMPONENT_SLOT:
         case SUIT_PARAMETER_IMAGE_SIZE:
         case SUIT_PARAMETER_SOURCE_COMPONENT:
         case SUIT_PARAMETER_USE_BEFORE:
         case SUIT_PARAMETER_MINIMUM_BATTERY:
-        case SUIT_PARAMETER_UPDATE_PRIORITY:
             if (!suit_qcbor_value_is_uint64(item)) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 break;

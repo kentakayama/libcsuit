@@ -200,13 +200,16 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
     for (size_t i = 0; i < params_list->len; i++) {
         const suit_parameters_t *param = &params_list->params[i];
         switch (param->label) {
+        case SUIT_PARAMETER_UPDATE_PRIORITY:
+            QCBOREncode_AddInt64ToMapN(context, param->label, param->value.int64);
+            break;
+
         /* uint */
         case SUIT_PARAMETER_COMPONENT_SLOT:
         case SUIT_PARAMETER_IMAGE_SIZE:
         case SUIT_PARAMETER_SOURCE_COMPONENT:
         case SUIT_PARAMETER_USE_BEFORE:
         case SUIT_PARAMETER_MINIMUM_BATTERY:
-        case SUIT_PARAMETER_UPDATE_PRIORITY:
             QCBOREncode_AddUInt64ToMapN(context, param->label, param->value.uint64);
             break;
 
