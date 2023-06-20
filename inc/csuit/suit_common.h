@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+#define BIT(nr) (1UL << (nr))
+
 extern uint64_t LIBCSUIT_SUPPORTED_VERSIONS[];
 extern size_t LIBCSUIT_SUPPORTED_VERSIONS_LEN;
 
@@ -267,9 +269,6 @@ typedef enum suit_con_dir_key {
 #define SUIT_SEVERABLE_EXISTS              127 // 0b01111111
 #define SUIT_SEVERABLE_IS_VERIFIED         128 // 0b10000000
 
-/*
- * SUIT_Wait_Event
- */
 typedef enum suit_wait_event_key {
     SUIT_WAIT_EVENT_INVALID                 = 0,
 
@@ -282,6 +281,15 @@ typedef enum suit_wait_event_key {
     SUIT_WAIT_EVENT_TIME_OF_DAY             = 6,
     SUIT_WAIT_EVENT_DAY_OF_WEEK             = 7,
 } suit_wait_event_key_t;
+
+/* draft-suit-update-management */
+#define SUIT_WAIT_EVENT_CONTAINS_AUTHORIZATION BIT(SUIT_WAIT_EVENT_AUTHORIZATION)
+#define SUIT_WAIT_EVENT_CONTAINS_POWER BIT(SUIT_WAIT_EVENT_POWER)
+#define SUIT_WAIT_EVENT_CONTAINS_NETWORK BIT(SUIT_WAIT_EVENT_NETWORK)
+#define SUIT_WAIT_EVENT_CONTAINS_OTHER_DEVICE_VERSION BIT(SUIT_WAIT_EVENT_OTHER_DEVICE_VERSION)
+#define SUIT_WAIT_EVENT_CONTAINS_TIME BIT(SUIT_WAIT_EVENT_TIME)
+#define SUIT_WAIT_EVENT_CONTAINS_TIME_OF_DAY BIT(SUIT_WAIT_EVENT_TIME_OF_DAY)
+#define SUIT_WAIT_EVENT_CONTAINS_DAY_OF_WEEK BIT(SUIT_WAIT_EVENT_DAY_OF_WEEK)
 
 typedef enum suit_parameter_key {
     SUIT_PARAMETER_INVALID              = 0,
@@ -317,6 +325,31 @@ typedef enum suit_parameter_key {
     //SUIT_PARAMETER_COMPRESSION_INFO     = 19,
     //SUIT_PARAMETER_URI_LIST             = 30,
 } suit_parameter_key_t;
+
+/* draft-suit-manifest */
+#define SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER BIT(SUIT_PARAMETER_VENDOR_IDENTIFIER)
+#define SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER BIT(SUIT_PARAMETER_CLASS_IDENTIFIER)
+#define SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST BIT(SUIT_PARAMETER_IMAGE_DIGEST)
+#define SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT BIT(SUIT_PARAMETER_COMPONENT_SLOT)
+#define SUIT_PARAMETER_CONTAINS_STRICT_ORDER BIT(SUIT_PARAMETER_STRICT_ORDER)
+#define SUIT_PARAMETER_CONTAINS_SOFT_FAILURE BIT(SUIT_PARAMETER_SOFT_FAILURE)
+#define SUIT_PARAMETER_CONTAINS_IMAGE_SIZE BIT(SUIT_PARAMETER_IMAGE_SIZE)
+#define SUIT_PARAMETER_CONTAINS_CONTENT BIT(SUIT_PARAMETER_CONTENT)
+#define SUIT_PARAMETER_CONTAINS_URI BIT(SUIT_PARAMETER_URI)
+#define SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT BIT(SUIT_PARAMETER_SOURCE_COMPONENT)
+#define SUIT_PARAMETER_CONTAINS_INVOKE_ARGS BIT(SUIT_PARAMETER_INVOKE_ARGS)
+#define SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER BIT(SUIT_PARAMETER_DEVICE_IDENTIFIER)
+
+/* draft-suit-update-management */
+#define SUIT_PARAMETER_CONTAINS_USE_BEFORE BIT(SUIT_PARAMETER_USE_BEFORE)
+#define SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY BIT(SUIT_PARAMETER_MINIMUM_BATTERY)
+#define SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY BIT(SUIT_PARAMETER_UPDATE_PRIORITY)
+#define SUIT_PARAMETER_CONTAINS_VERSION BIT(SUIT_PARAMETER_VERSION)
+#define SUIT_PARAMETER_CONTAINS_WAIT_INFO BIT(SUIT_PARAMETER_WAIT_INFO)
+
+/* draft-suit-trust-domains */
+#define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
+
 
 typedef enum suit_condition_version_comparison_types {
     SUIT_CONDITION_VERSION_COMPARISON_INVALID       = 0,
@@ -826,9 +859,9 @@ typedef struct suit_fetch_args {
 } suit_fetch_args_t;
 
 /*!
- * \brief   Returned value from fetch callback.
+ *  \brief  Returned value from fetch callback.
  *
- * Used by suit_fetch_callback().
+ *  Used by suit_fetch_callback().
  */
 typedef struct suit_fetch_ret {
     /**
@@ -838,9 +871,7 @@ typedef struct suit_fetch_ret {
 } suit_fetch_ret_t;
 
 /*!
- * \brief   Parameters to request checking condition.
- *
- * 
+ *  \brief  Parameters to request checking condition.
  */
 typedef struct suit_condition_args {
     suit_rep_policy_t report;
@@ -862,6 +893,45 @@ typedef struct suit_condition_args {
     } expected;
 } suit_condition_args_t;
 
+/*!
+ *  \brief  Parameter for SUIT_Wait_Event_Argument_Other_Device_Version.
+ */
+typedef struct suit_other_device_version {
+    UsefulBufC              other_device;
+    size_t                  len;
+    suit_version_match_t    versions[SUIT_MAX_ARRAY_LENGTH];
+} suit_other_device_version_t;
+
+/*
+ * SUIT_Wait_Event
+ */
+typedef struct suit_wait_event {
+    uint64_t                    exists;
+
+    int64_t                     authorization;
+    int64_t                     power;
+    int64_t                     network;
+    suit_other_device_version_t other_device_version;
+    uint64_t                    time;
+    uint64_t                    time_of_day;
+    uint64_t                    day_of_week;
+} suit_wait_event_t;
+
+/*!
+ *  \brief  Parameters to request wait event.
+ *
+ *  Used by suit_wait_callback().
+ */
+typedef struct suit_wait_args {
+    suit_rep_policy_t report;
+
+    /*! Destination SUIT_Component_Identifier */
+    suit_component_identifier_t dst;
+
+    /*! SUIT_Wait_Event */
+    suit_wait_event_t wait_info;
+} suit_wait_args_t;
+
 typedef struct suit_parameter_args {
     uint64_t                    exists;
 
@@ -870,7 +940,6 @@ typedef struct suit_parameter_args {
     UsefulBufC                  device_id;
 
     suit_digest_t               image_digest;
-    uint64_t                    use_before;
     uint64_t                    component_slot;
 
     /*! default True */
@@ -897,16 +966,17 @@ typedef struct suit_parameter_args {
 
 
     /* in draft-ietf-suit-update-management */
-    /*! positive minimum battery level in mWh */
-    uint64_t                     minimum_battery;
+    /*! used in suit-condition-use-before */
+    uint64_t                    use_before;
+    /*! used in suit-condition-minimum-battery */
+    uint64_t                    minimum_battery;
+    /*! XXX: used in suit-condition-update-authorized */
+    int64_t                     update_priority;
+    /*! used in suit-condition-version */
+    suit_version_match_t        version_match;
 
-    /*! the value is not defined, though 0 means "NOT GIVEN" here */
-    uint64_t                     update_priority;
-
-    /*! processed if suit-condition-version is specified */
-    UsefulBufC                  version;
-
-    //??                        wait_info;
+    /*! used in suit-directive-wait */
+    suit_wait_event_t           wait_info;
 
     /* in draft-ietf-suit-trust-domains */
 

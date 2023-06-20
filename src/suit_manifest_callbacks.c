@@ -16,13 +16,6 @@
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_callbacks.h"
 #include "csuit/suit_manifest_print.h"
-/*
- *  Public callback function for suit-condition-*. See csuit/suit_manifest_callbacks.h
- */
-suit_err_t suit_condition_callback(suit_condition_args_t condition_args)
-{
-    return suit_print_condition(condition_args);
-}
 
 /*
  *  Public callback function for such as suit-directive-write. See csuit/suit_manifest_callbacks.h
@@ -47,6 +40,22 @@ suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args,
 suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args)
 {
     return suit_print_invoke(invoke_args);
+}
+
+/*
+ *  Public callback function for suit-condition-*. See csuit/suit_manifest_callbacks.h
+ */
+suit_err_t suit_condition_callback(suit_condition_args_t condition_args)
+{
+    return suit_print_condition(condition_args);
+}
+
+/*
+ *  Public callback function for suit-directive-wait. See csuit/suit_manifest_callbacks.h
+ */
+suit_err_t suit_wait_callback(suit_wait_args_t wait_args)
+{
+    return suit_print_wait(wait_args);
 }
 
 /*

@@ -126,6 +126,94 @@ suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_decode_wait_event_from_item(const suit_decode_mode_t mode,
+                                            QCBORDecodeContext *context,
+                                            QCBORItem *item,
+                                            bool next,
+                                            suit_wait_event_t *wait_event)
+{
+    wait_event->exists = 0;
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_MAP);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    size_t map_count = item->val.uCount;
+
+    for (size_t i = 0; i < map_count; i++) {
+        QCBORDecode_PeekNext(context, item);
+        if (item->uLabelType != QCBOR_TYPE_INT64) {
+            return SUIT_ERR_INVALID_TYPE_OF_KEY;
+        }
+        switch (item->label.int64) {
+        /* int */
+        case SUIT_WAIT_EVENT_AUTHORIZATION:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_AUTHORIZATION;
+            QCBORDecode_GetInt64(context, &wait_event->authorization);
+            break;
+        case SUIT_WAIT_EVENT_POWER:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_POWER;
+            QCBORDecode_GetInt64(context, &wait_event->power);
+            break;
+        case SUIT_WAIT_EVENT_NETWORK:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_NETWORK;
+            QCBORDecode_GetInt64(context, &wait_event->network);
+            break;
+
+        /* uint */
+        case SUIT_WAIT_EVENT_TIME:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_TIME;
+            QCBORDecode_GetUInt64(context, &wait_event->time);
+            break;
+        case SUIT_WAIT_EVENT_TIME_OF_DAY:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_TIME_OF_DAY;
+            QCBORDecode_GetUInt64(context, &wait_event->time_of_day);
+            break;
+        case SUIT_WAIT_EVENT_DAY_OF_WEEK:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_DAY_OF_WEEK;
+            QCBORDecode_GetUInt64(context, &wait_event->day_of_week);
+            break;
+
+        /* SUIT_Wait_Event_Argument_Other_Device_Version */
+        case SUIT_WAIT_EVENT_OTHER_DEVICE_VERSION:
+            QCBORDecode_EnterArray(context, item);
+            if (item->val.uCount != 2) {
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            QCBORDecode_GetByteString(context, &wait_event->other_device_version.other_device);
+            QCBORDecode_EnterArray(context, item);
+            wait_event->other_device_version.len = item->val.uCount;
+            for (size_t j = 0; j < wait_event->other_device_version.len; j++) {
+                result = suit_decode_version_match(context, item, false, &wait_event->other_device_version.versions[j]);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+            }
+            QCBORDecode_ExitArray(context);
+            QCBORDecode_ExitArray(context);
+            break;
+
+        default:
+            return SUIT_ERR_NOT_IMPLEMENTED;
+        }
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_wait_event(const suit_decode_mode_t mode,
+                                  const suit_buf_t *buf,
+                                  suit_wait_event_t *wait_event)
+{
+    QCBORDecodeContext wait_event_context;
+    QCBORItem item;
+    QCBORDecode_Init(&wait_event_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_wait_event_from_item(mode, &wait_event_context, &item, true, wait_event);
+    QCBORError error = QCBORDecode_Finish(&wait_event_context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
+}
+
 suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
                                                  QCBORDecodeContext *context,
                                                  QCBORItem *item,

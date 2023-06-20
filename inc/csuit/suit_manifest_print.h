@@ -73,11 +73,18 @@ suit_err_t suit_print_store(suit_store_args_t store_args);
 suit_err_t suit_print_invoke(suit_invoke_args_t invoke_args);
 
 /*!
-    \brief Print SUIT report callback
+    \brief Print SUIT condition callback
     \param[in]      condition_args     Condition and suit-report arguments. See \ref suit_condition_args_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
 suit_err_t suit_print_condition(suit_condition_args_t condition_args);
+
+/*!
+    \brief Print SUIT wait callback
+    \param[in]      wait_args   Wait and suit-report arguments. See \ref suit_wait_args_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+*/
+suit_err_t suit_print_wait(suit_wait_args_t wait_args);
 
 /*!
     \brief Print SUIT report callback

@@ -91,6 +91,15 @@ suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
                                      bool next,
                                      suit_version_match_t *version_match);
 
+suit_err_t suit_decode_wait_event_from_item(const suit_decode_mode_t mode,
+                                            QCBORDecodeContext *context,
+                                            QCBORItem *item,
+                                            bool next,
+                                            suit_wait_event_t *wait_event);
+suit_err_t suit_decode_wait_event(const suit_decode_mode_t mode,
+                                  const suit_buf_t *buf,
+                                  suit_wait_event_t *wait_event);
+
 #ifdef __cplusplus
 }
 #endif

@@ -787,96 +787,96 @@ suit_err_t suit_print_version(const suit_version_match_t *version_match,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_wait_event(const suit_buf_t *wait_event,
+suit_err_t suit_print_wait_event(const suit_wait_event_t *wait_event,
                                  const uint32_t indent_space,
                                  const uint32_t indent_delta)
 {
-    if (wait_event == NULL) {
-        return SUIT_ERR_FATAL;
+    bool comma = false;
+    printf("{\n");
+
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_AUTHORIZATION) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ authorization / 1: %ld", indent_space + indent_delta, "", wait_event->authorization);
+        comma = true;
     }
-    printf("<< ");
-    suit_err_t result = SUIT_SUCCESS;
-    if (wait_event->ptr != NULL && wait_event->len > 0) {
-        QCBORDecodeContext context;
-        QCBORItem item;
-        QCBORDecode_Init(&context, (UsefulBufC){wait_event->ptr, wait_event->len}, QCBOR_DECODE_MODE_NORMAL);
-
-        QCBORDecode_EnterMap(&context, &item);
-        size_t map_count = item.val.uCount;
-        printf("{\n");
-        for (size_t i = 0; i < map_count; i++) {
-            QCBORDecode_PeekNext(&context, &item);
-            if (item.uLabelType != QCBOR_TYPE_INT64) {
-                return SUIT_ERR_INVALID_TYPE_OF_KEY;
-            }
-            printf("%*s/ %s / %ld: ", indent_space + indent_delta, "", suit_wait_event_key_to_str(item.label.int64), item.label.int64);
-            switch (item.label.int64) {
-            /* int */
-            case SUIT_WAIT_EVENT_AUTHORIZATION:
-            case SUIT_WAIT_EVENT_NETWORK:
-                result = suit_qcbor_get_next(&context, &item, QCBOR_TYPE_INT64);
-                if (result != SUIT_SUCCESS) {
-                    return result;
-                }
-                printf("%ld", item.val.int64);
-                break;
-
-            /* uint */
-            case SUIT_WAIT_EVENT_POWER:
-            case SUIT_WAIT_EVENT_TIME:
-            case SUIT_WAIT_EVENT_TIME_OF_DAY:
-            case SUIT_WAIT_EVENT_DAY_OF_WEEK:
-                result = suit_qcbor_get_next_uint(&context, &item);
-                if (result != SUIT_SUCCESS) {
-                    return result;
-                }
-                printf("%lu", item.val.uint64);
-                break;
-
-            /* SUIT_Wait_Event_Argument_Other_Device_Version */
-            case SUIT_WAIT_EVENT_OTHER_DEVICE_VERSION:
-                QCBORDecode_EnterArray(&context, &item);
-                if (item.val.uCount != 2) {
-                    return SUIT_ERR_INVALID_VALUE;
-                }
-                printf("[\n");
-
-                QCBORDecode_EnterArray(&context, &item);
-                size_t len = item.val.uCount;
-                printf("%*s[\n", indent_space + indent_delta, "");
-                for (size_t j = 0; j < len; j++) {
-                    suit_version_match_t version_match;
-                    result = suit_decode_version_match(&context, &item, false, &version_match);
-                    if (result != SUIT_SUCCESS) {
-                        return result;
-                    }
-                    printf("%*s", indent_space + 2 * indent_delta, "");
-                    result = suit_print_version(&version_match, indent_space + 2 * indent_delta, indent_delta);
-                    if (result != SUIT_SUCCESS) {
-                        return result;
-                    }
-
-                    if (j + 1 != len) {
-                        printf(",\n");
-                    }
-                }
-                printf("\n%*s]", indent_space + indent_delta, "");
-                QCBORDecode_ExitArray(&context);
-
-                printf("%*s]\n", indent_delta, "");
-                QCBORDecode_ExitArray(&context);
-                break;
-
-            default:
-                return SUIT_ERR_NOT_IMPLEMENTED;
-            }
-
-            if (i + 1 != map_count) {
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_POWER) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ power / 2: %ld", indent_space + indent_delta, "", wait_event->power);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_NETWORK) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ network / 3: %ld", indent_space + indent_delta, "", wait_event->network);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_OTHER_DEVICE_VERSION) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ other-device-version / 4: [", indent_space + indent_delta, "");
+        printf("%*s/ other-device: / ", indent_space + 2 * indent_delta, "");
+        suit_print_hex(wait_event->other_device_version.other_device.ptr, wait_event->other_device_version.other_device.len);
+        printf(",\n%*s/ version: / [\n", indent_space + 2 * indent_delta, "");
+        for (size_t i = 0; i < wait_event->other_device_version.len; i++) {
+            printf("%*s", indent_space + 3 * indent_delta, "");
+            suit_print_version(&wait_event->other_device_version.versions[i], indent_space + 4 * indent_delta, indent_delta);
+            if (i + 1 != wait_event->other_device_version.len) {
                 printf(",");
             }
             printf("\n");
         }
-        printf("%*s} ", indent_space, "");
+        printf("%*s]\n", indent_space + 2 * indent_delta, "");
+        printf("%*s]", indent_space + indent_delta, "");
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_TIME) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ time / 5: %lu", indent_space + indent_delta, "", wait_event->time);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_TIME_OF_DAY) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ time-of-day / 6: %lu", indent_space + indent_delta, "", wait_event->time_of_day);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_DAY_OF_WEEK) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ day-of-week / 7: %lu", indent_space + indent_delta, "", wait_event->day_of_week);
+        comma = true;
+    }
+    printf("\n%*s} ", indent_space, "");
+
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_wait_event_buf(const suit_buf_t *wait_event_buf,
+                                     const uint32_t indent_space,
+                                     const uint32_t indent_delta)
+{
+    if (wait_event_buf == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    printf("<< ");
+    suit_err_t result = SUIT_SUCCESS;
+    if (wait_event_buf->ptr != NULL && wait_event_buf->len > 0) {
+        suit_wait_event_t wait_event;
+        result = suit_decode_wait_event(SUIT_DECODE_MODE_STRICT, wait_event_buf, &wait_event);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        result = suit_print_wait_event(&wait_event, indent_space, indent_delta);
     }
     printf(">>");
     return result;
@@ -1028,7 +1028,7 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
         /* bstr .cbor SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
             if (params_list->params[i].value.string.len > 0) {
-                suit_print_wait_event(&params_list->params[i].value.string, indent_space, indent_delta);
+                suit_print_wait_event_buf(&params_list->params[i].value.string, indent_space, indent_delta);
             }
             break;
 
@@ -1224,6 +1224,7 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
                     break;
                 }
             }
+            printf("\n%*s}", indent_space, "");
             break;
 
         case SUIT_CONDITION_INVALID:
@@ -2035,6 +2036,22 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     printf("}\n\n");
 
     return result;
+}
+
+suit_err_t suit_print_wait(suit_wait_args_t wait_args)
+{
+    suit_err_t ret = SUIT_SUCCESS;
+
+    printf("wait callback : {\n");
+    printf("  dst-component-identifier : ");
+    suit_print_component_identifier(&wait_args.dst);
+    printf("\n");
+    printf("  wait-info : ");
+    suit_print_wait_event(&wait_args.wait_info, 4, 2);
+    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", wait_args.report.record_on_success, wait_args.report.record_on_failure, wait_args.report.sysinfo_success, wait_args.report.sysinfo_failure);
+    printf("}\n\n");
+
+    return ret;
 }
 
 suit_err_t suit_print_report(suit_report_args_t report_args)
