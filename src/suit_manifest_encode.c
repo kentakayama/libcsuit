@@ -200,6 +200,7 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
     for (size_t i = 0; i < params_list->len; i++) {
         const suit_parameters_t *param = &params_list->params[i];
         switch (param->label) {
+        /* int */
         case SUIT_PARAMETER_UPDATE_PRIORITY:
             QCBOREncode_AddInt64ToMapN(context, param->label, param->value.int64);
             break;
@@ -246,12 +247,20 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             QCBOREncode_CloseBstrWrap(context, NULL);
             break;
 
+        /* SUIT_Parameter_Version_Match */
+        case SUIT_PARAMETER_VERSION:
+            QCBOREncode_OpenArrayInMapN(context, param->label);
+            QCBOREncode_AddInt64(context, param->value.version_match.type);
+            QCBOREncode_OpenArray(context);
+            for (size_t j = 0; j < param->value.version_match.value.len; j++) {
+                QCBOREncode_AddInt64(context, param->value.version_match.value.int64[j]);
+            }
+            QCBOREncode_CloseArray(context);
+            QCBOREncode_CloseArray(context);
+            break;
 
         /* UUID */
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-
-        /* SUIT_Parameter_Version_Match */
-        case SUIT_PARAMETER_VERSION:
 
         /* bstr wrapped SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
@@ -285,6 +294,7 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
     QCBOREncodeContext context;
     QCBOREncode_Init(&context, tmp_buf);
     QCBOREncode_OpenArray(&context);
+    size_t extra = 0;
     for (size_t i = 0; i < cmd_seq->len; i++) {
         const suit_command_sequence_item_t *item = &cmd_seq->commands[i];
         if (item->label == SUIT_CONDITION_INVALID) {
@@ -363,22 +373,37 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             result = suit_append_directive_override_parameters(&item->value.params_list, suit_encode, &context);
             break;
 
+        case SUIT_DIRECTIVE_COPY_PARAMS:
+            QCBOREncode_OpenMapInMapN(&context, item->label);
+            for (extra = 0; extra < cmd_seq->len; extra++) {
+                if (cmd_seq->commands[i + extra].label != SUIT_DIRECTIVE_COPY_PARAMS) {
+                    break;
+                }
+                QCBOREncode_OpenArrayInMapN(&context, cmd_seq->commands[i + extra].value.copy_params.src_index);
+                for (size_t j = 0; j < cmd_seq->commands[i + extra].value.copy_params.int64s.len; j++) {
+                    QCBOREncode_AddInt64(&context, cmd_seq->commands[i + extra].value.copy_params.int64s.int64[j]);
+                }
+                QCBOREncode_CloseArray(&context);
+            }
+            QCBOREncode_CloseMap(&context);
+            i += extra - 1;
+            break;
+
         case SUIT_DIRECTIVE_TRY_EACH:
             QCBOREncode_AddUInt64(&context, item->label);
             QCBOREncode_OpenArray(&context);
-            size_t j;
-            for (j = 0; j < cmd_seq->len; j++) {
-                if (cmd_seq->commands[i + j].label != SUIT_DIRECTIVE_TRY_EACH) {
+            for (extra = 0; extra < cmd_seq->len; extra++) {
+                if (cmd_seq->commands[i + extra].label != SUIT_DIRECTIVE_TRY_EACH) {
                     break;
                 }
                 QCBOREncode_AddBytes(&context, (UsefulBufC){
-                    .ptr = cmd_seq->commands[i + j].value.string.ptr,
-                    .len = cmd_seq->commands[i + j].value.string.len}
+                    .ptr = cmd_seq->commands[i + extra].value.string.ptr,
+                    .len = cmd_seq->commands[i + extra].value.string.len}
                 );
-                cmd_seq->commands[i + j].label = SUIT_CONDITION_INVALID;
+                cmd_seq->commands[i + extra].label = SUIT_CONDITION_INVALID;
             }
             QCBOREncode_CloseArray(&context);
-            i += j - 1;
+            i += extra - 1;
             break;
 
         default:

@@ -425,6 +425,22 @@ typedef struct suit_dependencies {
 } suit_dependencies_t;
 
 /*
+ * [ + int64 ]
+ */
+typedef struct suit_int64_array {
+    size_t len;
+    int64_t int64[SUIT_MAX_ARRAY_LENGTH];
+} suit_int64_array_t;
+
+/*
+ * SUIT_Parameter_Version_Match
+ */
+typedef struct suit_version_match {
+    suit_condition_version_comparison_types_t   type;
+    suit_int64_array_t                          value;
+} suit_version_match_t;
+
+/*
  * SUIT_Parameters
  */
 typedef struct suit_parameters {
@@ -436,6 +452,7 @@ typedef struct suit_parameters {
         bool                        boolean;
         bool                        isNull;
         suit_digest_t               digest;
+        suit_version_match_t        version_match;
     } value;
 } suit_parameters_t;
 
@@ -455,14 +472,6 @@ typedef struct suit_index {
     uint8_t len;
     uint8_t index[SUIT_MAX_COMPONENT_NUM + SUIT_MAX_DEPENDENCY_NUM];
 } suit_index_t;
-
-/*
- * [ + int64 ]
- */
-typedef struct suit_int64_array {
-    size_t len;
-    int64_t int64[SUIT_MAX_ARRAY_LENGTH];
-} suit_int64_array_t;
 
 typedef struct suit_copy_params {
     uint8_t src_index;

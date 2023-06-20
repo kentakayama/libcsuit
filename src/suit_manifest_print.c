@@ -272,6 +272,25 @@ char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
     return NULL;
 }
 
+char* suit_version_comparison_type_to_str(suit_condition_version_comparison_types_t type)
+{
+    switch (type) {
+    case SUIT_CONDITION_VERSION_COMPARISON_GREATER:
+        return "greater";
+    case SUIT_CONDITION_VERSION_COMPARISON_GREATER_EQUAL:
+        return "greater-equal";
+    case SUIT_CONDITION_VERSION_COMPARISON_EQUAL:
+        return "equal";
+    case SUIT_CONDITION_VERSION_COMPARISON_LESSER_EQUAL:
+        return "lesser-equal";
+    case SUIT_CONDITION_VERSION_COMPARISON_LESSER:
+        return "lesser";
+    case SUIT_CONDITION_VERSION_COMPARISON_INVALID:
+        break;
+    }
+    return NULL;
+}
+
 char* suit_cose_protected_key_to_str(int64_t key)
 {
     switch (key) {
@@ -816,13 +835,17 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
     for (size_t i = 0; i < params_list->len; i++) {
         printf("%*s/ %s / %ld: ", indent_space, "", suit_parameter_key_to_str(params_list->params[i].label), params_list->params[i].label);
         switch (params_list->params[i].label) {
+        /* int64 */
+        case SUIT_PARAMETER_UPDATE_PRIORITY:
+            printf("%ld", params_list->params[i].value.int64);
+            break;
+
         /* uint64 */
         case SUIT_PARAMETER_COMPONENT_SLOT:
         case SUIT_PARAMETER_IMAGE_SIZE:
         case SUIT_PARAMETER_SOURCE_COMPONENT:
         case SUIT_PARAMETER_USE_BEFORE:
         case SUIT_PARAMETER_MINIMUM_BATTERY:
-        case SUIT_PARAMETER_UPDATE_PRIORITY:
             printf("%lu", params_list->params[i].value.uint64);
             break;
 
@@ -878,7 +901,19 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
             printf(" >>");
             break;
 
+        /* SUIT_Parameter_Version_Match */
         case SUIT_PARAMETER_VERSION:
+            printf("[\n");
+            printf("%*s/ suit-condition-version-comparison-type / %d / %s /,\n", indent_space + indent_delta, "", params_list->params[i].value.version_match.type, suit_version_comparison_type_to_str(params_list->params[i].value.version_match.type));
+            printf("%*s/ suit-condition-version-comparison-value / [", indent_space + indent_delta, "");
+            for (size_t j = 0; j < params_list->params[i].value.version_match.value.len; j++) {
+                printf(" %ld", params_list->params[i].value.version_match.value.int64[j]);
+                if (j + 1 != params_list->params[i].value.version_match.value.len) {
+                    printf(",");
+                }
+            }
+            printf(" ]\n%*s]", indent_space, "");
+            break;
         case SUIT_PARAMETER_WAIT_INFO:
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -992,14 +1027,10 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
         /* SUIT_Directive_Try_Each_Argument */
         case SUIT_DIRECTIVE_TRY_EACH:
             printf("[\n");
-            bool l1_comma = false;
             while (1) {
                 result = suit_decode_command_sequence(mode, &cmd_seq->commands[i].value.string, &tmp_cmd_seq);
                 if (result != SUIT_SUCCESS) {
                     break;
-                }
-                if (l1_comma) {
-                    printf(",\n");
                 }
                 printf("%*s<< [\n", indent_space + indent_delta, "");
                 result = suit_print_cmd_seq(mode, &tmp_cmd_seq, indent_space + 2 * indent_delta, indent_delta);
@@ -1007,8 +1038,8 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
                     break;
                 }
                 printf("%*s] >>", indent_space + indent_delta, "");
-                l1_comma = true;
                 if (i + 1 < cmd_seq->len && cmd_seq->commands[i + 1].label == SUIT_DIRECTIVE_TRY_EACH) {
+                    printf(",\n");
                     i++;
                 }
                 else {
@@ -1018,11 +1049,32 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
             printf("\n%*s]", indent_space, "");
             break;
 
-        /* SUIT_Override_Mult_Arg */
-        //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
-
         /* SUIT_Directive_Copy_Params */
-        //case SUIT_DIRECTIVE_COPY_PARAMS:
+        case SUIT_DIRECTIVE_COPY_PARAMS:
+            printf("{\n");
+            while (1) {
+                printf("%*s/ src-index / %u: [", indent_space + indent_delta, "", cmd_seq->commands[i].value.copy_params.src_index);
+                for (size_t j = 0; j < cmd_seq->commands[i].value.copy_params.int64s.len; j++) {
+                    printf(" %ld", cmd_seq->commands[i].value.copy_params.int64s.int64[j]);
+                    if (j + 1 != cmd_seq->commands[i].value.copy_params.int64s.len) {
+                        printf(",");
+                    }
+                }
+                printf(" ]");
+
+                if (i + 1 < cmd_seq->len && cmd_seq->commands[i + 1].label == SUIT_DIRECTIVE_COPY_PARAMS) {
+                    printf(",\n");
+                    i++;
+                }
+                else {
+                    break;
+                }
+            }
+            printf("\n%*s}", indent_space, "");
+            break;
+
+        /* SUIT_Override_Mult_Arg */
+        case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
 
         case SUIT_CONDITION_INVALID:
         //default:

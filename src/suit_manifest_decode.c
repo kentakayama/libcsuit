@@ -183,6 +183,36 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
 
         /* SUIT_Parameter_Version_Match */
         case SUIT_PARAMETER_VERSION:
+            if (item->uDataType != QCBOR_TYPE_ARRAY) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            if (item->val.uCount != 2) {
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_INT64);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            params_list->params[i].value.version_match.type = item->val.int64;
+            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ARRAY);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            if (item->val.uCount > SUIT_MAX_ARRAY_LENGTH) {
+                return SUIT_ERR_NO_MEMORY;
+            }
+            if (item->val.uCount < 1) {
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            params_list->params[i].value.version_match.value.len = item->val.uCount;
+            for (size_t j = 0; j < params_list->params[i].value.version_match.value.len; j++) {
+                result = suit_qcbor_get_next(context, item, QCBOR_TYPE_INT64);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                params_list->params[i].value.version_match.value.int64[j] = item->val.int64;
+            }
+            break;
 
         /* bstr wrapped SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
@@ -1538,7 +1568,6 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                 }
                 break;
 
-            // TODO
             default:
                 return SUIT_ERR_NOT_IMPLEMENTED;
             }
