@@ -267,6 +267,9 @@ typedef enum suit_con_dir_key {
 #define SUIT_SEVERABLE_EXISTS              127 // 0b01111111
 #define SUIT_SEVERABLE_IS_VERIFIED         128 // 0b10000000
 
+/*
+ * SUIT_Wait_Event
+ */
 typedef enum suit_wait_event_key {
     SUIT_WAIT_EVENT_INVALID                 = 0,
 

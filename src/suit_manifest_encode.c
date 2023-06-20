@@ -227,10 +227,14 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
         /* bstr */
         case SUIT_PARAMETER_VENDOR_IDENTIFIER:
         case SUIT_PARAMETER_CLASS_IDENTIFIER:
+        case SUIT_PARAMETER_DEVICE_IDENTIFIER:
         case SUIT_PARAMETER_INVOKE_ARGS:
         case SUIT_PARAMETER_CONTENT:
         /* draft-ietf-suit-firmware-encryption */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
+        /* draft-ietf-suit-update-management */
+        /* bstr wrapped SUIT_Wait_Event */
+        case SUIT_PARAMETER_WAIT_INFO:
             QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
             break;
 
@@ -258,12 +262,6 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             QCBOREncode_CloseArray(context);
             QCBOREncode_CloseArray(context);
             break;
-
-        /* UUID */
-        case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-
-        /* bstr wrapped SUIT_Wait_Event */
-        case SUIT_PARAMETER_WAIT_INFO:
 
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -373,7 +371,54 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             result = suit_append_directive_override_parameters(&item->value.params_list, suit_encode, &context);
             break;
 
+        /* SUIT_Override_Mult_Arg */
+        case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+            /*
+                Encode expanded items into one map.
+
+                e.g.
+                [ override-multiple, 0, A ],
+                [ override-multiple, 1, B ],
+                [ override-multiple, 2, C ]
+                =>
+                suit-directive-override-multiple: {
+                    / index / 0: { + $$SUIT_Parameters = A },
+                    / index / 1: { + $$SUIT_Parameters = B },
+                    / index / 2: { + $$SUIT_Parameters = C }
+                }
+             */
+            QCBOREncode_OpenMapInMapN(&context, item->label);
+            for (extra = 0; extra < cmd_seq->len; extra++) {
+                item = &cmd_seq->commands[i + extra];
+                if (item->label != SUIT_DIRECTIVE_OVERRIDE_MULTIPLE) {
+                    break;
+                }
+                QCBOREncode_AddInt64(&context, item->value.params_list.index);
+                result = suit_append_directive_override_parameters(&item->value.params_list, suit_encode, &context);
+                if (result != SUIT_SUCCESS) {
+                    break;
+                }
+            }
+            QCBOREncode_CloseMap(&context);
+            i += extra - 1;
+            break;
+
+        /* SUIT_Directive_Copy_Params */
         case SUIT_DIRECTIVE_COPY_PARAMS:
+            /*
+                Encode expanded items into one map.
+
+                e.g.
+                [ copy-params, 0, A ],
+                [ copy-params, 1, B ],
+                [ copy-params, 2, C ],
+                =>
+                copy-params: {
+                    / src-index / 0: [ + int = A ],
+                    / src-index / 1: [ + int = B ],
+                    / src-index / 2: [ + int = C ]
+                }
+             */
             QCBOREncode_OpenMapInMapN(&context, item->label);
             for (extra = 0; extra < cmd_seq->len; extra++) {
                 if (cmd_seq->commands[i + extra].label != SUIT_DIRECTIVE_COPY_PARAMS) {
@@ -389,7 +434,22 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             i += extra - 1;
             break;
 
+        /* SUIT_Directive_Try_Each_Argument */
         case SUIT_DIRECTIVE_TRY_EACH:
+            /*
+                Encode expanded items into one array.
+
+                e.g.
+                [ try-each, << A >> ],
+                [ try-each, << B >> ],
+                [ try-each, << C >> ]
+                =>
+                try-each: [
+                    << SUIT_Command_Sequence = A >>,
+                    << SUIT_Command_Sequence = B >>,
+                    << SUIT_Command_Sequence = C >>
+                ]
+             */
             QCBOREncode_AddUInt64(&context, item->label);
             QCBOREncode_OpenArray(&context);
             for (extra = 0; extra < cmd_seq->len; extra++) {

@@ -86,6 +86,11 @@ suit_err_t suit_decode_digest_from_item(suit_decode_mode_t mode,
                                         bool next,
                                         suit_digest_t *digest);
 
+suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
+                                     QCBORItem *item,
+                                     bool next,
+                                     suit_version_match_t *version_match);
+
 #ifdef __cplusplus
 }
 #endif
