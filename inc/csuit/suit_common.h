@@ -884,12 +884,14 @@ typedef struct suit_condition_args {
 
     /*! To be expected values */
     union {
+        int64_t         i64;
         uint64_t        u64;
         UsefulBufC      str;
         struct {
             uint64_t        image_size;
             suit_digest_t   image_digest;
         };
+        suit_version_match_t version_match;
     } expected;
 } suit_condition_args_t;
 

@@ -1995,11 +1995,15 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
 
     printf("  expected : ");
     switch (condition_args.condition) {
+    /* int64 */
+    case SUIT_CONDITION_UPDATE_AUTHORIZED:
+        printf("%ld\n", condition_args.expected.i64);
+        break;
+
     /* uint64 */
     case SUIT_CONDITION_COMPONENT_SLOT:
     case SUIT_CONDITION_USE_BEFORE:
     case SUIT_CONDITION_MINIMUM_BATTERY:
-    case SUIT_CONDITION_UPDATE_AUTHORIZED:
         printf("%lu\n", condition_args.expected.u64);
         break;
 
@@ -2025,9 +2029,14 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     case SUIT_CONDITION_ABORT:
         result = SUIT_ERR_INVALID_KEY;
 
+    /* SUIT_Parameter_Version_Match */
+    case SUIT_CONDITION_VERSION:
+        suit_print_version(&condition_args.expected.version_match, 2, 2);
+        printf("\n");
+        break;
+
     /* not implemented */
     case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
-    case SUIT_CONDITION_VERSION:
     default:
         result = SUIT_ERR_NOT_IMPLEMENTED;
     }
@@ -2047,8 +2056,8 @@ suit_err_t suit_print_wait(suit_wait_args_t wait_args)
     suit_print_component_identifier(&wait_args.dst);
     printf("\n");
     printf("  wait-info : ");
-    suit_print_wait_event(&wait_args.wait_info, 4, 2);
-    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", wait_args.report.record_on_success, wait_args.report.record_on_failure, wait_args.report.sysinfo_success, wait_args.report.sysinfo_failure);
+    suit_print_wait_event(&wait_args.wait_info, 2, 2);
+    printf("\n  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", wait_args.report.record_on_success, wait_args.report.record_on_failure, wait_args.report.sysinfo_success, wait_args.report.sysinfo_failure);
     printf("}\n\n");
 
     return ret;
