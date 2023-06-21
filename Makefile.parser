@@ -32,6 +32,10 @@ else
     LDFLAGS += -lcrypto
 endif
 
+ifeq ($(DEBUG),1)
+    CFLAGS += -DSKIP_ERROR=1
+endif
+
 $(TARGET): $(OBJS)
 	mkdir -p ./bin
 	$(CC) -o $@ $^ $(LDFLAGS)
