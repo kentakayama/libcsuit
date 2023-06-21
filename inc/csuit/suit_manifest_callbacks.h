@@ -63,7 +63,7 @@ suit_err_t suit_store_callback(suit_store_args_t store_args);
 suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
 
 /*!
-    \brief  SUIT report callback triggerd in libcsuit
+    \brief  SUIT condition callback triggerd in libcsuit
     \param[in]      condition_args     Condition and suit-report arguments. See \ref suit_condition_args_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 
@@ -73,6 +73,18 @@ suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
     requesting to check the condition.
 */
 suit_err_t suit_condition_callback(suit_condition_args_t condition_args);
+
+/*!
+    \brief  SUIT wait callback triggerd in libcsuit
+    \param[in]      wait_args     Wait and suit-report arguments. See \ref suit_wait_args_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+
+    This function is expected to be replaced by user defined function
+    using -Xlinker --wrap suit_wait_callback. See Makefile.process as an example.
+    The libcsuit may trigger this function at suit-directive-wait
+    requesting to check the wait.
+*/
+suit_err_t suit_wait_callback(suit_wait_args_t wait_args);
 
 /*!
     \brief  SUIT report callback trigged in libcsuit

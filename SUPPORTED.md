@@ -18,9 +18,9 @@ process | :green_square::green_square::green_square: | :green_square::green_squa
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :red_square::red_square::red_square: | :green_square::green_square::green_square::red_square::red_square: | :green_square:
-encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :red_square::red_square::red_square: | :green_square::green_square::green_square::red_square::red_square: | :green_square:
-process | :green_square: | :green_square::green_square::green_square::green_square::red_square: | :red_square::red_square::red_square: | :green_square::green_square::green_square::red_square::red_square: | :green_square:
+decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square:
+encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square:
+process | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square:
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -115,7 +115,7 @@ Device Identifier | 24 | suit-condition-device-identifier | SUIT Manifest | OPTI
 Image Not Match | 25 | suit-condition-image-not-match | SUIT Update Management | OPTIONAL | RWX
 Minimum Battery | 26 | suit-condition-minimum-battery | SUIT Update Management | OPTIONAL | RWX
 Update Authorized | 27 | suit-condition-update-authorized | SUIT Update Management | OPTIONAL | RWX
-Version | 28 | suit-condition-version | SUIT Update Management | N/M | RW-
+Version | 28 | suit-condition-version | SUIT Update Management | N/M | RWX
 Custom Condition | - | suit-condition-custom | SUIT Manifest | N/M | ---
 
 ### SUIT Directive
@@ -131,12 +131,12 @@ Override Parameters | 20 | suit-directive-override-parameters | SUIT Manifest | 
 Fetch | 21 | suit-directive-fetch | SUIT Manifest | N/M | RWX
 Copy | 22 | suit-directive-copy | SUIT Manifest | N/M | RWX
 Invoke | 23 | suit-directive-invoke | SUIT Manifest | REQUIRED for Bootloader | RWX
-Wait | 29 | suit-directive-wait | SUIT Update Management | N/M | ---
+Wait | 29 | suit-directive-wait | SUIT Update Management | N/M | RWX
 Swap | 31 | suit-directive-swap | SUIT Manifest | N/M | RWX
 Run Sequence | 32 | suit-directive-run-sequence | SUIT Manifest | OPTIONAL | RWX
 Unlink | 33 | suit-directive-unlink | SUIT Multiple Trust Domains | N/M | RWX
-Override Multiple | ? | suit-directive-override-multiple | SUIT Update Management | N/M | ---
-Copy Params | ? | suit-directive-copy-params | SUIT Update Management | N/M | ---
+Override Multiple | 34 | suit-directive-override-multiple | SUIT Update Management | N/M | RWX
+Copy Params | 35 | suit-directive-copy-params | SUIT Update Management | N/M | RWX
 
 ### SUIT Parameters
 
@@ -161,8 +161,8 @@ Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RWX
 Device ID | 24 | suit-parameter-device-identifier | SUIT Manifest | N/M | RWX
 Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management | N/M | RWX
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RWX
-Version | 28 | suit-parameter-version | SUIT Update Management | N/M | ---
-Wait Info | 29 | suit-parameter-wait-info | SUIT Update Management | N/M | ---
+Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX
+Wait Info | 29 | suit-parameter-wait-info | SUIT Update Management | N/M | RWX
 Fetch Arguments | ? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | ---
 Custom | - | suit-parameter-custom | SUIT Manifest | N/M | ---
 

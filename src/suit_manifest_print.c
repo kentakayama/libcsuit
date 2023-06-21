@@ -211,13 +211,11 @@ char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
 
     case SUIT_DIRECTIVE_WAIT:
         return "directive-wait";
-
-    /* To Be Defined?
     case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
         return "directive-override-multiple";
     case SUIT_DIRECTIVE_COPY_PARAMS:
         return "directive-copy-params";
-    */
+
     case SUIT_CONDITION_INVALID:
     //case SUIT_DIRECTIVE_INVALID:
         break;
@@ -269,6 +267,48 @@ char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
         return "fetch-args";
     */
     case SUIT_PARAMETER_INVALID:
+        break;
+    }
+    return NULL;
+}
+
+char* suit_version_comparison_type_to_str(suit_condition_version_comparison_types_t type)
+{
+    switch (type) {
+    case SUIT_CONDITION_VERSION_COMPARISON_GREATER:
+        return "greater";
+    case SUIT_CONDITION_VERSION_COMPARISON_GREATER_EQUAL:
+        return "greater-equal";
+    case SUIT_CONDITION_VERSION_COMPARISON_EQUAL:
+        return "equal";
+    case SUIT_CONDITION_VERSION_COMPARISON_LESSER_EQUAL:
+        return "lesser-equal";
+    case SUIT_CONDITION_VERSION_COMPARISON_LESSER:
+        return "lesser";
+    case SUIT_CONDITION_VERSION_COMPARISON_INVALID:
+        break;
+    }
+    return NULL;
+}
+
+char* suit_wait_event_key_to_str(suit_wait_event_key_t key)
+{
+    switch (key) {
+    case SUIT_WAIT_EVENT_AUTHORIZATION:
+        return "authorization";
+    case SUIT_WAIT_EVENT_POWER:
+        return "power";
+    case SUIT_WAIT_EVENT_NETWORK:
+        return "network";
+    case SUIT_WAIT_EVENT_OTHER_DEVICE_VERSION:
+        return "other-device-version";
+    case SUIT_WAIT_EVENT_TIME:
+        return "time";
+    case SUIT_WAIT_EVENT_TIME_OF_DAY:
+        return "time-of-day";
+    case SUIT_WAIT_EVENT_DAY_OF_WEEK:
+        return "day-of-week";
+    case SUIT_WAIT_EVENT_INVALID:
         break;
     }
     return NULL;
@@ -636,8 +676,9 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
             return SUIT_ERR_INVALID_TYPE_OF_VALUE;
         }
         for (size_t i = 0; i < Out.uNumUsed; i++) {
-            printf("%ld(\n", puTags[i]);
+            printf("%ld(", puTags[i]);
         }
+        printf("[\n");
         size_t cose_struct_len = item.val.uCount;
 
         printf("%*s/ protected: / << ", indent_space + indent_delta, "");
@@ -723,6 +764,119 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
         for (size_t i = 0; i < Out.uNumUsed; i++) {
             printf(")");
         }
+    }
+    printf(">>");
+    return result;
+}
+
+suit_err_t suit_print_version(const suit_version_match_t *version_match,
+                              const uint32_t indent_space,
+                              const uint32_t indent_delta)
+{
+    printf("[\n");
+    printf("%*s/ comparison-type / %d / %s /,\n", indent_space + indent_delta, "", version_match->type, suit_version_comparison_type_to_str(version_match->type));
+    printf("%*s/ comparison-value / [", indent_space + indent_delta, "");
+    for (size_t j = 0; j < version_match->value.len; j++) {
+        printf(" %ld", version_match->value.int64[j]);
+        if (j + 1 != version_match->value.len) {
+            printf(",");
+        }
+    }
+    printf(" ]\n%*s]", indent_space, "");
+
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_wait_event(const suit_wait_event_t *wait_event,
+                                 const uint32_t indent_space,
+                                 const uint32_t indent_delta)
+{
+    bool comma = false;
+    printf("{\n");
+
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_AUTHORIZATION) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ authorization / 1: %ld", indent_space + indent_delta, "", wait_event->authorization);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_POWER) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ power / 2: %ld", indent_space + indent_delta, "", wait_event->power);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_NETWORK) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ network / 3: %ld", indent_space + indent_delta, "", wait_event->network);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_OTHER_DEVICE_VERSION) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ other-device-version / 4: [", indent_space + indent_delta, "");
+        printf("%*s/ other-device: / ", indent_space + 2 * indent_delta, "");
+        suit_print_hex(wait_event->other_device_version.other_device.ptr, wait_event->other_device_version.other_device.len);
+        printf(",\n%*s/ version: / [\n", indent_space + 2 * indent_delta, "");
+        for (size_t i = 0; i < wait_event->other_device_version.len; i++) {
+            printf("%*s", indent_space + 3 * indent_delta, "");
+            suit_print_version(&wait_event->other_device_version.versions[i], indent_space + 4 * indent_delta, indent_delta);
+            if (i + 1 != wait_event->other_device_version.len) {
+                printf(",");
+            }
+            printf("\n");
+        }
+        printf("%*s]\n", indent_space + 2 * indent_delta, "");
+        printf("%*s]", indent_space + indent_delta, "");
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_TIME) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ time / 5: %lu", indent_space + indent_delta, "", wait_event->time);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_TIME_OF_DAY) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ time-of-day / 6: %lu", indent_space + indent_delta, "", wait_event->time_of_day);
+        comma = true;
+    }
+    if (wait_event->exists & SUIT_WAIT_EVENT_CONTAINS_DAY_OF_WEEK) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ day-of-week / 7: %lu", indent_space + indent_delta, "", wait_event->day_of_week);
+        comma = true;
+    }
+    printf("\n%*s} ", indent_space, "");
+
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_wait_event_buf(const suit_buf_t *wait_event_buf,
+                                     const uint32_t indent_space,
+                                     const uint32_t indent_delta)
+{
+    if (wait_event_buf == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    printf("<< ");
+    suit_err_t result = SUIT_SUCCESS;
+    if (wait_event_buf->ptr != NULL && wait_event_buf->len > 0) {
+        suit_wait_event_t wait_event;
+        result = suit_decode_wait_event(SUIT_DECODE_MODE_STRICT, wait_event_buf, &wait_event);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        result = suit_print_wait_event(&wait_event, indent_space, indent_delta);
     }
     printf(">>");
     return result;
@@ -818,13 +972,17 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
     for (size_t i = 0; i < params_list->len; i++) {
         printf("%*s/ %s / %ld: ", indent_space, "", suit_parameter_key_to_str(params_list->params[i].label), params_list->params[i].label);
         switch (params_list->params[i].label) {
+        /* int64 */
+        case SUIT_PARAMETER_UPDATE_PRIORITY:
+            printf("%ld", params_list->params[i].value.int64);
+            break;
+
         /* uint64 */
         case SUIT_PARAMETER_COMPONENT_SLOT:
         case SUIT_PARAMETER_IMAGE_SIZE:
         case SUIT_PARAMETER_SOURCE_COMPONENT:
         case SUIT_PARAMETER_USE_BEFORE:
         case SUIT_PARAMETER_MINIMUM_BATTERY:
-        case SUIT_PARAMETER_UPDATE_PRIORITY:
             printf("%lu", params_list->params[i].value.uint64);
             break;
 
@@ -860,10 +1018,17 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
                                     params_list->params[i].value.string.len);
             break;
 
-        /* SUIT_Encryption_Info */
+        /* bstr .cbor SUIT_Encryption_Info */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
             if (params_list->params[i].value.string.len > 0) {
                 suit_print_encryption_info(&params_list->params[i].value.string, indent_space, indent_delta);
+            }
+            break;
+
+        /* bstr .cbor SUIT_Wait_Event */
+        case SUIT_PARAMETER_WAIT_INFO:
+            if (params_list->params[i].value.string.len > 0) {
+                suit_print_wait_event_buf(&params_list->params[i].value.string, indent_space, indent_delta);
             }
             break;
 
@@ -880,8 +1045,11 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
             printf(" >>");
             break;
 
+        /* SUIT_Parameter_Version_Match */
         case SUIT_PARAMETER_VERSION:
-        case SUIT_PARAMETER_WAIT_INFO:
+            result = suit_print_version(&params_list->params[i].value.version_match, indent_space, indent_delta);
+            break;
+
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
             break;
@@ -890,11 +1058,9 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
             return result;
         }
         if (i + 1 != params_list->len) {
-            printf(",\n");
+            printf(",");
         }
-        else {
-            printf("\n");
-        }
+        printf("\n");
     }
     return SUIT_SUCCESS;
 }
@@ -994,14 +1160,10 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
         /* SUIT_Directive_Try_Each_Argument */
         case SUIT_DIRECTIVE_TRY_EACH:
             printf("[\n");
-            bool l1_comma = false;
             while (1) {
                 result = suit_decode_command_sequence(mode, &cmd_seq->commands[i].value.string, &tmp_cmd_seq);
                 if (result != SUIT_SUCCESS) {
                     break;
-                }
-                if (l1_comma) {
-                    printf(",\n");
                 }
                 printf("%*s<< [\n", indent_space + indent_delta, "");
                 result = suit_print_cmd_seq(mode, &tmp_cmd_seq, indent_space + 2 * indent_delta, indent_delta);
@@ -1009,8 +1171,8 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
                     break;
                 }
                 printf("%*s] >>", indent_space + indent_delta, "");
-                l1_comma = true;
                 if (i + 1 < cmd_seq->len && cmd_seq->commands[i + 1].label == SUIT_DIRECTIVE_TRY_EACH) {
+                    printf(",\n");
                     i++;
                 }
                 else {
@@ -1020,11 +1182,50 @@ suit_err_t suit_print_cmd_seq(const suit_decode_mode_t mode,
             printf("\n%*s]", indent_space, "");
             break;
 
-        /* SUIT_Override_Mult_Arg */
-        //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
-
         /* SUIT_Directive_Copy_Params */
-        //case SUIT_DIRECTIVE_COPY_PARAMS:
+        case SUIT_DIRECTIVE_COPY_PARAMS:
+            printf("{\n");
+            while (1) {
+                printf("%*s/ src-index / %u: [", indent_space + indent_delta, "", cmd_seq->commands[i].value.copy_params.src_index);
+                for (size_t j = 0; j < cmd_seq->commands[i].value.copy_params.int64s.len; j++) {
+                    printf(" %ld", cmd_seq->commands[i].value.copy_params.int64s.int64[j]);
+                    if (j + 1 != cmd_seq->commands[i].value.copy_params.int64s.len) {
+                        printf(",");
+                    }
+                }
+                printf(" ]");
+
+                if (i + 1 < cmd_seq->len && cmd_seq->commands[i + 1].label == SUIT_DIRECTIVE_COPY_PARAMS) {
+                    printf(",\n");
+                    i++;
+                }
+                else {
+                    break;
+                }
+            }
+            printf("\n%*s}", indent_space, "");
+            break;
+
+        /* SUIT_Override_Mult_Arg */
+        case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+            printf("{\n");
+            while (1) {
+                printf("%*s/ index / %u: {\n", indent_space + indent_delta, "", cmd_seq->commands[i].value.params_list.index);
+                if (cmd_seq->commands[i].value.params_list.len > 0) {
+                    result = suit_print_suit_parameters_list(&cmd_seq->commands[i].value.params_list, indent_space + 2 * indent_delta, indent_delta);
+                }
+                printf("%*s}", indent_space + indent_delta, "");
+
+                if (i + 1 < cmd_seq->len && cmd_seq->commands[i + 1].label == SUIT_DIRECTIVE_OVERRIDE_MULTIPLE) {
+                    printf(",\n");
+                    i++;
+                }
+                else {
+                    break;
+                }
+            }
+            printf("\n%*s}", indent_space, "");
+            break;
 
         case SUIT_CONDITION_INVALID:
         //default:
@@ -1592,19 +1793,24 @@ suit_err_t suit_print_envelope(const suit_decode_mode_t mode,
         }
     }
     // authentication-wrapper
-    printf("%*s/ authentication-wrapper / 2: << [\n", indent_space + indent_delta, "");
-    printf("%*s/ digest: / << ", indent_space + 2 * indent_delta, "");
-    result = suit_print_digest(&envelope->wrapper.digest, indent_space + 2 * indent_delta, indent_delta);
-    if (result != SUIT_SUCCESS) {
-        return result;
+    printf("%*s/ authentication-wrapper /", indent_space + indent_delta, "");
+    if (envelope->wrapper.digest.algorithm_id != SUIT_ALGORITHM_ID_INVALID &&
+        envelope->wrapper.digest.bytes.len > 0) {
+        printf(" 2: << [\n");
+        printf("%*s/ digest: / << ", indent_space + 2 * indent_delta, "");
+        result = suit_print_digest(&envelope->wrapper.digest, indent_space + 2 * indent_delta, indent_delta);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        printf(" >>,\n");
+        for (size_t i = 0; i < envelope->wrapper.signatures_len; i++) {
+            printf("%*s/ signatures: / << ", indent_space + 2 * indent_delta, "");
+            result = suit_print_signature(&envelope->wrapper.signatures[i], indent_space + 2 * indent_delta, indent_delta);
+            printf(" >>\n");
+        }
+        printf("%*s] >>,", indent_space + indent_delta, "");
     }
-    printf(" >>,\n");
-    for (size_t i = 0; i < envelope->wrapper.signatures_len; i++) {
-        printf("%*s/ signatures: / << ", indent_space + 2 * indent_delta, "");
-        result = suit_print_signature(&envelope->wrapper.signatures[i], indent_space + 2 * indent_delta, indent_delta);
-        printf(" >>\n");
-    }
-    printf("%*s] >>,\n", indent_space + indent_delta, "");
+    printf("\n");
 
     // manifest
     result = suit_print_manifest(mode, &envelope->manifest, indent_space + indent_delta, indent_delta);
@@ -1789,11 +1995,15 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
 
     printf("  expected : ");
     switch (condition_args.condition) {
+    /* int64 */
+    case SUIT_CONDITION_UPDATE_AUTHORIZED:
+        printf("%ld\n", condition_args.expected.i64);
+        break;
+
     /* uint64 */
     case SUIT_CONDITION_COMPONENT_SLOT:
     case SUIT_CONDITION_USE_BEFORE:
     case SUIT_CONDITION_MINIMUM_BATTERY:
-    case SUIT_CONDITION_UPDATE_AUTHORIZED:
         printf("%lu\n", condition_args.expected.u64);
         break;
 
@@ -1819,9 +2029,14 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     case SUIT_CONDITION_ABORT:
         result = SUIT_ERR_INVALID_KEY;
 
+    /* SUIT_Parameter_Version_Match */
+    case SUIT_CONDITION_VERSION:
+        suit_print_version(&condition_args.expected.version_match, 2, 2);
+        printf("\n");
+        break;
+
     /* not implemented */
     case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
-    case SUIT_CONDITION_VERSION:
     default:
         result = SUIT_ERR_NOT_IMPLEMENTED;
     }
@@ -1830,6 +2045,22 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     printf("}\n\n");
 
     return result;
+}
+
+suit_err_t suit_print_wait(suit_wait_args_t wait_args)
+{
+    suit_err_t ret = SUIT_SUCCESS;
+
+    printf("wait callback : {\n");
+    printf("  dst-component-identifier : ");
+    suit_print_component_identifier(&wait_args.dst);
+    printf("\n");
+    printf("  wait-info : ");
+    suit_print_wait_event(&wait_args.wait_info, 2, 2);
+    printf("\n  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", wait_args.report.record_on_success, wait_args.report.record_on_failure, wait_args.report.sysinfo_success, wait_args.report.sysinfo_failure);
+    printf("}\n\n");
+
+    return ret;
 }
 
 suit_err_t suit_print_report(suit_report_args_t report_args)

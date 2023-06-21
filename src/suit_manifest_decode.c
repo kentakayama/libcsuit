@@ -86,6 +86,134 @@ suit_err_t suit_decode_digest_from_bstr(const suit_decode_mode_t mode,
     return suit_decode_digest(mode, &buf, digest);
 }
 
+suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
+                                     QCBORItem *item,
+                                     bool next,
+                                     suit_version_match_t *version_match)
+{
+    if (next) {
+        QCBORDecode_GetNext(context, item);
+    }
+    if (item->uDataType != QCBOR_TYPE_ARRAY) {
+        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+    }
+    if (item->val.uCount != 2) {
+        return SUIT_ERR_INVALID_VALUE;
+    }
+    suit_err_t result = suit_qcbor_get_next(context, item, QCBOR_TYPE_INT64);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    version_match->type = item->val.int64;
+    result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ARRAY);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    if (item->val.uCount > SUIT_MAX_ARRAY_LENGTH) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    if (item->val.uCount < 1) {
+        return SUIT_ERR_INVALID_VALUE;
+    }
+    version_match->value.len = item->val.uCount;
+    for (size_t j = 0; j < version_match->value.len; j++) {
+        result = suit_qcbor_get_next(context, item, QCBOR_TYPE_INT64);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        version_match->value.int64[j] = item->val.int64;
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_wait_event_from_item(const suit_decode_mode_t mode,
+                                            QCBORDecodeContext *context,
+                                            QCBORItem *item,
+                                            bool next,
+                                            suit_wait_event_t *wait_event)
+{
+    wait_event->exists = 0;
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_MAP);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    size_t map_count = item->val.uCount;
+
+    for (size_t i = 0; i < map_count; i++) {
+        QCBORDecode_PeekNext(context, item);
+        if (item->uLabelType != QCBOR_TYPE_INT64) {
+            return SUIT_ERR_INVALID_TYPE_OF_KEY;
+        }
+        switch (item->label.int64) {
+        /* int */
+        case SUIT_WAIT_EVENT_AUTHORIZATION:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_AUTHORIZATION;
+            QCBORDecode_GetInt64(context, &wait_event->authorization);
+            break;
+        case SUIT_WAIT_EVENT_POWER:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_POWER;
+            QCBORDecode_GetInt64(context, &wait_event->power);
+            break;
+        case SUIT_WAIT_EVENT_NETWORK:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_NETWORK;
+            QCBORDecode_GetInt64(context, &wait_event->network);
+            break;
+
+        /* uint */
+        case SUIT_WAIT_EVENT_TIME:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_TIME;
+            QCBORDecode_GetUInt64(context, &wait_event->time);
+            break;
+        case SUIT_WAIT_EVENT_TIME_OF_DAY:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_TIME_OF_DAY;
+            QCBORDecode_GetUInt64(context, &wait_event->time_of_day);
+            break;
+        case SUIT_WAIT_EVENT_DAY_OF_WEEK:
+            wait_event->exists |= SUIT_WAIT_EVENT_CONTAINS_DAY_OF_WEEK;
+            QCBORDecode_GetUInt64(context, &wait_event->day_of_week);
+            break;
+
+        /* SUIT_Wait_Event_Argument_Other_Device_Version */
+        case SUIT_WAIT_EVENT_OTHER_DEVICE_VERSION:
+            QCBORDecode_EnterArray(context, item);
+            if (item->val.uCount != 2) {
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            QCBORDecode_GetByteString(context, &wait_event->other_device_version.other_device);
+            QCBORDecode_EnterArray(context, item);
+            wait_event->other_device_version.len = item->val.uCount;
+            for (size_t j = 0; j < wait_event->other_device_version.len; j++) {
+                result = suit_decode_version_match(context, item, false, &wait_event->other_device_version.versions[j]);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+            }
+            QCBORDecode_ExitArray(context);
+            QCBORDecode_ExitArray(context);
+            break;
+
+        default:
+            return SUIT_ERR_NOT_IMPLEMENTED;
+        }
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_wait_event(const suit_decode_mode_t mode,
+                                  const suit_buf_t *buf,
+                                  suit_wait_event_t *wait_event)
+{
+    QCBORDecodeContext wait_event_context;
+    QCBORItem item;
+    QCBORDecode_Init(&wait_event_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_wait_event_from_item(mode, &wait_event_context, &item, true, wait_event);
+    QCBORError error = QCBORDecode_Finish(&wait_event_context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
+}
+
 suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
                                                  QCBORDecodeContext *context,
                                                  QCBORItem *item,
@@ -113,13 +241,21 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         label = item->label.int64;
         params_list->params[i].label = label;
         switch (label) {
+        /* int */
+        case SUIT_PARAMETER_UPDATE_PRIORITY:
+            if (item->uDataType != QCBOR_TYPE_INT64) {
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                break;
+            }
+            params_list->params[i].value.int64 = item->val.int64;
+            break;
+
         /* uint */
         case SUIT_PARAMETER_COMPONENT_SLOT:
         case SUIT_PARAMETER_IMAGE_SIZE:
         case SUIT_PARAMETER_SOURCE_COMPONENT:
         case SUIT_PARAMETER_USE_BEFORE:
         case SUIT_PARAMETER_MINIMUM_BATTERY:
-        case SUIT_PARAMETER_UPDATE_PRIORITY:
             if (!suit_qcbor_value_is_uint64(item)) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 break;
@@ -146,6 +282,9 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         case SUIT_PARAMETER_INVOKE_ARGS:
         /* draft-ietf-suit-firmware-encryption */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
+        /* bstr wrapped SUIT_Wait_Event */
+        /* draft-ietf-suit-update-management */
+        case SUIT_PARAMETER_WAIT_INFO:
             if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 break;
@@ -175,9 +314,8 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
 
         /* SUIT_Parameter_Version_Match */
         case SUIT_PARAMETER_VERSION:
-
-        /* bstr wrapped SUIT_Wait_Event */
-        case SUIT_PARAMETER_WAIT_INFO:
+            result = suit_decode_version_match(context, item, false, &params_list->params[i].value.version_match);
+            break;
 
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -352,13 +490,118 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             if (result != SUIT_SUCCESS) {
                 return result;
             }
+            cmd_seq->commands[cmd_seq->len].value.params_list.index = 0;
             cmd_seq->commands[cmd_seq->len].label = label;
             cmd_seq->len++;
             break;
 
+        /* SUIT_Override_Mult_Arg */
+        case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
+            /*
+                Expand each override parameter directive
+                into multiple command sequence.
+
+                e.g.
+                suit-directive-override-multiple: {
+                    / index / 0: { + $$SUIT_Parameters = A },
+                    / index / 1: { + $$SUIT_Parameters = B },
+                    / index / 2: { + $$SUIT_Parameters = C }
+                }
+                =>
+                [ override-multiple, 0, A ],
+                [ override-multiple, 1, B ],
+                [ override-multiple, 2, C ]
+             */
+            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_MAP);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            size_t map_len = item->val.uCount;
+            /* store mapped parameters */
+            for (size_t j = 0; j < map_len; j++) {
+                result = suit_qcbor_get_next(context, item, QCBOR_TYPE_MAP);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                suit_command_sequence_item_t *command = &cmd_seq->commands[cmd_seq->len];
+
+                result = suit_index_from_item_label(item, &command->value.params_list.index);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                result = suit_decode_parameters_list_from_item(mode, context, item, false, &command->value.params_list);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                command->label = label;
+                cmd_seq->len++;
+            }
+            break;
+
+        /* SUIT_Directive_Copy_Params */
+        case SUIT_DIRECTIVE_COPY_PARAMS:
+            /*
+                Extract copy-params elements
+                into multiple command sequence.
+
+                e.g.
+                copy-params: {
+                    / src-index / 0: [ + int = A ],
+                    / src-index / 1: [ + int = B ],
+                    / src-index / 2: [ + int = C ]
+                }
+                =>
+                [ copy-params, 0, A ],
+                [ copy-params, 1, B ],
+                [ copy-params, 2, C ],
+             */
+            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_MAP);
+            if (result != SUIT_SUCCESS) {
+                return result;
+            }
+            size_t map_count = item->val.uCount;
+            for (size_t j = 0 ; j < map_count; j++) {
+                result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ARRAY);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                suit_command_sequence_item_t *command = &cmd_seq->commands[cmd_seq->len];
+
+                result = suit_index_from_item_label(item, &command->value.copy_params.src_index);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+
+                command->value.copy_params.int64s.len = item->val.uCount;
+                for (size_t k = 0; k < command->value.copy_params.int64s.len; k++) {
+                    result = suit_qcbor_get_next(context, item, QCBOR_TYPE_INT64);
+                    if (result != SUIT_SUCCESS) {
+                        return result;
+                    }
+                    command->value.copy_params.int64s.int64[k] = item->val.int64;
+                }
+                command->label = label;
+                cmd_seq->len++;
+            }
+            break;
+
         /* SUIT_Directive_Try_Each_Argument */
         case SUIT_DIRECTIVE_TRY_EACH:
-            /* XXX: should not extract here? */
+            /*
+                Extract try-each sequence directives
+                into multiple command sequence.
+
+                e.g.
+                try-each: [
+                    << SUIT_Command_Sequence = A >>,
+                    << SUIT_Command_Sequence = B >>,
+                    << SUIT_Command_Sequence = C >>
+                ]
+                =>
+                [ try-each, << A >> ],
+                [ try-each, << B >> ],
+                [ try-each, << C >> ]
+             */
             result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ARRAY);
             if (result != SUIT_SUCCESS) {
                 return result;
@@ -373,18 +616,14 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
-                cmd_seq->commands[cmd_seq->len].label = label;
-                cmd_seq->commands[cmd_seq->len].value.string.len = item->val.string.len;
-                cmd_seq->commands[cmd_seq->len].value.string.ptr = (uint8_t *)item->val.string.ptr;
+                suit_command_sequence_item_t *command = &cmd_seq->commands[cmd_seq->len];
+
+                command->label = label;
+                command->value.string.len = item->val.string.len;
+                command->value.string.ptr = (uint8_t *)item->val.string.ptr;
                 cmd_seq->len++;
             }
             break;
-
-        /* SUIT_Override_Mult_Arg */
-        //case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
-
-        /* SUIT_Directive_Copy_Params */
-        //case SUIT_DIRECTIVE_COPY_PARAMS:
 
         case SUIT_CONDITION_INVALID:
         default:
@@ -1429,7 +1668,6 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                 }
                 break;
 
-            // TODO
             default:
                 return SUIT_ERR_NOT_IMPLEMENTED;
             }
