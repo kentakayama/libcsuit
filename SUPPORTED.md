@@ -135,8 +135,8 @@ Wait | 29 | suit-directive-wait | SUIT Update Management | N/M | RWX
 Swap | 31 | suit-directive-swap | SUIT Manifest | N/M | RWX
 Run Sequence | 32 | suit-directive-run-sequence | SUIT Manifest | OPTIONAL | RWX
 Unlink | 33 | suit-directive-unlink | SUIT Multiple Trust Domains | N/M | RWX
-Override Multiple | 34 | suit-directive-override-multiple | SUIT Update Management | N/M | RWX
-Copy Params | 35 | suit-directive-copy-params | SUIT Update Management | N/M | RWX
+Override Multiple | 34? | suit-directive-override-multiple | SUIT Update Management | N/M | RWX
+Copy Params | 35? | suit-directive-copy-params | SUIT Update Management | N/M | RWX
 
 ### SUIT Parameters
 
@@ -163,7 +163,7 @@ Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management |
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RWX
 Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX
 Wait Info | 29 | suit-parameter-wait-info | SUIT Update Management | N/M | RWX
-Fetch Arguments | ? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | ---
+Fetch Arguments | 30? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | ---
 Custom | - | suit-parameter-custom | SUIT Manifest | N/M | ---
 
 ### SUIT Text
