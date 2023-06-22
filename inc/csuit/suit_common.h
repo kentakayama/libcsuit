@@ -317,13 +317,10 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_UPDATE_PRIORITY      = 27,
     SUIT_PARAMETER_VERSION              = 28,
     SUIT_PARAMETER_WAIT_INFO            = 29,
+    SUIT_PARAMETER_FETCH_ARGS           = 30, /* XXX */
 
     /* draft-ietf-suit-firmware-encryption */
     SUIT_PARAMETER_ENCRYPTION_INFO      = 19,
-
-    /* deprecated, to be removed */
-    //SUIT_PARAMETER_COMPRESSION_INFO     = 19,
-    //SUIT_PARAMETER_URI_LIST             = 30,
 } suit_parameter_key_t;
 
 /* draft-suit-manifest */
@@ -339,6 +336,7 @@ typedef enum suit_parameter_key {
 #define SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT BIT(SUIT_PARAMETER_SOURCE_COMPONENT)
 #define SUIT_PARAMETER_CONTAINS_INVOKE_ARGS BIT(SUIT_PARAMETER_INVOKE_ARGS)
 #define SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER BIT(SUIT_PARAMETER_DEVICE_IDENTIFIER)
+#define SUIT_PARAMETER_CONTAINS_FETCH_ARGS BIT(SUIT_PARAMETER_FETCH_ARGS)
 
 /* draft-suit-update-management */
 #define SUIT_PARAMETER_CONTAINS_USE_BEFORE BIT(SUIT_PARAMETER_USE_BEFORE)
@@ -817,6 +815,9 @@ typedef struct suit_store_args {
     UsefulBufC encryption_info;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 
+    /*! Extra arguments derived from fetch-args */
+    UsefulBufC fetch_args;
+
     /*! SUIT_STORE, SUIT_COPY, SUIT_SWAP, or SUIT_UNLINK */
     suit_store_key_t operation;
 } suit_store_args_t;
@@ -961,7 +962,7 @@ typedef struct suit_parameter_args {
     uint64_t                    source_component;
 
     /*! used in suit-directive-fetch */
-    UsefulBufC                  fetch_arguments;
+    UsefulBufC                  fetch_args;
 
     /*! used in suit-directive-invoke */
     UsefulBufC                  invoke_args;

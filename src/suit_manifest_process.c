@@ -210,6 +210,16 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                 }
             }
             break;
+        case SUIT_PARAMETER_FETCH_ARGS:
+            QCBORDecode_GetByteString(context, &val.str);
+            for (size_t j = 0; j < suit_index->len; j++) {
+                uint8_t tmp_index = suit_index->index[j];
+                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) || override) {
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_FETCH_ARGS;
+                    parameters[tmp_index].fetch_args = val.str;
+                }
+            }
+            break;
 
         /* bstr .cbor COSE_Encrypt0 // bstr .cbor COSE_Encrypt */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
@@ -522,7 +532,7 @@ suit_err_t suit_process_fetch(suit_extracted_t *extracted,
             fetch.uri[parameters[tmp_index].uri.len] = '\0';
             fetch.uri_len = parameters[tmp_index].uri.len + 1;
 
-            fetch.args = parameters[tmp_index].fetch_arguments;
+            fetch.args = parameters[tmp_index].fetch_args;
 
             fetch.buf_len = buf_size;
             fetch.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len);
@@ -562,6 +572,9 @@ suit_err_t suit_process_fetch(suit_extracted_t *extracted,
                 if (sizeof(store.mechanisms) != sizeof(suit_mechanism_t) * 4) {
                     return SUIT_ERR_FATAL;
                 }
+            }
+            if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) {
+                store.fetch_args = parameters[tmp_index].fetch_args;
             }
             result = suit_store_callback(store);
             if (result != SUIT_SUCCESS) {

@@ -278,11 +278,11 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         case SUIT_PARAMETER_CLASS_IDENTIFIER:
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
         case SUIT_PARAMETER_CONTENT:
-        //case SUIT_PARAMETER_FETCH_ARGS:
         case SUIT_PARAMETER_INVOKE_ARGS:
+        case SUIT_PARAMETER_FETCH_ARGS:
         /* draft-ietf-suit-firmware-encryption */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
-        /* bstr wrapped SUIT_Wait_Event */
+        /* bstr .cbor SUIT_Wait_Event */
         /* draft-ietf-suit-update-management */
         case SUIT_PARAMETER_WAIT_INFO:
             if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {

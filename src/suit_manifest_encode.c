@@ -228,12 +228,13 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
         case SUIT_PARAMETER_VENDOR_IDENTIFIER:
         case SUIT_PARAMETER_CLASS_IDENTIFIER:
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-        case SUIT_PARAMETER_INVOKE_ARGS:
         case SUIT_PARAMETER_CONTENT:
+        case SUIT_PARAMETER_INVOKE_ARGS:
+        case SUIT_PARAMETER_FETCH_ARGS:
         /* draft-ietf-suit-firmware-encryption */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
         /* draft-ietf-suit-update-management */
-        /* bstr wrapped SUIT_Wait_Event */
+        /* bstr .cbor SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
             QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
             break;
