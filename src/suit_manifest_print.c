@@ -262,10 +262,8 @@ char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
         return "version";
     case SUIT_PARAMETER_WAIT_INFO:
         return "wait-info";
-    /* To Be Defined?
     case SUIT_PARAMETER_FETCH_ARGS:
         return "fetch-args";
-    */
     case SUIT_PARAMETER_INVALID:
         break;
     }
@@ -578,6 +576,10 @@ suit_err_t suit_print_string(const suit_buf_t *string)
 
 suit_err_t suit_print_hex(const uint8_t *array, const size_t size)
 {
+    if (size == 0) {
+        printf("h''");
+        return SUIT_SUCCESS;
+    }
     if (array == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -1014,6 +1016,7 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
             break;
         case SUIT_PARAMETER_CONTENT:
         case SUIT_PARAMETER_INVOKE_ARGS:
+        case SUIT_PARAMETER_FETCH_ARGS:
             result = suit_print_hex(params_list->params[i].value.string.ptr,
                                     params_list->params[i].value.string.len);
             break;
@@ -1948,6 +1951,9 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
         suit_print_hex_string(store_args.encryption_info.ptr, store_args.encryption_info.len);
         printf("\n");
     }
+    printf("  fetch-args : ");
+    suit_print_hex(store_args.fetch_args.ptr, store_args.fetch_args.len);
+    printf("\n");
 
     printf("  ptr : %p (%ld)\n", store_args.src_buf.ptr, store_args.src_buf.len);
     printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", store_args.report.record_on_success, store_args.report.record_on_failure, store_args.report.sysinfo_success, store_args.report.sysinfo_failure);
@@ -1963,6 +1969,9 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
     printf("  uri : ");
     suit_print_tstr_in_max(fetch_args.uri, fetch_args.uri_len, SUIT_MAX_PRINT_URI_COUNT);
     printf(" (%ld)\n", fetch_args.uri_len);
+    printf("  fetch-args : ");
+    suit_print_hex(fetch_args.args.ptr, fetch_args.args.len);
+    printf("\n");
     printf("  dst-component-identifier : ");
     suit_print_component_identifier(&fetch_args.dst);
     printf("\n");
