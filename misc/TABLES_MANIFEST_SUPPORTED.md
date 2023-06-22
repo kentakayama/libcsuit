@@ -102,7 +102,7 @@ Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management |
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RWX
 Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX
 Wait Info | 29 | suit-parameter-wait-info | SUIT Update Management | N/M | RWX
-Fetch Arguments | 30? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | ---
+Fetch Arguments | 30? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | RWX
 Custom | - | suit-parameter-custom | SUIT Manifest | N/M | ---
 
 ### SUIT Text
