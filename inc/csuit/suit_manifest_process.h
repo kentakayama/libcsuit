@@ -27,7 +27,7 @@ suit_err_t suit_process_digest(QCBORDecodeContext *context,
 /*!
     \brief  Decode & Process SUIT binary
 
-    \param[in]      suit_inputs     To be procceed manifests and its public keys to verify.
+    \param[in]      suit_inputs     To be processed manifests and its public keys to verify.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 
     Process one or more SUIT_Envelope(s) like below.

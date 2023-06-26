@@ -78,7 +78,7 @@ extern "C" {
 #define SUIT_MAX_PUBLIC_KEY_LEN             SECP521R1_PUBLIC_KEY_LENGTH
 
 /*!
-    \brief  Generate COSE_Sign1 sined payload.
+    \brief  Generate COSE_Sign1 signed payload.
 
     \param[in]  raw_cbor            Pointer and length of the target payload.
     \param[in]  key_pair            Pointer of private and public key pair.
@@ -124,7 +124,7 @@ suit_err_t suit_verify_cose_sign(const UsefulBufC signed_cose,
     ]
     \endcode
 
-    This function verifies whether the payload correspond to the signature,
+    This function verifies whether the payload corresponds to the signature,
     and then extracts payload to returned_payload if success.
  */
 suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
