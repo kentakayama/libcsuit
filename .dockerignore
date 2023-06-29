@@ -15,7 +15,9 @@ obj
 *Dockerfile
 Doxyfile
 html
-mbedtls_config.h
 tags
 *.pdf
 *.md
+misc/*.md
+misc/*.py
+misc/*.patch

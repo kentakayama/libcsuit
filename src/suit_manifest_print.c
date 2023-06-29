@@ -497,7 +497,7 @@ suit_err_t suit_component_identifier_to_filename(const suit_component_identifier
 }
 
 suit_err_t suit_print_hex_string(const uint8_t *array,
-                                 const int size)
+                                 const size_t size)
 {
     if (array == NULL) {
         return SUIT_ERR_FATAL;
@@ -618,10 +618,10 @@ suit_err_t suit_print_uuid(const suit_buf_t *buf)
     if (buf == NULL || buf->len != 16) {
         return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
-    int16_t digits[] = {4, 2, 2, 2, 6};
-    int16_t pos = 0;
-    for (size_t i = 0; i < 5; i++) {
-        for (size_t j = 0; j < digits[i]; j++) {
+    uint8_t digits[] = {4, 2, 2, 2, 6};
+    uint8_t pos = 0;
+    for (uint8_t i = 0; i < 5; i++) {
+        for (uint8_t j = 0; j < digits[i]; j++) {
             printf("%02x", (unsigned char)buf->ptr[pos]);
             pos++;
         }
@@ -874,7 +874,7 @@ suit_err_t suit_print_wait_event_buf(const suit_buf_t *wait_event_buf,
     suit_err_t result = SUIT_SUCCESS;
     if (wait_event_buf->ptr != NULL && wait_event_buf->len > 0) {
         suit_wait_event_t wait_event;
-        result = suit_decode_wait_event(SUIT_DECODE_MODE_STRICT, wait_event_buf, &wait_event);
+        result = suit_decode_wait_event(wait_event_buf, &wait_event);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -1299,6 +1299,8 @@ suit_err_t suit_print_text_component(const suit_text_component_t *text_component
                                      const uint32_t indent_space,
                                      const uint32_t indent_delta)
 {
+    (void)indent_delta; /* avoiding unused parameter warning */
+
     if (text_component == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -1503,6 +1505,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
 
     printf("%*s/ common / 3: << {\n", indent_space + indent_delta, "");
     bool comma = false;
+#if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
     if (manifest->common.dependencies.len > 0) {
         printf("%*s/ dependencies / 1: {\n", indent_space + 2 * indent_delta, "");
         bool l1_comma = false;
@@ -1520,6 +1523,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         printf("%*s}", indent_space + 2 * indent_delta, "");
         comma = true;
     }
+#endif /* LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
 
     if (manifest->common.components_len > 0) {
         if (comma) {
@@ -1736,11 +1740,12 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_integrated_payload(const suit_decode_mode_t mode,
-                                         const suit_payloads_t *payloads,
+suit_err_t suit_print_integrated_payload(const suit_payloads_t *payloads,
                                          const uint32_t indent_space,
                                          const uint32_t indent_delta)
 {
+    (void)indent_delta; /* avoiding unused parameter warning */
+
     for (size_t i = 0; i < payloads->len; i++) {
         printf("%*s\"%.*s\" : ", indent_space, "", (int)payloads->payload[i].key.len, (char *)payloads->payload[i].key.ptr);
         suit_print_hex_in_max(payloads->payload[i].bytes.ptr, payloads->payload[i].bytes.len, SUIT_MAX_PRINT_BYTE_COUNT);
@@ -1755,6 +1760,8 @@ suit_err_t suit_print_delegation(const suit_delegation_t *delegation,
                                  const uint32_t indent_space,
                                  const uint32_t indent_delta)
 {
+    (void)indent_delta; /* avoiding unused parameter warning */
+
     if (delegation == NULL) {
         return SUIT_ERR_FATAL;
     }
@@ -1892,7 +1899,7 @@ suit_err_t suit_print_envelope(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        result = suit_print_integrated_payload(mode, &envelope->payloads, indent_space + indent_delta, indent_delta);
+        result = suit_print_integrated_payload(&envelope->payloads, indent_space + indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -1964,6 +1971,8 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
 suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
                             suit_fetch_ret_t *fetch_ret)
 {
+    (void)fetch_ret; /* avoiding unused parameter warning */
+
     suit_err_t ret = SUIT_SUCCESS;
     printf("fetch callback : {\n");
     printf("  uri : ");
@@ -2037,6 +2046,7 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     case SUIT_CONDITION_IS_DEPENDENCY:
     case SUIT_CONDITION_ABORT:
         result = SUIT_ERR_INVALID_KEY;
+        break;
 
     /* SUIT_Parameter_Version_Match */
     case SUIT_CONDITION_VERSION:

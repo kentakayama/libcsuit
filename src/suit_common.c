@@ -373,5 +373,3 @@ suit_err_t suit_fix_suit_encode_buf(suit_encode_t *suit_encode,
     suit_encode->cur_pos = suit_encode->pos;
     return SUIT_SUCCESS;
 }
-
-

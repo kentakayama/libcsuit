@@ -22,12 +22,12 @@
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/t_cose_sign1_sign.h"
 
-#ifndef LIBCSUIT_DISABLE_ENCRYPTION
+#if !defined(LIBCSUIT_DISABLE_ENCRYPTION)
 #include "t_cose/t_cose_encrypt_enc.h"
 #include "t_cose/t_cose_encrypt_dec.h"
 #include "t_cose/t_cose_recipient_enc_keywrap.h"
 #include "t_cose/t_cose_recipient_dec_keywrap.h"
-#endif
+#endif /* !LIBCSUIT_DISABLE_ENCRYPTION */
 
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
 #include "psa/crypto.h"

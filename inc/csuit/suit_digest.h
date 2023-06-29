@@ -302,6 +302,12 @@ suit_err_t suit_generate_digest_using_encode_buf(const uint8_t *ptr,
                                                  suit_encode_t *suit_encode,
                                                  suit_digest_t *digest);
 
+suit_err_t suit_decode_digest_from_item(suit_decode_mode_t mode,
+                                        QCBORDecodeContext *context,
+                                        QCBORItem *item,
+                                        bool next,
+                                        suit_digest_t *digest);
+
 #ifdef __cplusplus
 }
 #endif
