@@ -54,11 +54,9 @@ typedef enum {
     SUIT_ERR_FAILED_TO_VERIFY_DELEGATION,   /*! suit-delegation is not signed by trust-anchor */
     SUIT_ERR_CONDITION_MISMATCH,        /*! suit-condition-* failed */
 
-    //SUIT_ERR_AUTHENTICATION_POSITION    = 7, /*! suit-authentication-block MUST come before any element, except suit-delegation */
     SUIT_ERR_REDUNDANT,                 /*! same key appears, e.g. suit-install exists in both suit-manifest and suit-envelope */
     SUIT_ERR_NOT_CANONICAL_CBOR,        /*! not encoded with canonical CBOR */
     SUIT_ERR_INVALID_MANIFEST_VERSION,  /*! does not support SUIT Manifest version specified by suit-manifest-version */
-    //SUIT_ERR_NO_ARGUMENT                = 13, /*! arguments for callback function did not appear */
     SUIT_ERR_TRY_OUT,                   /*! all command_sequence in try-each section failed */
     SUIT_ERR_ABORT,                     /*! abort to execute, mainly for libcsuit internal */
 } suit_err_t;
