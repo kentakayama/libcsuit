@@ -18,15 +18,7 @@ LDWRAP = \
 
 TARGET = ./bin/suit_manifest_process
 SRCS = \
-	examples/suit_manifest_process_main_min.c \
-	examples/suit_examples_cose.c \
-	src/suit_common.c \
-	src/suit_digest.c \
-	src/suit_cose.c \
-	src/suit_manifest_process.c
-SRCS = \
-	examples/suit_manifest_process_main_min.c \
-	examples/suit_examples_cose.c
+	examples/suit_manifest_process_main_min.c
 
 OBJDIR = ./obj
 OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
