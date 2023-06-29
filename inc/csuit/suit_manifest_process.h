@@ -14,7 +14,8 @@
 #define SUIT_MANIFEST_PROCESS_H
 
 #include "suit_common.h"
-#include "suit_manifest_decode.h"
+#include "suit_digest.h"
+#include "suit_cose.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -86,6 +86,7 @@ suit_err_t suit_decode_digest_from_bstr(const suit_decode_mode_t mode,
     return suit_decode_digest(mode, &buf, digest);
 }
 
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
 suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
                                      QCBORItem *item,
                                      bool next,
@@ -125,9 +126,10 @@ suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
     }
     return SUIT_SUCCESS;
 }
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_VERSION */
 
-suit_err_t suit_decode_wait_event_from_item(const suit_decode_mode_t mode,
-                                            QCBORDecodeContext *context,
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
+suit_err_t suit_decode_wait_event_from_item(QCBORDecodeContext *context,
                                             QCBORItem *item,
                                             bool next,
                                             suit_wait_event_t *wait_event)
@@ -199,20 +201,20 @@ suit_err_t suit_decode_wait_event_from_item(const suit_decode_mode_t mode,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_decode_wait_event(const suit_decode_mode_t mode,
-                                  const suit_buf_t *buf,
+suit_err_t suit_decode_wait_event(const suit_buf_t *buf,
                                   suit_wait_event_t *wait_event)
 {
     QCBORDecodeContext wait_event_context;
     QCBORItem item;
     QCBORDecode_Init(&wait_event_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_wait_event_from_item(mode, &wait_event_context, &item, true, wait_event);
+    suit_err_t result = suit_decode_wait_event_from_item(&wait_event_context, &item, true, wait_event);
     QCBORError error = QCBORDecode_Finish(&wait_event_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
     }
     return result;
 }
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO */
 
 suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
                                                  QCBORDecodeContext *context,
@@ -242,6 +244,7 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         params_list->params[i].label = label;
         switch (label) {
         /* int */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY)
         case SUIT_PARAMETER_UPDATE_PRIORITY:
             if (item->uDataType != QCBOR_TYPE_INT64) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
@@ -249,21 +252,36 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
             }
             params_list->params[i].value.int64 = item->val.int64;
             break;
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY */
 
         /* uint */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_SLOT)
         case SUIT_PARAMETER_COMPONENT_SLOT:
+#endif /* LIBCSUIT_DISABLE_PARAMETER_COMPONENT_SLOT */
         case SUIT_PARAMETER_IMAGE_SIZE:
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_SOURCE_COMPONENT)
         case SUIT_PARAMETER_SOURCE_COMPONENT:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_USE_BEFORE)
         case SUIT_PARAMETER_USE_BEFORE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_MINIMUM_BATTERY)
         case SUIT_PARAMETER_MINIMUM_BATTERY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_SLOT) || \
+    !defined(LIBCSUIT_DISABLE_PARAMETER_SOURCE_COMPONENT) || \
+    !defined(LIBCSUIT_DISABLE_PARAMETER_USE_BEFORE) || \
+    !defined(LIBCSUIT_DISABLE_PARAMETER_MINIMUM_BATTERY)
             if (!suit_qcbor_value_is_uint64(item)) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 break;
             }
             params_list->params[i].value.uint64 = item->val.uint64;
             break;
+#endif
 
         /* tstr */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_URI)
         case SUIT_PARAMETER_URI:
             if (item->uDataType != QCBOR_TYPE_TEXT_STRING) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
@@ -272,19 +290,35 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
             params_list->params[i].value.string.ptr = (uint8_t *)item->val.string.ptr;
             params_list->params[i].value.string.len = item->val.string.len;
             break;
+#endif
 
         /* bstr */
         case SUIT_PARAMETER_VENDOR_IDENTIFIER:
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_CLASS_IDENTIFIER)
         case SUIT_PARAMETER_CLASS_IDENTIFIER:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_DEVICE_IDENTIFIER)
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_CONTENT)
         case SUIT_PARAMETER_CONTENT:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_INVOKE_ARGS)
         case SUIT_PARAMETER_INVOKE_ARGS:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
         case SUIT_PARAMETER_FETCH_ARGS:
+#endif
         /* draft-ietf-suit-firmware-encryption */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
         case SUIT_PARAMETER_ENCRYPTION_INFO:
+#endif
+
         /* bstr .cbor SUIT_Wait_Event */
         /* draft-ietf-suit-update-management */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
         case SUIT_PARAMETER_WAIT_INFO:
+#endif
             if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 break;
@@ -294,8 +328,14 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
             break;
 
         /* bool */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER)
         case SUIT_PARAMETER_STRICT_ORDER:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE)
         case SUIT_PARAMETER_SOFT_FAILURE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER) || \
+    !defined(LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE)
             if (item->uDataType == QCBOR_TYPE_TRUE) {
                 params_list->params[i].value.boolean = true;
             }
@@ -306,6 +346,7 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             break;
+#endif
 
         /* SUIT_Digest */
         case SUIT_PARAMETER_IMAGE_DIGEST:
@@ -313,9 +354,11 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
             break;
 
         /* SUIT_Parameter_Version_Match */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
         case SUIT_PARAMETER_VERSION:
             result = suit_decode_version_match(context, item, false, &params_list->params[i].value.version_match);
             break;
+#endif
 
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -344,7 +387,6 @@ bool is_suit_directive_only(int64_t label)
     case SUIT_DIRECTIVE_COPY:
     case SUIT_DIRECTIVE_SWAP:
     case SUIT_DIRECTIVE_INVOKE:
-    //case SUIT_DIRECTIVE_FETCH_URI_LIST:
         return true;
     }
     return false;
@@ -391,36 +433,72 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
         switch (label) {
         /* SUIT_Rep_Policy */
         case SUIT_CONDITION_VENDOR_IDENTIFIER:
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_CLASS_IDENTIFIER)
         case SUIT_CONDITION_CLASS_IDENTIFIER:
+#endif
         case SUIT_CONDITION_IMAGE_MATCH:
         case SUIT_CONDITION_COMPONENT_SLOT:
+#if !defined(LIBCSUIT_DISABLE_CONDITION_CHECK_CONTENT)
         case SUIT_CONDITION_CHECK_CONTENT:
+#endif
         case SUIT_CONDITION_ABORT:
+#if !defined(LIBCSUIT_DISABLE_CONDITION_DEVICE_IDENTIFIER)
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
+#endif
 
         /* in draft-ietf-suit-trust-domains */
+#if !defined(LIBCSUIT_DISABLE_CONDITION_DEPENDENCY_INTEGRITY)
         case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_IS_DEPENDENCY)
         case SUIT_CONDITION_IS_DEPENDENCY:
+#endif
 
         /* in draft-ietf-suit-update-management */
+#if !defined(LIBCSUIT_DISABLE_CONDITION_USE_BEFORE)
         case SUIT_CONDITION_USE_BEFORE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_IMAGE_NOT_MATCH)
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_MINIMUM_BATTERY)
         case SUIT_CONDITION_MINIMUM_BATTERY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_UPDATE_AUTHORIZED)
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_VERSION)
         case SUIT_CONDITION_VERSION:
+#endif
 
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_WRITE)
         case SUIT_DIRECTIVE_WRITE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_FETCH)
         case SUIT_DIRECTIVE_FETCH:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_COPY)
         case SUIT_DIRECTIVE_COPY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_INVOKE)
         case SUIT_DIRECTIVE_INVOKE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_SWAP)
         case SUIT_DIRECTIVE_SWAP:
+#endif
 
         /* in draft-ietf-suit-update-management */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_WAIT)
         case SUIT_DIRECTIVE_WAIT:
+#endif
 
         /* in draft-ietf-suit-trust-domains */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_PROCESS_DEPENDENCY)
         case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_UNLINK)
         case SUIT_DIRECTIVE_UNLINK:
+#endif
             result = suit_qcbor_get_next_uint(context, item);
             if (result != SUIT_SUCCESS) {
                 return result;
@@ -431,6 +509,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             break;
 
         /* bstr */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_RUN_SEQUENCE)
         case SUIT_DIRECTIVE_RUN_SEQUENCE:
             result = suit_qcbor_get_next(context, item, QCBOR_TYPE_BYTE_STRING);
             if (result != SUIT_SUCCESS) {
@@ -441,6 +520,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             cmd_seq->commands[cmd_seq->len].value.string.len = item->val.string.len;
             cmd_seq->len++;
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_RUN_SEQUENCE */
 
         /* uint, true, [ + uint ] */
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
@@ -463,7 +543,11 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                 cmd_seq->commands[cmd_seq->len].value.index_arg.len = 1;
                 cmd_seq->commands[cmd_seq->len].value.index_arg.index[0] = item->val.uint64;
                 break;
+
             case QCBOR_TYPE_ARRAY:
+#if defined(LIBCSUIT_DISABLE_COMPONENT_INDEX_ARRAY)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
                 if (item->val.uCount == 0) {
                     return SUIT_ERR_INVALID_VALUE;
                 }
@@ -474,9 +558,17 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                     }
                     cmd_seq->commands[cmd_seq->len].value.index_arg.index[j] = item->val.uint64;
                 }
-            case QCBOR_TYPE_TRUE:
-                cmd_seq->commands[cmd_seq->len].value.index_arg.len = 0;
+#endif /* LIBCSUIT_DISABLE_COMPONENT_INDEX_ARRAY */
                 break;
+
+            case QCBOR_TYPE_TRUE:
+#if defined(LIBCSUIT_DISABLE_COMPONENT_INDEX_TYPE_BOOLEAN)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
+                cmd_seq->commands[cmd_seq->len].value.index_arg.len = 0;
+#endif /* LIBCSUIT_DISABLE_COMPONENT_INDEX_TYPE_BOOLEAN */
+                break;
+
             default:
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
@@ -484,7 +576,9 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             break;
 
         /* $$SUIT_Parameters */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_SET_PARAMETERS)
         case SUIT_DIRECTIVE_SET_PARAMETERS:
+#endif
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
             result = suit_decode_parameters_list_from_item(mode, context, item, true, &cmd_seq->commands[cmd_seq->len].value.params_list);
             if (result != SUIT_SUCCESS) {
@@ -496,6 +590,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
             break;
 
         /* SUIT_Override_Mult_Arg */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE)
         case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
             /*
                 Expand each override parameter directive
@@ -537,8 +632,10 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                 cmd_seq->len++;
             }
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE */
 
         /* SUIT_Directive_Copy_Params */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_COPY_PARAMS)
         case SUIT_DIRECTIVE_COPY_PARAMS:
             /*
                 Extract copy-params elements
@@ -584,8 +681,10 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                 cmd_seq->len++;
             }
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_COPY_PARAMS */
 
         /* SUIT_Directive_Try_Each_Argument */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_TRY_EACH)
         case SUIT_DIRECTIVE_TRY_EACH:
             /*
                 Extract try-each sequence directives
@@ -624,6 +723,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                 cmd_seq->len++;
             }
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_TRY_EACH */
 
         case SUIT_CONDITION_INVALID:
         default:
@@ -798,6 +898,7 @@ suit_err_t suit_decode_components_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
+#if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
 suit_err_t suit_decode_dependency_metadata_from_item(const suit_decode_mode_t mode,
                                                      QCBORDecodeContext *context,
                                                      QCBORItem *item,
@@ -867,9 +968,9 @@ suit_err_t suit_decode_dependencies_from_item(const suit_decode_mode_t mode,
     }
     return result;
 }
+#endif /* LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
 
-suit_err_t suit_decode_authentication_block(const suit_decode_mode_t mode,
-                                            suit_buf_t *buf,
+suit_err_t suit_decode_authentication_block(suit_buf_t *buf,
                                             suit_buf_t *digest_buf,
                                             const suit_key_t *public_key)
 {
@@ -905,17 +1006,21 @@ suit_err_t suit_decode_common_from_item(const suit_decode_mode_t mode,
             break;
         }
         switch (item->label.uint64) {
+#if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
         case SUIT_DEPENDENCIES:
             result = suit_decode_dependencies_from_item(mode, context, item, false, &common->dependencies);
             break;
+#endif /* !LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
+
         case SUIT_COMPONENTS:
             result = suit_decode_components_from_item(mode, context, item, false, common->components, &common->components_len);
             break;
+
         case SUIT_SHARED_SEQUENCE:
             result = suit_decode_shared_sequence_from_bstr(mode, context, item, false, &common->shared_seq);
             break;
+
         default:
-            // TODO
             return SUIT_ERR_NOT_IMPLEMENTED;
         }
         if (!suit_continue(mode, result)) {
@@ -948,8 +1053,8 @@ suit_err_t suit_decode_common_from_bstr(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_text_component_from_item(const suit_decode_mode_t mode,
-                                                QCBORDecodeContext *context,
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_TEXT)
+suit_err_t suit_decode_text_component_from_item(QCBORDecodeContext *context,
                                                 QCBORItem *item,
                                                 bool next,
                                                 suit_text_component_t *text_component)
@@ -1032,7 +1137,7 @@ suit_err_t suit_decode_text_from_item(const suit_decode_mode_t mode,
             if (result != SUIT_SUCCESS) {
                 return result;
             }
-            result = suit_decode_text_component_from_item(mode, context, item, true, &text->component[text->component_len].text_component);
+            result = suit_decode_text_component_from_item(context, item, true, &text->component[text->component_len].text_component);
             if (result != SUIT_SUCCESS) {
                 return result;
             }
@@ -1101,6 +1206,7 @@ suit_err_t suit_decode_text_from_bstr(const suit_decode_mode_t mode,
     }
     return result;
 }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_TEXT */
 
 suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
                                           QCBORDecodeContext *context,
@@ -1146,6 +1252,9 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             result = suit_decode_common_from_bstr(mode, context, item, false, &manifest->common);
             break;
         case SUIT_MANIFEST_COMPONENT_ID:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             result = suit_decode_component_identifiers_from_item(mode, context, item, false, &manifest->manifest_component_id);
             break;
         case SUIT_DEPENDENCY_RESOLUTION:
@@ -1167,8 +1276,13 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             else {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
+#endif /* LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID */
             break;
+
         case SUIT_PAYLOAD_FETCH:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
                 result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.payload_fetch);
@@ -1186,8 +1300,13 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             else {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
+#endif /* LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH */
             break;
+
         case SUIT_INSTALL:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
                 result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.install);
@@ -1206,8 +1325,13 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             else {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
+#endif /* LIBCSUIT_DISABLE_MANIFEST_INSTALL */
             break;
+
         case SUIT_TEXT:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_TEXT)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
                 result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.text);
@@ -1226,8 +1350,13 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             else {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
+#endif /* LIBCSUIT_DISABLE_MANIFEST_TEXT */
             break;
+
         case SUIT_COSWID:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_COSWID)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
                 result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.coswid);
@@ -1240,29 +1369,50 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             else {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
+#endif /* LIBCSUIT_DISABLE_MANIFEST_COSWID */
             break;
+
         /* SUIT_Unseverabme_Members */
         case SUIT_VALIDATE:
             result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.validate);
             break;
+
         case SUIT_LOAD:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.load);
+#endif /* LIBCSUIT_DISABLE_MANIFEST_LOAD */
             break;
+
         case SUIT_INVOKE:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.invoke);
+#endif /* LIBCSUIT_DISABLE_MANIFEST_INVOKE */
             break;
+
         /* in draft-ietf-suit-trust-domains */
         case SUIT_UNINSTALL:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.uninstall);
+#endif /* LIBCSUIT_DISABLE_MANIFEST_UNINSTALL */
             break;
 
         case SUIT_REFERENCE_URI:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
             result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
             if (result != SUIT_SUCCESS) {
                 return result;
             }
             manifest->reference_uri.len = item->val.string.len;
             manifest->reference_uri.ptr = (uint8_t *)item->val.string.ptr;
+#endif /* LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI */
             break;
 
         default:
@@ -1357,7 +1507,7 @@ suit_err_t suit_decode_authentication_wrapper_from_item(const suit_decode_mode_t
         buf->len = item->val.string.len;
 
         for (int32_t j = 0; j < SUIT_MAX_KEY_NUM; j++) {
-            result = suit_decode_authentication_block(mode, buf, &digest_buf, &mechanisms[j].key);
+            result = suit_decode_authentication_block(buf, &digest_buf, &mechanisms[j].key);
             if (result == SUIT_SUCCESS) {
                 verified = true;
                 mechanisms[j].use = true;
@@ -1385,8 +1535,8 @@ suit_err_t suit_decode_authentication_wrapper(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_delegation_from_item(const suit_decode_mode_t mode,
-                                            QCBORDecodeContext *context,
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_DELEGATION)
+suit_err_t suit_decode_delegation_from_item(QCBORDecodeContext *context,
                                             QCBORItem *item,
                                             bool next,
                                             suit_delegation_t *delegation,
@@ -1451,21 +1601,21 @@ suit_err_t suit_decode_delegation_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_delegation(const suit_decode_mode_t mode,
-                                  UsefulBufC buf,
+suit_err_t suit_decode_delegation(UsefulBufC buf,
                                   suit_delegation_t *delegation,
                                   suit_mechanism_t mechanisms[])
 {
     QCBORDecodeContext delegation_context;
     QCBORItem item;
     QCBORDecode_Init(&delegation_context, buf, QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_delegation_from_item(mode, &delegation_context, &item, true, delegation, mechanisms);
+    suit_err_t result = suit_decode_delegation_from_item(&delegation_context, &item, true, delegation, mechanisms);
     QCBORError error = QCBORDecode_Finish(&delegation_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
     }
     return result;
 }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_DELGATION */
 
 suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                                           QCBORDecodeContext *context,
@@ -1475,6 +1625,11 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                                           suit_mechanism_t mechanisms[])
 {
     suit_err_t result = SUIT_SUCCESS;
+
+    if (!next) {
+        /* there is no QCBORDecode_PeekNextWithTags() */
+        return SUIT_ERR_FATAL;
+    }
 
     uint64_t puTags[1];
     QCBORTagListOut Out = {0, 1, puTags};
@@ -1528,10 +1683,14 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
             label = item->label.int64;
             switch (label) {
             case SUIT_DELEGATION:
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_DELEGATION)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
                 if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                     return SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 }
-                result = suit_decode_delegation(mode, item->val.string, &envelope->delegation, mechanisms);
+                result = suit_decode_delegation(item->val.string, &envelope->delegation, mechanisms);
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_DELEGATION */
                 break;
 
             case SUIT_AUTHENTICATION:
@@ -1561,6 +1720,9 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 
             /* SUIT_Severable_Manifest_members */
             case SUIT_SEVERED_PAYLOAD_FETCH:
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
                 if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.payload_fetch);
                     if (!suit_continue(mode, result)) {
@@ -1581,8 +1743,13 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                         result = SUIT_ERR_FAILED_TO_VERIFY;
                     }
                 }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH */
                 break;
+
             case SUIT_SEVERED_INSTALL:
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_INSTALL)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
                 if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.install);
                     if (!suit_continue(mode, result)) {
@@ -1603,8 +1770,13 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                         result = SUIT_ERR_FAILED_TO_VERIFY;
                     }
                 }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_INSTALL */
                 break;
+
             case SUIT_SEVERED_TEXT:
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_TEXT)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
                 if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.text);
                     if (!suit_continue(mode, result)) {
@@ -1625,8 +1797,13 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                         result = SUIT_ERR_FAILED_TO_VERIFY;
                     }
                 }
+#endif
                 break;
+
             case SUIT_SEVERED_COSWID:
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_COSWID)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
                 if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.coswid);
                     envelope->manifest.sev_man_mem.coswid_status |= SUIT_SEVERABLE_IS_VERIFIED;
@@ -1645,8 +1822,13 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                         result = SUIT_ERR_FAILED_TO_VERIFY;
                     }
                 }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_COSWID */
                 break;
+
             case SUIT_SEVERED_DEPENDENCY_RESOLUTION:
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION)
+                return SUIT_ERR_NOT_IMPLEMENTED;
+#else
                 if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.dependency_resolution);
                     if (!suit_continue(mode, result)) {
@@ -1666,6 +1848,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                         result = SUIT_ERR_FAILED_TO_VERIFY;
                     }
                 }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION */
                 break;
 
             default:

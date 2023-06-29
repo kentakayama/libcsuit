@@ -203,7 +203,12 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     }
 
     psa_set_key_usage_flags(&key_attributes, usage);
+
+#if defined(LIBCSUIT_USE_DETERMINISTIC_ECDSA)
     psa_set_key_algorithm(&key_attributes, PSA_ALG_DETERMINISTIC_ECDSA(hash));
+#else
+    psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDSA(hash));
+#endif
     if (key->private_key == NULL) {
         psa_set_key_type(&key_attributes, PSA_KEY_TYPE_ECC_PUBLIC_KEY(nid));
         result = psa_import_key(&key_attributes,
@@ -222,7 +227,11 @@ suit_err_t suit_create_es_key(suit_key_t *key)
         return SUIT_ERR_FAILED_TO_VERIFY;
     }
 
+#if defined(LIBCSUIT_USE_T_COSE_1)
+    key->cose_key.k.key_handle           = key_handle;
+#else
     key->cose_key.key.handle    = key_handle;
+#endif
 
     return SUIT_SUCCESS;
 }
@@ -472,8 +481,12 @@ suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key,
 suit_err_t suit_free_key(const suit_key_t *key)
 {
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
-    psa_destroy_key((psa_key_handle_t)key->cose_key.key.handle);
+#if defined(LIBCSUIT_USE_T_COSE_1)
+    psa_destroy_key((psa_key_handle_t)key->cose_key.k.key_handle);
 #else
+    psa_destroy_key((psa_key_handle_t)key->cose_key.key.handle);
+#endif /* LIBCSUIT_USE_T_COSE_1 */
+#else /* LIBCSUIT_PSA_CRYPTO_C */
     EVP_PKEY_free(key->cose_key.key.ptr);
 #endif
     return SUIT_SUCCESS;
@@ -623,11 +636,13 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
         }
         break; /* SUIT_COSE_KTY_EC2 */
 
+#if !defined(LIBCSUIT_DISABLE_ENCRYPTION)
     case SUIT_COSE_KTY_SYMMETRIC:
         if (key_params.k.len == 16) {
             result = suit_key_init_a128kw_secret_key(key_params.k.ptr, &mechanism->key);
         }
         break; /* SUIT_COSE_KTY_SYMMETRIC */
+#endif /* LIBCSUIT_DISABLE_ENCRYPTION */
 
     default:
         return SUIT_ERR_INVALID_TYPE_OF_VALUE;

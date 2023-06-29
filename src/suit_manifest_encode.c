@@ -38,26 +38,41 @@ suit_err_t suit_encode_append_delegation(const suit_delegation_t *delegation,
 suit_err_t suit_encode_append_severed_members(const suit_encode_t *suit_encode,
                                               QCBOREncodeContext *context)
 {
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION)
     if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->dependency_resolution) &&
         suit_encode->dependency_resolution_digest.bytes.len > 0) {
         QCBOREncode_AddBytesToMapN(context, SUIT_SEVERED_DEPENDENCY_RESOLUTION, suit_encode->dependency_resolution);
     }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION */
+
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH)
     if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->payload_fetch) &&
         suit_encode->payload_fetch_digest.bytes.len > 0) {
         QCBOREncode_AddBytesToMapN(context, SUIT_SEVERED_PAYLOAD_FETCH, suit_encode->payload_fetch);
     }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH */
+
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_INSTALL)
     if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->install) &&
         suit_encode->install_digest.bytes.len > 0) {
         QCBOREncode_AddBytesToMapN(context, SUIT_SEVERED_INSTALL, suit_encode->install);
     }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_INSTALL */
+
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_TEXT)
     if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->text) &&
         suit_encode->text_digest.bytes.len > 0) {
         QCBOREncode_AddBytesToMapN(context, SUIT_SEVERED_TEXT, suit_encode->text);
     }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_TEXT */
+
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_COSWID)
     if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->coswid) &&
         suit_encode->coswid_digest.bytes.len > 0) {
         QCBOREncode_AddBytesToMapN(context, SUIT_SEVERED_COSWID, suit_encode->coswid);
     }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_COSWID */
+
     return SUIT_SUCCESS;
 }
 
@@ -163,8 +178,7 @@ suit_err_t suit_generate_encoded_digest(const uint8_t *ptr,
     return result;
 }
 
-suit_err_t suit_encode_append_payloads(const suit_decode_mode_t mode,
-                                       const suit_envelope_t *envelope,
+suit_err_t suit_encode_append_payloads(const suit_envelope_t *envelope,
                                        QCBOREncodeContext *context)
 {
     for (size_t i = 0; i < envelope->payloads.len; i++) {
@@ -174,8 +188,7 @@ suit_err_t suit_encode_append_payloads(const suit_decode_mode_t mode,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_encode_append_authentication_wrapper(const suit_decode_mode_t mode,
-                                                     UsefulBufC digest,
+suit_err_t suit_encode_append_authentication_wrapper(UsefulBufC digest,
                                                      UsefulBuf signatures[],
                                                      size_t num_signature,
                                                      QCBOREncodeContext *context)
@@ -192,7 +205,6 @@ suit_err_t suit_encode_append_authentication_wrapper(const suit_decode_mode_t mo
 }
 
 suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_t *params_list,
-                                                     suit_encode_t *suit_encode,
                                                      QCBOREncodeContext *context)
 {
     QCBOREncode_OpenMap(context);
@@ -201,20 +213,31 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
         const suit_parameters_t *param = &params_list->params[i];
         switch (param->label) {
         /* int */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY)
         case SUIT_PARAMETER_UPDATE_PRIORITY:
             QCBOREncode_AddInt64ToMapN(context, param->label, param->value.int64);
             break;
+#endif /* LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY */
 
         /* uint */
-        case SUIT_PARAMETER_COMPONENT_SLOT:
         case SUIT_PARAMETER_IMAGE_SIZE:
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_SLOT)
+        case SUIT_PARAMETER_COMPONENT_SLOT:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_SOURCE_COMPONENT)
         case SUIT_PARAMETER_SOURCE_COMPONENT:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_USE_BEFORE)
         case SUIT_PARAMETER_USE_BEFORE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_MINIMUM_BATTERY)
         case SUIT_PARAMETER_MINIMUM_BATTERY:
+#endif
             QCBOREncode_AddUInt64ToMapN(context, param->label, param->value.uint64);
             break;
 
         /* tstr */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_URI)
         case SUIT_PARAMETER_URI:
             if (param->value.string.len > 0) {
                 QCBOREncode_AddTextToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
@@ -223,27 +246,49 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
                 QCBOREncode_AddNULLToMapN(context, param->label);
             }
             break;
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_URI */
 
         /* bstr */
         case SUIT_PARAMETER_VENDOR_IDENTIFIER:
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_CLASS_IDENTIFIER)
         case SUIT_PARAMETER_CLASS_IDENTIFIER:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_DEVICE_IDENTIFIER)
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_CONTENT)
         case SUIT_PARAMETER_CONTENT:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_INVOKE_ARGS)
         case SUIT_PARAMETER_INVOKE_ARGS:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
         case SUIT_PARAMETER_FETCH_ARGS:
+#endif
         /* draft-ietf-suit-firmware-encryption */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
         case SUIT_PARAMETER_ENCRYPTION_INFO:
+#endif
         /* draft-ietf-suit-update-management */
         /* bstr .cbor SUIT_Wait_Event */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
         case SUIT_PARAMETER_WAIT_INFO:
+#endif
             QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
             break;
 
         /* bool */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER)
         case SUIT_PARAMETER_STRICT_ORDER:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE)
         case SUIT_PARAMETER_SOFT_FAILURE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER) || \
+    !defined(LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE)
             QCBOREncode_AddBoolToMapN(context, param->label, param->value.boolean);
             break;
+#endif
 
         /* SUIT_Digest */
         case SUIT_PARAMETER_IMAGE_DIGEST:
@@ -253,6 +298,7 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             break;
 
         /* SUIT_Parameter_Version_Match */
+#if !defined(LIBCSUIT_DISABLE_CONDITION_VERSION)
         case SUIT_PARAMETER_VERSION:
             QCBOREncode_OpenArrayInMapN(context, param->label);
             QCBOREncode_AddInt64(context, param->value.version_match.type);
@@ -263,6 +309,7 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             QCBOREncode_CloseArray(context);
             QCBOREncode_CloseArray(context);
             break;
+#endif /* !LIBCSUIT_DISABLE_CONDITION_VERSION */
 
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -302,56 +349,101 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
         switch (item->label) {
         /* SUIT_Rep_Policy */
         case SUIT_CONDITION_VENDOR_IDENTIFIER:
+#if !defined(LIBCSUIT_DISABLE_CONDITION_CLASS_IDENTIFIER)
         case SUIT_CONDITION_CLASS_IDENTIFIER:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_DEVICE_IDENTIFIER)
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
+#endif
         case SUIT_CONDITION_IMAGE_MATCH:
+#if !defined(LIBCSUIT_DISABLE_CONDITION_COMPONENT_SLOT)
         case SUIT_CONDITION_COMPONENT_SLOT:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_CHECK_CONTENT)
         case SUIT_CONDITION_CHECK_CONTENT:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_ABORT)
         case SUIT_CONDITION_ABORT:
+#endif
 
         /* in draft-ietf-suit-update-management */
+#if !defined(LIBCSUIT_DISABLE_CONDITION_USE_BEFORE)
         case SUIT_CONDITION_USE_BEFORE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_IMAGE_NOT_MATCH)
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_MINIMUM_BATTERY)
         case SUIT_CONDITION_MINIMUM_BATTERY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_UPDATE_AUTHORIZED)
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_VERSION)
         case SUIT_CONDITION_VERSION:
+#endif
 
         /* in draft-ietf-suit-trust-domains */
+#if !defined(LIBCSUIT_DISABLE_CONDITION_DEPENDENCY_INTEGRITY)
         case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_CONDITION_IS_DEPENDENCY)
         case SUIT_CONDITION_IS_DEPENDENCY:
+#endif
 
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_WRITE)
         case SUIT_DIRECTIVE_WRITE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_FETCH)
         case SUIT_DIRECTIVE_FETCH:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_COPY)
         case SUIT_DIRECTIVE_COPY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_INVOKE)
         case SUIT_DIRECTIVE_INVOKE:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_SWAP)
         case SUIT_DIRECTIVE_SWAP:
+#endif
 
         /* in draft-ietf-suit-update-management */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_WAIT)
         case SUIT_DIRECTIVE_WAIT:
+#endif
 
         /* in draft-ietf-suit-trust-domains */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_PROCESS_DEPENDENCY)
         case SUIT_DIRECTIVE_PROCESS_DEPENDENCY:
+#endif
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_UNLINK)
         case SUIT_DIRECTIVE_UNLINK:
+#endif
             QCBOREncode_AddUInt64(&context, item->label);
             QCBOREncode_AddUInt64(&context, item->value.uint64);
             break;
 
         /* bstr */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_RUN_SEQUENCE)
         case SUIT_DIRECTIVE_RUN_SEQUENCE:
             QCBOREncode_AddUInt64(&context, item->label);
             QCBOREncode_AddBytes(&context, (UsefulBufC){.ptr = item->value.string.ptr, .len = item->value.string.len});
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_RUN_SEQUENCE */
 
         /* uint, true, [ + uint ] */
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
-            if (item->value.index_arg.len == 0) {
-                QCBOREncode_AddUInt64(&context, item->label);
-                QCBOREncode_AddBool(&context, true);
-            }
-            else if (item->value.index_arg.len == 1) {
+            if (item->value.index_arg.len == 1) {
                 QCBOREncode_AddUInt64(&context, item->label);
                 QCBOREncode_AddUInt64(&context, item->value.index_arg.index[0]);
             }
+#if !defined(LIBCSUIT_DISABLE_COMPONENT_INDEX_TYPE_BOOLEAN)
+            else if (item->value.index_arg.len == 0) {
+                QCBOREncode_AddUInt64(&context, item->label);
+                QCBOREncode_AddBool(&context, true);
+            }
+#endif /* !LIBCSUIT_DISABLE_COMPONENT_INDEX_TYPE_BOOLEAN */
+#if !defined(LIBCSUIT_DISABLE_COMPONENT_INDEX_ARRAY)
             else if (item->value.index_arg.len < SUIT_MAX_INDEX_NUM) {
                 QCBOREncode_AddUInt64(&context, item->label);
                 QCBOREncode_OpenArray(&context);
@@ -360,19 +452,23 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
                 }
                 QCBOREncode_CloseArray(&context);
             }
+#endif /* !LIBCSUIT_DISABLE_COMPONENT_INDEX_ARRAY */
             else {
                 return SUIT_ERR_INVALID_VALUE;
             }
             break;
 
         /* $$SUIT_Parameters */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_SET_PARAMETERS)
         case SUIT_DIRECTIVE_SET_PARAMETERS:
+#endif
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
             QCBOREncode_AddUInt64(&context, item->label);
-            result = suit_append_directive_override_parameters(&item->value.params_list, suit_encode, &context);
+            result = suit_append_directive_override_parameters(&item->value.params_list, &context);
             break;
 
         /* SUIT_Override_Mult_Arg */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE)
         case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
             /*
                 Encode expanded items into one map.
@@ -395,7 +491,7 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
                     break;
                 }
                 QCBOREncode_AddInt64(&context, item->value.params_list.index);
-                result = suit_append_directive_override_parameters(&item->value.params_list, suit_encode, &context);
+                result = suit_append_directive_override_parameters(&item->value.params_list, &context);
                 if (result != SUIT_SUCCESS) {
                     break;
                 }
@@ -403,8 +499,10 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             QCBOREncode_CloseMap(&context);
             i += extra - 1;
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE */
 
         /* SUIT_Directive_Copy_Params */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_COPY_PARAMS)
         case SUIT_DIRECTIVE_COPY_PARAMS:
             /*
                 Encode expanded items into one map.
@@ -434,8 +532,10 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             QCBOREncode_CloseMap(&context);
             i += extra - 1;
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_COPY_PARAMS */
 
         /* SUIT_Directive_Try_Each_Argument */
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_TRY_EACH)
         case SUIT_DIRECTIVE_TRY_EACH:
             /*
                 Encode expanded items into one array.
@@ -466,6 +566,7 @@ suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
             QCBOREncode_CloseArray(&context);
             i += extra - 1;
             break;
+#endif /* !LIBCSUIT_DISABLE_DIRECTIVE_TRY_EACH */
 
         default:
             return SUIT_ERR_NOT_IMPLEMENTED;
@@ -526,6 +627,7 @@ suit_err_t suit_encode_common(const suit_common_t *suit_common,
     QCBOREncode_OpenMap(&context);
 
     // suit-dependencies
+#if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
     if (suit_common->dependencies.len > 0) {
         QCBOREncode_OpenMapInMapN(&context, SUIT_DEPENDENCIES);
         for (size_t i = 0; i <suit_common->dependencies.len; i++) {
@@ -538,6 +640,7 @@ suit_err_t suit_encode_common(const suit_common_t *suit_common,
         }
         QCBOREncode_CloseMap(&context);
     }
+#endif /* LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
 
     // suit-components
     if (suit_common->components_len > 0) {
@@ -564,6 +667,7 @@ suit_err_t suit_encode_common(const suit_common_t *suit_common,
     return result;
 }
 
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_TEXT)
 suit_err_t suit_encode_text(const suit_text_t *text,
                             suit_encode_t *suit_encode,
                             UsefulBuf *buf)
@@ -666,6 +770,7 @@ suit_err_t suit_encode_text_bstr(const suit_text_t *text,
     *buf = (UsefulBuf){.ptr = (void *)t_buf.ptr, .len = t_buf.len};
     return suit_fix_suit_encode_buf(suit_encode, t_buf.len);
 }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_TEXT */
 
 /*!
     \brief  Encode suit-manifest
@@ -716,6 +821,8 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
             return result;
         }
     }
+
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
     UsefulBuf load_buf = NULLUsefulBuf;
     if (manifest->unsev_mem.load.len > 0) {
         result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->unsev_mem.load, suit_encode, &load_buf);
@@ -723,6 +830,9 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
             return result;
         }
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_LOAD */
+
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
     UsefulBuf invoke_buf = NULLUsefulBuf;
     if (manifest->unsev_mem.invoke.len > 0) {
         result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->unsev_mem.invoke, suit_encode, &invoke_buf);
@@ -730,6 +840,9 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
             return result;
         }
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_INVOKE */
+
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
     UsefulBuf uninstall_buf = NULLUsefulBuf;
     if (manifest->unsev_mem.uninstall.len > 0) {
         result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->unsev_mem.uninstall, suit_encode, &uninstall_buf);
@@ -737,8 +850,10 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
             return result;
         }
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_UNINSTALL */
 
     /* encode severable members */
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION)
     if (manifest->sev_man_mem.dependency_resolution_status & SUIT_SEVERABLE_EXISTS) {
         UsefulBuf dependency_resolution_buf = NULLUsefulBuf;
         result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->sev_man_mem.dependency_resolution, suit_encode, &dependency_resolution_buf);
@@ -755,9 +870,15 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         }
     }
     else if (manifest->sev_mem_dig.dependency_resolution.bytes.len > 0) {
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         suit_encode->dependency_resolution_digest = manifest->sev_mem_dig.dependency_resolution;
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION */
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION */
 
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
     if (manifest->sev_man_mem.payload_fetch_status & SUIT_SEVERABLE_EXISTS) {
         UsefulBuf payload_fetch_buf = NULLUsefulBuf;
         result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->sev_man_mem.payload_fetch, suit_encode, &payload_fetch_buf);
@@ -774,9 +895,15 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         }
     }
     else if (manifest->sev_mem_dig.payload_fetch.bytes.len > 0) {
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION)
+        return SUIT_ERR_NOT_IMPLEMENETD;
+#else
         suit_encode->payload_fetch_digest = manifest->sev_mem_dig.payload_fetch;
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION */
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH */
 
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_COSWID)
     if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_EXISTS) {
         suit_encode->coswid = (UsefulBufC){.ptr = manifest->sev_man_mem.coswid.ptr, .len = manifest->sev_man_mem.coswid.len};
         if (manifest->sev_man_mem.text_status & SUIT_SEVERABLE_IN_ENVELOPE) {
@@ -787,9 +914,15 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         }
     }
     else if (manifest->sev_mem_dig.coswid.bytes.len > 0) {
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_COSWID)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         suit_encode->coswid_digest = manifest->sev_mem_dig.coswid;
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_COSWID */
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_COSWID */
 
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
     if (manifest->sev_man_mem.install_status & SUIT_SEVERABLE_EXISTS) {
         UsefulBuf install_buf = NULLUsefulBuf;
         result = suit_encode_shared_sequence((suit_command_sequence_t *)&manifest->sev_man_mem.install, suit_encode, &install_buf);
@@ -806,9 +939,15 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         }
     }
     else if (manifest->sev_mem_dig.install.bytes.len > 0) {
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_INSTALL)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         suit_encode->install_digest = manifest->sev_mem_dig.install;
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_INSTALL */
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_INSTALL */
 
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_TEXT)
     if (manifest->sev_man_mem.text_status & SUIT_SEVERABLE_EXISTS) {
         UsefulBuf text_buf = NULLUsefulBuf;
         result = suit_encode_text(&manifest->sev_man_mem.text, suit_encode, &text_buf);
@@ -825,8 +964,13 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         }
     }
     else if (manifest->sev_mem_dig.text.bytes.len > 0) {
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_TEXT)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         suit_encode->text_digest = manifest->sev_mem_dig.text;
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_TEXT */
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_TEXT */
 
 
     /* Encode whole manifest */
@@ -848,14 +992,18 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
     QCBOREncode_AddBytesToMapN(&context, SUIT_COMMON, UsefulBuf_Const(suit_common));
 
     // 4
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
     if (manifest->reference_uri.len > 0) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_REFERENCE_URI, (UsefulBufC){.ptr = manifest->reference_uri.ptr, .len = manifest->reference_uri.len});
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI */
 
     // 5
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
     if (manifest->manifest_component_id.len > 0) {
         suit_encode_append_component_identifier(&manifest->manifest_component_id, SUIT_MANIFEST_COMPONENT_ID, &context);
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID */
 
     // 7
     if (!UsefulBuf_IsNULLOrEmpty(validate_buf)) {
@@ -863,84 +1011,120 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
     }
 
     // 8
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
     if (!UsefulBuf_IsNULLOrEmpty(load_buf)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_LOAD, UsefulBuf_Const(load_buf));
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_LOAD */
 
     // 9
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
     if (!UsefulBuf_IsNULLOrEmpty(invoke_buf)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_INVOKE, UsefulBuf_Const(invoke_buf));
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_INVOKE */
 
     // 14
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_COSWID)
     if (suit_encode->coswid_digest.bytes.len > 0) {
         /* severed */
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_COSWID)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         QCBOREncode_AddUInt64(&context, SUIT_COSWID);
         result = suit_encode_append_digest(&suit_encode->coswid_digest, 0, &context);
         if (result != SUIT_SUCCESS) {
             return result;
         }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_COSWID */
     }
     else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->coswid)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_COSWID, suit_encode->coswid);
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_COSWID */
 
     // 15
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION)
     if (suit_encode->dependency_resolution_digest.bytes.len > 0) {
         /* severed */
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         QCBOREncode_AddUInt64(&context, SUIT_DEPENDENCY_RESOLUTION);
         result = suit_encode_append_digest(&suit_encode->dependency_resolution_digest, 0, &context);
         if (result != SUIT_SUCCESS) {
             return result;
         }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION */
     }
     else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->dependency_resolution)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_DEPENDENCY_RESOLUTION, suit_encode->dependency_resolution);
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION */
 
     // 16
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
     if (suit_encode->payload_fetch_digest.bytes.len > 0) {
         /* severed */
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         QCBOREncode_AddUInt64(&context, SUIT_PAYLOAD_FETCH);
         result = suit_encode_append_digest(&suit_encode->payload_fetch_digest, 0, &context);
         if (result != SUIT_SUCCESS) {
             return result;
         }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH */
     }
     else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->payload_fetch)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_PAYLOAD_FETCH, suit_encode->payload_fetch);
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH */
 
     // 17
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
     if (suit_encode->install_digest.bytes.len > 0) {
         /* severed */
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_INSTALL)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         QCBOREncode_AddUInt64(&context, SUIT_INSTALL);
         result = suit_encode_append_digest(&suit_encode->install_digest, 0, &context);
         if (result != SUIT_SUCCESS) {
             return result;
         }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_INSTALL */
     }
     else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->install)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_INSTALL, suit_encode->install);
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_INSTALL */
 
     // 23
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_TEXT)
     if (suit_encode->text_digest.bytes.len > 0) {
         /* severed */
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_TEXT)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
         QCBOREncode_AddUInt64(&context, SUIT_TEXT);
         result = suit_encode_append_digest(&suit_encode->text_digest, 0, &context);
         if (result != SUIT_SUCCESS) {
             return result;
         }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_TEXT */
     }
     else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->text)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_TEXT, suit_encode->text);
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_TEXT */
 
     // 24
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
     if (!UsefulBuf_IsNULLOrEmpty(uninstall_buf)) {
         QCBOREncode_AddBytesToMapN(&context, SUIT_UNINSTALL, UsefulBuf_Const(uninstall_buf));
     }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_UNINSTALL */
 
     QCBOREncode_CloseMap(&context);
     if (result != SUIT_SUCCESS) {
@@ -1043,12 +1227,14 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
     }
     QCBOREncode_OpenMap(&context);
 
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_DELEGATION)
     result = suit_encode_append_delegation(&envelope->delegation, &context);
     if (result != SUIT_SUCCESS) {
         goto out;
     }
+#endif
 
-    result = suit_encode_append_authentication_wrapper(mode, UsefulBuf_Const(digest), signatures, num_signatures, &context);
+    result = suit_encode_append_authentication_wrapper(UsefulBuf_Const(digest), signatures, num_signatures, &context);
     if (result != SUIT_SUCCESS) {
         goto out;
     }
@@ -1063,7 +1249,7 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         goto out;
     }
 
-    result = suit_encode_append_payloads(mode, envelope, &context);
+    result = suit_encode_append_payloads(envelope, &context);
     if (result != SUIT_SUCCESS) {
         goto out;
     }

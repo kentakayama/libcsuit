@@ -1,0 +1,57 @@
+#
+# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+#
+# SPDX-License-Identifier: BSD-2-Clause
+#
+
+CFLAGS ?= -Os
+WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
+LOCAL_CFLAGS = $(WARNING_CFLAGS) -I ./examples/inc
+LDFLAGS = $(CMD_LD) -lcsuit -lt_cose -lqcbor -lm
+LDWRAP = \
+	-Xlinker --wrap=suit_fetch_callback \
+	-Xlinker --wrap=suit_store_callback \
+	-Xlinker --wrap=suit_invoke_callback \
+	-Xlinker --wrap=suit_condition_callback \
+	-Xlinker --wrap=suit_wait_callback \
+	-Xlinker --wrap=suit_report_callback
+
+TARGET = ./bin/suit_manifest_process
+SRCS = \
+	examples/suit_manifest_process_main_min.c
+
+OBJDIR = ./obj
+OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+
+ifeq ($(MBEDTLS),1)
+    # use MbedTLS
+    LOCAL_CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
+    LDFLAGS += -lmbedcrypto
+else
+    # use OpenSSL
+    LDFLAGS += -lcrypto
+endif
+
+.PHONY: all test clean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(LDWRAP) -o $@ $^ $(LDFLAGS)
+
+$(OBJDIR)/%.o:	%.c
+	mkdir -p $(dir $@)
+	$(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(CMD_LINE) -o $@ -c $<
+
+define test-one
+	$(TARGET) ./testfiles/suit_manifest_exp$(1).cbor || exit 1
+
+endef
+
+TEST_NUM := 0 1 2A 2B 3 4 5 U I D R S0 S1 S2 S3 S4 U0 U1
+test: all
+	$(foreach num,$(TEST_NUM),$(call test-one,$(num)))
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+

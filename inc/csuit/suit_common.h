@@ -12,9 +12,16 @@
 #ifndef SUIT_COMMON_H
 #define SUIT_COMMON_H
 
+#include "csuit/config.h"
+
 #include "qcbor/qcbor.h"
 #include "qcbor/qcbor_spiffy_decode.h"
+
+#if defined(LIBCSUIT_USE_T_COSE_1)
+#include "t_cose/t_cose_common.h"
+#else
 #include "t_cose/t_cose_key.h"
+#endif /* LIBCSUIT_USE_T_COSE_1 */
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,11 +61,9 @@ typedef enum {
     SUIT_ERR_FAILED_TO_VERIFY_DELEGATION,   /*! suit-delegation is not signed by trust-anchor */
     SUIT_ERR_CONDITION_MISMATCH,        /*! suit-condition-* failed */
 
-    //SUIT_ERR_AUTHENTICATION_POSITION    = 7, /*! suit-authentication-block MUST come before any element, except suit-delegation */
     SUIT_ERR_REDUNDANT,                 /*! same key appears, e.g. suit-install exists in both suit-manifest and suit-envelope */
     SUIT_ERR_NOT_CANONICAL_CBOR,        /*! not encoded with canonical CBOR */
     SUIT_ERR_INVALID_MANIFEST_VERSION,  /*! does not support SUIT Manifest version specified by suit-manifest-version */
-    //SUIT_ERR_NO_ARGUMENT                = 13, /*! arguments for callback function did not appear */
     SUIT_ERR_TRY_OUT,                   /*! all command_sequence in try-each section failed */
     SUIT_ERR_ABORT,                     /*! abort to execute, mainly for libcsuit internal */
 } suit_err_t;
@@ -189,17 +194,19 @@ typedef enum suit_manifest_key {
     SUIT_LOAD                           = 8,
     SUIT_INVOKE                         = 9,
 
-    SUIT_PAYLOAD_FETCH                  = 16,
-    SUIT_INSTALL                        = 17,
-
-    SUIT_TEXT                           = 23,
+    /* draft-ietf-suit-update-management */
+    SUIT_COSWID                         = 14,
 
     /* draft-ietf-suit-trust-domains */
     SUIT_DEPENDENCY_RESOLUTION          = 15,
-    SUIT_UNINSTALL                      = 24,
 
-    /* draft-ietf-suit-update-management */
-    SUIT_COSWID                         = 14,
+    /* draft-ietf-suit-manifest */
+    SUIT_PAYLOAD_FETCH                  = 16,
+    SUIT_INSTALL                        = 17,
+    SUIT_TEXT                           = 23,
+
+    /* draft-ietf-suit-trust-domains */
+    SUIT_UNINSTALL                      = 24,
 } suit_manifest_key_t;
 
 typedef enum suit_common_key {
@@ -222,45 +229,58 @@ typedef enum suit_con_dir_key {
     SUIT_CONDITION_VENDOR_IDENTIFIER    = 1,
     SUIT_CONDITION_CLASS_IDENTIFIER     = 2,
     SUIT_CONDITION_IMAGE_MATCH          = 3,
+
+    /* draft-ietf-suit-update-management */
+    SUIT_CONDITION_USE_BEFORE           = 4,
+
+    /* draft-ietf-suit-manifest */
     SUIT_CONDITION_COMPONENT_SLOT       = 5,
     SUIT_CONDITION_CHECK_CONTENT        = 6,
-    SUIT_CONDITION_ABORT                = 14,
-    SUIT_CONDITION_DEVICE_IDENTIFIER    = 24,
-
-    SUIT_DIRECTIVE_SET_COMPONENT_INDEX  = 12,
-    SUIT_DIRECTIVE_TRY_EACH             = 15,
-    SUIT_DIRECTIVE_WRITE                = 18,
-    SUIT_DIRECTIVE_OVERRIDE_PARAMETERS  = 20,
-    SUIT_DIRECTIVE_FETCH                = 21,
-    SUIT_DIRECTIVE_COPY                 = 22,
-    SUIT_DIRECTIVE_INVOKE               = 23,
-    SUIT_DIRECTIVE_SWAP                 = 31,
-    SUIT_DIRECTIVE_RUN_SEQUENCE         = 32,
 
     /* draft-ietf-suit-trust-domains */
     SUIT_CONDITION_DEPENDENCY_INTEGRITY = 7,
     SUIT_CONDITION_IS_DEPENDENCY        = 8,
 
-    SUIT_DIRECTIVE_PROCESS_DEPENDENCY   = 11,
-    SUIT_DIRECTIVE_SET_PARAMETERS       = 19,
-    SUIT_DIRECTIVE_UNLINK               = 33,
+    SUIT_CONDITION_ABORT                = 14,
+    SUIT_CONDITION_DEVICE_IDENTIFIER    = 24,
 
     /* draft-ietf-suit-update-management */
-    SUIT_CONDITION_USE_BEFORE           = 4,
     SUIT_CONDITION_IMAGE_NOT_MATCH      = 25,
     SUIT_CONDITION_MINIMUM_BATTERY      = 26,
     SUIT_CONDITION_UPDATE_AUTHORIZED    = 27,
     SUIT_CONDITION_VERSION              = 28,
 
-    SUIT_DIRECTIVE_WAIT                 = 29,
-    SUIT_DIRECTIVE_OVERRIDE_MULTIPLE    = 34,
-    SUIT_DIRECTIVE_COPY_PARAMS          = 35,
 
-    /* deprecated, to be removed */
-    //SUIT_DIRECTIVE_SET_DEPENDENCY_INDEX = 13,
-    //SUIT_DIRECTIVE_DO_EACH              = 16,
-    //SUIT_DIRECTIVE_MAP_FILTER           = 17,
-    //SUIT_DIRECTIVE_FETCH_URI_LIST       = 30,
+    /* draft-ietf-suit-trust-domains */
+    SUIT_DIRECTIVE_PROCESS_DEPENDENCY   = 11,
+
+    /* draft-ietf-suit-manifest */
+    SUIT_DIRECTIVE_SET_COMPONENT_INDEX  = 12,
+    SUIT_DIRECTIVE_TRY_EACH             = 15,
+    SUIT_DIRECTIVE_WRITE                = 18,
+
+    /* draft-ietf-suit-trust-domains */
+    SUIT_DIRECTIVE_SET_PARAMETERS       = 19,
+
+    /* draft-ietf-suit-manifest */
+    SUIT_DIRECTIVE_OVERRIDE_PARAMETERS  = 20,
+    SUIT_DIRECTIVE_FETCH                = 21,
+    SUIT_DIRECTIVE_COPY                 = 22,
+    SUIT_DIRECTIVE_INVOKE               = 23,
+
+    /* draft-ietf-suit-update-management */
+    SUIT_DIRECTIVE_WAIT                 = 29,
+
+    /* draft-ietf-suit-manifest */
+    SUIT_DIRECTIVE_SWAP                 = 31,
+    SUIT_DIRECTIVE_RUN_SEQUENCE         = 32,
+
+    /* draft-ietf-suit-trust-domains */
+    SUIT_DIRECTIVE_UNLINK               = 33,
+
+    /* draft-ietf-suit-update-management */
+    SUIT_DIRECTIVE_OVERRIDE_MULTIPLE    = 34,   /* XXX */
+    SUIT_DIRECTIVE_COPY_PARAMS          = 35,   /* XXX */
 } suit_con_dir_key_t;
 
 #define SUIT_SEVERABLE_INVALID               0 // 0b00000000
@@ -298,6 +318,11 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_VENDOR_IDENTIFIER    = 1,
     SUIT_PARAMETER_CLASS_IDENTIFIER     = 2,
     SUIT_PARAMETER_IMAGE_DIGEST         = 3,
+
+    /* draft-ietf-suit-update-management */
+    SUIT_PARAMETER_USE_BEFORE           = 4,
+
+    /* draft-ietf-suit-manifest */
     SUIT_PARAMETER_COMPONENT_SLOT       = 5,
 
     SUIT_PARAMETER_STRICT_ORDER         = 12,
@@ -305,22 +330,21 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_IMAGE_SIZE           = 14,
     SUIT_PARAMETER_CONTENT              = 18,
 
+    /* draft-ietf-suit-firmware-encryption */
+    SUIT_PARAMETER_ENCRYPTION_INFO      = 19,
+
+    /* draft-ietf-suit-manifest */
     SUIT_PARAMETER_URI                  = 21,
     SUIT_PARAMETER_SOURCE_COMPONENT     = 22,
     SUIT_PARAMETER_INVOKE_ARGS          = 23,
-
     SUIT_PARAMETER_DEVICE_IDENTIFIER    = 24,
 
     /* draft-ietf-suit-update-management */
-    SUIT_PARAMETER_USE_BEFORE           = 4,
     SUIT_PARAMETER_MINIMUM_BATTERY      = 26,
     SUIT_PARAMETER_UPDATE_PRIORITY      = 27,
     SUIT_PARAMETER_VERSION              = 28,
     SUIT_PARAMETER_WAIT_INFO            = 29,
     SUIT_PARAMETER_FETCH_ARGS           = 30, /* XXX */
-
-    /* draft-ietf-suit-firmware-encryption */
-    SUIT_PARAMETER_ENCRYPTION_INFO      = 19,
 } suit_parameter_key_t;
 
 /* draft-suit-manifest */
@@ -1052,8 +1076,12 @@ typedef struct suit_inputs {
 } suit_inputs_t;
 
 typedef struct suit_extracted {
+#if !defined(DISABLE_LIBCSUIT_COMMON_DEPENDENCIES)
     suit_dependencies_t dependencies;
+#endif
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_COMPONENT_ID)
     suit_component_identifier_t manifest_component_id;
+#endif
 
     uint8_t components_len;
     suit_component_with_index_t components[SUIT_MAX_INDEX_NUM];
@@ -1062,22 +1090,31 @@ typedef struct suit_extracted {
     UsefulBufC manifest;
     suit_digest_t manifest_digest;
     UsefulBufC shared_sequence;
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_REFERENCE_URI)
     UsefulBufC reference_uri;
+#endif
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_DEPENDENCY_RESOLUTION)
     UsefulBufC dependency_resolution;
     suit_digest_t dependency_resolution_digest;
+#endif
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_PAYLOAD_FETCH)
     UsefulBufC payload_fetch;
     suit_digest_t payload_fetch_digest;
+#endif
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_INSTALL)
     UsefulBufC install;
     suit_digest_t install_digest;
+#endif
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_UNINSTALL)
     UsefulBufC uninstall;
-    suit_digest_t uninstall_digest;
+#endif
     UsefulBufC validate;
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_LOAD)
     UsefulBufC load;
+#endif
+#if !defined(DISABLE_LIBCSUIT_MANIFEST_INVOKE)
     UsefulBufC invoke;
-    UsefulBufC text;
-    suit_digest_t text_digest;
-    UsefulBufC coswid;
-    suit_digest_t coswid_digest;
+#endif
 } suit_extracted_t;
 
 
@@ -1109,6 +1146,19 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context,
 size_t suit_qcbor_calc_rollback(QCBORItem *item);
 bool suit_continue(suit_decode_mode_t mode,
                    suit_err_t result);
+
+suit_err_t suit_decode_component_identifiers_from_item(suit_decode_mode_t mode,
+                                                       QCBORDecodeContext *context,
+                                                       QCBORItem *item,
+                                                       bool next,
+                                                       suit_component_identifier_t *identifier);
+
+suit_err_t suit_decode_components_from_item(suit_decode_mode_t mode,
+                                            QCBORDecodeContext *context,
+                                            QCBORItem *item,
+                                            bool next,
+                                            suit_component_with_index_t *components,
+                                            uint8_t *num);
 
 #ifdef __cplusplus
 }

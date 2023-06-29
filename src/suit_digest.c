@@ -174,3 +174,4 @@ suit_err_t suit_generate_digest_using_encode_buf(const uint8_t *ptr,
     return SUIT_SUCCESS;
 }
 
+

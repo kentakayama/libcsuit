@@ -5,8 +5,21 @@
 #
 
 NAME = libcsuit
-CFLAGS = $(CMD_C) -Wall -fPIC
-INC = $(CMD_INC) -I ./inc
+CFLAGS ?= -Os
+WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
+LOCAL_CFLAGS = $(WARNING_CFLAGS) -fPIC -I ./inc
+LOCAL_CFLAGS += -ffunction-sections -fdata-sections
+# link me with -Wl,--gc-sections
+
+ifeq ($(MBEDTLS),1)
+    # use MbedTLS
+    LOCAL_CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
+else
+    # use OpenSSL
+    MBEDTLS=0
+endif
+
+
 SRCS = \
 	src/suit_common.c \
 	src/suit_manifest_process.c \
@@ -16,7 +29,9 @@ SRCS = \
 	src/suit_manifest_print.c \
 	src/suit_cose.c \
 	src/suit_digest.c
+
 PUBLIC_INTERFACE = \
+	inc/csuit/config.h \
 	inc/csuit/csuit.h \
 	inc/csuit/suit_common.h \
 	inc/csuit/suit_cose.h \
@@ -29,14 +44,6 @@ PUBLIC_INTERFACE = \
 
 OBJDIR = ./obj
 OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
-
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-else
-    # use OpenSSL
-    MBEDTLS=0
-endif
 
 .PHONY: all so doc install uninstall test clean
 
@@ -51,13 +58,13 @@ doc:
 	$(AR) -r $@ $^
 
 ./bin/$(NAME).so: $(OBJS)
-	$(CC) -shared $^ $(CFLAGS) $(INC) -o $@
+	$(CC) -shared $^ $(LOCAL_CFLAGS) $(CFLAGS) -o $@
 
 ./obj/src:
 	@if [ ! -d "./obj/src" ]; then mkdir -p ./obj/src; fi
 
 $(OBJDIR)/%.o: %.c | ./obj/src
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+	$(CC) $(LOCAL_CFLAGS) $(CFLAGS) -o $@ -c $<
 
 ifeq ($(PREFIX),)
     PREFIX := /usr/local
