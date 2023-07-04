@@ -71,7 +71,6 @@ CoSWID (s) | 14 | suit-coswid | SUIT Update Management | RECOMMENDED | RWX
 Payload Fetch (s) | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
 Payload Installation (s) | 17 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description (s) | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
-Uninstall (s) | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RWX
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
