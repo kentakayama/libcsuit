@@ -48,6 +48,7 @@ SUIT Manifest | https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest
 SUIT Multiple Trust Domains | https://datatracker.ietf.org/doc/html/draft-moran-suit-trust-domains
 SUIT Update Manegement | https://datatracker.ietf.org/doc/html/draft-ietf-suit-update-management
 SUIT Encrypted Payload | https://datatracker.ietf.org/doc/html/draft-ietf-suit-firmware-encryption
+SUIT MUD | https://datatracker.ietf.org/doc/html/draft-ietf-suit-mud
 SUIT Report | https://datatracker.ietf.org/doc/html/draft-ietf-suit-report
 
 **IS**:
