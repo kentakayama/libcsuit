@@ -16,10 +16,10 @@ RUN make libqcbor.a install
 
 RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_cose
 WORKDIR /root/t_cose
-RUN make -f Makefile.psa libt_cose.a install
+RUN make -f Makefile.psa CMD_LINE="-DT_COSE_DISABLE_SHORT_CIRCUIT_SIGN -DT_COSE_DISABLE_ES384 -DT_COSE_DISABLE_ES512 -DT_COSE_DISABLE_PS256 -DT_COSE_DISABLE_PS384 -DT_COSE_DISABLE_PS512 -DT_COSE_DISABLE_EDDSA" libt_cose.a install
 
 COPY . /root/libcsuit
-RUN cp /root/libcsuit/misc/config/min_config.h /root/libcsuit/inc/csuit/config.h
+RUN cp /root/libcsuit/misc/config/max_config.h /root/libcsuit/inc/csuit/config.h
 WORKDIR /root/libcsuit
 
 RUN make MBEDTLS=1 install
