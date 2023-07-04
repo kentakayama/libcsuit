@@ -27,5 +27,7 @@ WORKDIR /root/libcsuit
 RUN make MBEDTLS=1 install
 RUN make -f Makefile.min_process CFLAGS="-Os -fdata-sections -ffunction-sections" LDFLAGS="-Wl,--gc-sections" MBEDTLS=1
 
-CMD ls -la bin/suit_manifest_process && \
+CMD nm -S bin/suit_manifest_process > min_nm.txt && \
+    python3 misc/analyze_size.py && \
+    ls -la bin/suit_manifest_process && \
     ./bin/suit_manifest_process; echo "exit: $?"

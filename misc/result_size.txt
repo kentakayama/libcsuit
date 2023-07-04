@@ -1,0 +1,1104 @@
+github.com/AlDanial/cloc v 1.97  T=0.05 s (435.1 files/s, 245271.1 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+C                               10            762            529           8099
+C/C++ Header                    11            425            838           1186
+-------------------------------------------------------------------------------
+SUM:                            21           1187           1367           9285
+-------------------------------------------------------------------------------
+Sending build context to Docker daemon  6.821MB
+Step 1/21 : FROM debian:latest
+ ---> 49081a1edb0b
+Step 2/21 : RUN apt-get update
+ ---> Using cache
+ ---> 24b74f31a736
+Step 3/21 : RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ ---> Using cache
+ ---> f84db7c797e7
+Step 4/21 : ENV CC="musl-gcc -static"
+ ---> Using cache
+ ---> 7f496d37be94
+Step 5/21 : RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
+ ---> Using cache
+ ---> 1c303d519524
+Step 6/21 : COPY misc/config/mbedtls_config.h /root/mbedtls/include/mbedtls/
+ ---> Using cache
+ ---> 0ae4d59a9399
+Step 7/21 : COPY misc/config/crypto_config.h /root/mbedtls/include/psa/
+ ---> Using cache
+ ---> fc7dd53ce546
+Step 8/21 : WORKDIR /root/mbedtls
+ ---> Using cache
+ ---> 4199eec522d2
+Step 9/21 : RUN CFLAGS="-Os -fdata-sections -ffunction-sections" make install -j`nproc`
+ ---> Using cache
+ ---> 15d4d7382040
+Step 10/21 : RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
+ ---> Using cache
+ ---> 10764639bb8e
+Step 11/21 : WORKDIR /root/QCBOR
+ ---> Using cache
+ ---> 2c09dbd625e1
+Step 12/21 : RUN make libqcbor.a CMD_LINE="-fdata-sections -ffunction-sections" install
+ ---> Using cache
+ ---> 5012e0ab76c8
+Step 13/21 : RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_cose
+ ---> Using cache
+ ---> 701c9d9bd8ef
+Step 14/21 : WORKDIR /root/t_cose
+ ---> Using cache
+ ---> ca67b521a9e2
+Step 15/21 : RUN make -f Makefile.psa CMD_LINE="-fdata-sections -ffunction-sections -DT_COSE_DISABLE_SHORT_CIRCUIT_SIGN -DT_COSE_DISABLE_ES384 -DT_COSE_DISABLE_ES512 -DT_COSE_DISABLE_PS256 -DT_COSE_DISABLE_PS384 -DT_COSE_DISABLE_PS512 -DT_COSE_DISABLE_EDDSA" libt_cose.a install
+ ---> Using cache
+ ---> a9f2b3538866
+Step 16/21 : COPY . /root/libcsuit
+ ---> 8d1b02294022
+Step 17/21 : RUN cp /root/libcsuit/misc/config/min_config.h /root/libcsuit/inc/csuit/config.h
+ ---> Running in 4dfeabaec2c6
+Removing intermediate container 4dfeabaec2c6
+ ---> be7b7306e0f8
+Step 18/21 : WORKDIR /root/libcsuit
+ ---> Running in f54e323e4164
+Removing intermediate container f54e323e4164
+ ---> e39fdd46919c
+Step 19/21 : RUN make MBEDTLS=1 install
+ ---> Running in 5ce72f6bef13
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_common.o -c src/suit_common.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_process.o -c src/suit_manifest_process.c
+[91msrc/suit_manifest_process.c: In function 'suit_set_parameters':
+src/suit_manifest_process.c:24:43: warning: unused parameter 'may_soft_failure' [-Wunused-parameter]
+   24 |                                const bool may_soft_failure)
+      |                                ~~~~~~~~~~~^~~~~~~~~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_set_index':
+[0m[91msrc/suit_manifest_process.c:441:51: warning: unused parameter 'extracted' [-Wunused-parameter]
+  441 |                           const suit_extracted_t *extracted,
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_process_condition':
+[0m[91msrc/suit_manifest_process.c:695:56: warning: unused parameter 'suit_inputs' [-Wunused-parameter]
+  695 |                                   const suit_inputs_t *suit_inputs)
+      |                                   ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_process_command_sequence_buf':
+[0m[91msrc/suit_manifest_process.c:1391:7: warning: unused variable 'val' [-Wunused-variable]
+ 1391 |     } val;
+      |       ^~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_callbacks.o -c src/suit_manifest_callbacks.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_decode.o -c src/suit_manifest_decode.c
+[91msrc/suit_manifest_decode.c: In function 'suit_decode_envelope_from_item':
+[0m[91msrc/suit_manifest_decode.c:1650:10: warning: variable 'is_manifest_set' set but not used [-Wunused-but-set-variable]
+ 1650 |     bool is_manifest_set = false;
+      |          ^~~~~~~~~~~~~~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_encode.o -c src/suit_manifest_encode.c
+[91msrc/suit_manifest_encode.c: In function 'suit_encode_append_severed_members':
+src/suit_manifest_encode.c:38:68: warning: unused parameter 'suit_encode' [-Wunused-parameter]
+   38 | suit_err_t suit_encode_append_severed_members(const suit_encode_t *suit_encode,
+      |                                               ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+src/suit_manifest_encode.c:39:67: warning: unused parameter 'context' [-Wunused-parameter]
+   39 |                                               QCBOREncodeContext *context)
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~~~~~~
+[0m[91msrc/suit_manifest_encode.c: In function 'suit_encode_shared_sequence':
+src/suit_manifest_encode.c:343:12: warning: unused variable 'extra' [-Wunused-variable]
+  343 |     size_t extra = 0;
+      |            ^~~~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_print.o -c src/suit_manifest_print.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_cose.o -c src/suit_cose.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_digest.o -c src/suit_digest.c
+ar -r bin/libcsuit.a obj/src/suit_common.o obj/src/suit_manifest_process.o obj/src/suit_manifest_callbacks.o obj/src/suit_manifest_decode.o obj/src/suit_manifest_encode.o obj/src/suit_manifest_print.o obj/src/suit_cose.o obj/src/suit_digest.o
+[91mar: creating bin/libcsuit.a
+[0minstall -d /usr/local/lib/
+install -m 644 ./bin/libcsuit.a /usr/local/lib/
+install -d /usr/local/include/csuit
+install -m 644 inc/csuit/config.h /usr/local/include/csuit/
+install -m 644 inc/csuit/csuit.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_common.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_cose.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_digest.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_decode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_encode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_process.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_callbacks.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_print.h /usr/local/include/csuit/
+Removing intermediate container 5ce72f6bef13
+ ---> 7b46aae76826
+Step 20/21 : RUN make -f Makefile.min_process CFLAGS="-Os -fdata-sections -ffunction-sections" LDFLAGS="-Wl,--gc-sections" MBEDTLS=1
+ ---> Running in 9419ecbdf6aa
+mkdir -p obj/examples/
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -I /usr/local/include -I ./examples/inc -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -fdata-sections -ffunction-sections  -o obj/examples/suit_manifest_process_main_min.o -c examples/suit_manifest_process_main_min.c
+musl-gcc -static -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -Xlinker --wrap=suit_condition_callback -Xlinker --wrap=suit_wait_callback -Xlinker --wrap=suit_report_callback -o bin/suit_manifest_process obj/examples/suit_manifest_process_main_min.o -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm -lmbedcrypto -Wl,--gc-sections
+Removing intermediate container 9419ecbdf6aa
+ ---> a32ccba164a2
+Step 21/21 : CMD nm -S bin/suit_manifest_process > min_nm.txt &&     python3 misc/analyze_size.py &&     ls -la bin/suit_manifest_process &&     ./bin/suit_manifest_process; echo "exit: $?"
+ ---> Running in 9fe8264779e1
+Removing intermediate container 9fe8264779e1
+ ---> 4977b29d9e3a
+Successfully built 4977b29d9e3a
+Successfully tagged libcsuit_min0:latest
+Sending build context to Docker daemon   6.83MB
+Step 1/21 : FROM debian:latest
+ ---> 49081a1edb0b
+Step 2/21 : RUN apt-get update
+ ---> Using cache
+ ---> 24b74f31a736
+Step 3/21 : RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ ---> Using cache
+ ---> f84db7c797e7
+Step 4/21 : ENV CC="musl-gcc -static"
+ ---> Using cache
+ ---> 7f496d37be94
+Step 5/21 : RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
+ ---> Using cache
+ ---> 1c303d519524
+Step 6/21 : COPY misc/config/mbedtls_config.h /root/mbedtls/include/mbedtls/
+ ---> Using cache
+ ---> 0ae4d59a9399
+Step 7/21 : COPY misc/config/crypto_config.h /root/mbedtls/include/psa/
+ ---> Using cache
+ ---> fc7dd53ce546
+Step 8/21 : WORKDIR /root/mbedtls
+ ---> Using cache
+ ---> 4199eec522d2
+Step 9/21 : RUN make install -j`nproc`
+ ---> Using cache
+ ---> 98595b43c5fe
+Step 10/21 : RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
+ ---> Using cache
+ ---> f90955db40cd
+Step 11/21 : WORKDIR /root/QCBOR
+ ---> Using cache
+ ---> d5fc16e59f48
+Step 12/21 : RUN make libqcbor.a install
+ ---> Using cache
+ ---> c5a7bd312624
+Step 13/21 : RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_cose
+ ---> Using cache
+ ---> 741592b0172d
+Step 14/21 : WORKDIR /root/t_cose
+ ---> Using cache
+ ---> f97b54ea356e
+Step 15/21 : RUN make -f Makefile.psa CMD_LINE="-DT_COSE_DISABLE_SHORT_CIRCUIT_SIGN -DT_COSE_DISABLE_ES384 -DT_COSE_DISABLE_ES512 -DT_COSE_DISABLE_PS256 -DT_COSE_DISABLE_PS384 -DT_COSE_DISABLE_PS512 -DT_COSE_DISABLE_EDDSA" libt_cose.a install
+ ---> Using cache
+ ---> cb4a1afaa1da
+Step 16/21 : COPY . /root/libcsuit
+ ---> 2ba465f831fb
+Step 17/21 : RUN cp /root/libcsuit/misc/config/min_config.h /root/libcsuit/inc/csuit/config.h
+ ---> Running in 2221ca4c56f4
+Removing intermediate container 2221ca4c56f4
+ ---> a54cc2eecb95
+Step 18/21 : WORKDIR /root/libcsuit
+ ---> Running in 9b28bee2363f
+Removing intermediate container 9b28bee2363f
+ ---> 897b1612d8ef
+Step 19/21 : RUN make MBEDTLS=1 install
+ ---> Running in 2398f345325a
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_common.o -c src/suit_common.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_process.o -c src/suit_manifest_process.c
+[91msrc/suit_manifest_process.c: In function 'suit_set_parameters':
+src/suit_manifest_process.c:24:43: warning: unused parameter 'may_soft_failure' [-Wunused-parameter]
+   24 |                                const bool may_soft_failure)
+      |                                ~~~~~~~~~~~^~~~~~~~~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_set_index':
+src/suit_manifest_process.c:441:51: warning: unused parameter 'extracted' [-Wunused-parameter]
+  441 |                           const suit_extracted_t *extracted,
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_process_condition':
+src/suit_manifest_process.c:695:56: warning: unused parameter 'suit_inputs' [-Wunused-parameter]
+  695 |                                   const suit_inputs_t *suit_inputs)
+      |                                   ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_process_command_sequence_buf':
+[0m[91msrc/suit_manifest_process.c:1391:7: warning: unused variable 'val' [-Wunused-variable]
+ 1391 |     } val;
+      |       ^~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_callbacks.o -c src/suit_manifest_callbacks.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_decode.o -c src/suit_manifest_decode.c
+[91msrc/suit_manifest_decode.c: In function 'suit_decode_envelope_from_item':
+[0m[91msrc/suit_manifest_decode.c:1650:10: warning: variable 'is_manifest_set' set but not used [-Wunused-but-set-variable]
+ 1650 |     bool is_manifest_set = false;
+      |          ^~~~~~~~~~~~~~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_encode.o -c src/suit_manifest_encode.c
+[91msrc/suit_manifest_encode.c: In function 'suit_encode_append_severed_members':
+src/suit_manifest_encode.c:38:68: warning: unused parameter 'suit_encode' [-Wunused-parameter]
+   38 | suit_err_t suit_encode_append_severed_members(const suit_encode_t *suit_encode,
+      |                                               ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+src/suit_manifest_encode.c:39:67: warning: unused parameter 'context' [-Wunused-parameter]
+   39 |                                               QCBOREncodeContext *context)
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~~~~~~
+[0m[91msrc/suit_manifest_encode.c: In function 'suit_encode_shared_sequence':
+[0m[91msrc/suit_manifest_encode.c:343:12: warning: unused variable 'extra' [-Wunused-variable]
+  343 |     size_t extra = 0;
+      |            ^~~~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_print.o -c src/suit_manifest_print.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_cose.o -c src/suit_cose.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_digest.o -c src/suit_digest.c
+ar -r bin/libcsuit.a obj/src/suit_common.o obj/src/suit_manifest_process.o obj/src/suit_manifest_callbacks.o obj/src/suit_manifest_decode.o obj/src/suit_manifest_encode.o obj/src/suit_manifest_print.o obj/src/suit_cose.o obj/src/suit_digest.o
+[91mar: creating bin/libcsuit.a
+[0minstall -d /usr/local/lib/
+install -m 644 ./bin/libcsuit.a /usr/local/lib/
+install -d /usr/local/include/csuit
+install -m 644 inc/csuit/config.h /usr/local/include/csuit/
+install -m 644 inc/csuit/csuit.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_common.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_cose.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_digest.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_decode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_encode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_process.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_callbacks.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_print.h /usr/local/include/csuit/
+Removing intermediate container 2398f345325a
+ ---> 380070dc4ab7
+Step 20/21 : RUN make -f Makefile.min_process MBEDTLS=1
+ ---> Running in 31ece46705b7
+mkdir -p obj/examples/
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -I /usr/local/include -I ./examples/inc -DLIBCSUIT_PSA_CRYPTO_C=1 -Os  -o obj/examples/suit_manifest_process_main_min.o -c examples/suit_manifest_process_main_min.c
+musl-gcc -static -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -Xlinker --wrap=suit_condition_callback -Xlinker --wrap=suit_wait_callback -Xlinker --wrap=suit_report_callback -o bin/suit_manifest_process obj/examples/suit_manifest_process_main_min.o -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm -lmbedcrypto 
+Removing intermediate container 31ece46705b7
+ ---> 33b265f0f0bd
+Step 21/21 : CMD ls -la bin/suit_manifest_process &&     ./bin/suit_manifest_process; echo "exit: $?"
+ ---> Running in 200f78884e7a
+Removing intermediate container 200f78884e7a
+ ---> d2fc576bdff2
+Successfully built d2fc576bdff2
+Successfully tagged libcsuit_min1:latest
+Sending build context to Docker daemon  6.838MB
+Step 1/19 : FROM debian:latest
+ ---> 49081a1edb0b
+Step 2/19 : RUN apt-get update
+ ---> Using cache
+ ---> 24b74f31a736
+Step 3/19 : RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ ---> Using cache
+ ---> f84db7c797e7
+Step 4/19 : ENV CC="musl-gcc -static"
+ ---> Using cache
+ ---> 7f496d37be94
+Step 5/19 : RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
+ ---> Using cache
+ ---> 1c303d519524
+Step 6/19 : WORKDIR /root/mbedtls
+ ---> Using cache
+ ---> c22b836cf669
+Step 7/19 : RUN make install -j`nproc`
+ ---> Using cache
+ ---> d31bf3fad87d
+Step 8/19 : RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
+ ---> Using cache
+ ---> 827ef2fd1549
+Step 9/19 : WORKDIR /root/QCBOR
+ ---> Using cache
+ ---> c1fc50442234
+Step 10/19 : RUN make libqcbor.a install
+ ---> Using cache
+ ---> 46929c6c63ae
+Step 11/19 : RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_cose
+ ---> Using cache
+ ---> 8e395fafe7f7
+Step 12/19 : WORKDIR /root/t_cose
+ ---> Using cache
+ ---> 3025dcdc351e
+Step 13/19 : RUN make -f Makefile.psa CMD_LINE="-DT_COSE_DISABLE_SHORT_CIRCUIT_SIGN -DT_COSE_DISABLE_ES384 -DT_COSE_DISABLE_ES512 -DT_COSE_DISABLE_PS256 -DT_COSE_DISABLE_PS384 -DT_COSE_DISABLE_PS512 -DT_COSE_DISABLE_EDDSA" libt_cose.a install
+ ---> Using cache
+ ---> 9f64134aa31a
+Step 14/19 : COPY . /root/libcsuit
+ ---> 748b2d447cee
+Step 15/19 : RUN cp /root/libcsuit/misc/config/min_config.h /root/libcsuit/inc/csuit/config.h
+ ---> Running in 0f1c56de48f9
+Removing intermediate container 0f1c56de48f9
+ ---> 9a9099008e3c
+Step 16/19 : WORKDIR /root/libcsuit
+ ---> Running in 74b4a2cc9d29
+Removing intermediate container 74b4a2cc9d29
+ ---> c6bb6758a371
+Step 17/19 : RUN make MBEDTLS=1 install
+ ---> Running in 3a01c86c89c6
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_common.o -c src/suit_common.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_process.o -c src/suit_manifest_process.c
+[91msrc/suit_manifest_process.c: In function 'suit_set_parameters':
+src/suit_manifest_process.c:24:43: warning: unused parameter 'may_soft_failure' [-Wunused-parameter]
+   24 |                                const bool may_soft_failure)
+      |                                ~~~~~~~~~~~^~~~~~~~~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_set_index':
+src/suit_manifest_process.c:441:51: warning: unused parameter 'extracted' [-Wunused-parameter]
+  441 |                           const suit_extracted_t *extracted,
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_process_condition':
+src/suit_manifest_process.c:695:56: warning: unused parameter 'suit_inputs' [-Wunused-parameter]
+  695 |                                   const suit_inputs_t *suit_inputs)
+      |                                   ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+[0m[91msrc/suit_manifest_process.c: In function 'suit_process_command_sequence_buf':
+[0m[91msrc/suit_manifest_process.c:1391:7: warning: unused variable 'val' [-Wunused-variable]
+ 1391 |     } val;
+      |       ^~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_callbacks.o -c src/suit_manifest_callbacks.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_decode.o -c src/suit_manifest_decode.c
+[91msrc/suit_manifest_decode.c: In function 'suit_decode_envelope_from_item':
+[0m[91msrc/suit_manifest_decode.c:1650:10: warning: variable 'is_manifest_set' set but not used [-Wunused-but-set-variable]
+ 1650 |     bool is_manifest_set = false;
+      |          ^~~~~~~~~~~~~~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_encode.o -c src/suit_manifest_encode.c
+[91msrc/suit_manifest_encode.c: In function 'suit_encode_append_severed_members':
+src/suit_manifest_encode.c:38:68: warning: unused parameter 'suit_encode' [-Wunused-parameter]
+   38 | suit_err_t suit_encode_append_severed_members(const suit_encode_t *suit_encode,
+      |                                               ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+src/suit_manifest_encode.c:39:67: warning: unused parameter 'context' [-Wunused-parameter]
+   39 |                                               QCBOREncodeContext *context)
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~~~~~~
+[0m[91msrc/suit_manifest_encode.c: In function 'suit_encode_shared_sequence':
+src/suit_manifest_encode.c:343:12: warning: unused variable 'extra' [-Wunused-variable]
+  343 |     size_t extra = 0;
+      |            ^~~~~
+[0mmusl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_print.o -c src/suit_manifest_print.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_cose.o -c src/suit_cose.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_digest.o -c src/suit_digest.c
+ar -r bin/libcsuit.a obj/src/suit_common.o obj/src/suit_manifest_process.o obj/src/suit_manifest_callbacks.o obj/src/suit_manifest_decode.o obj/src/suit_manifest_encode.o obj/src/suit_manifest_print.o obj/src/suit_cose.o obj/src/suit_digest.o
+[91mar: creating bin/libcsuit.a
+[0minstall -d /usr/local/lib/
+install -m 644 ./bin/libcsuit.a /usr/local/lib/
+install -d /usr/local/include/csuit
+install -m 644 inc/csuit/config.h /usr/local/include/csuit/
+install -m 644 inc/csuit/csuit.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_common.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_cose.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_digest.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_decode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_encode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_process.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_callbacks.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_print.h /usr/local/include/csuit/
+Removing intermediate container 3a01c86c89c6
+ ---> 456b3d9e90a1
+Step 18/19 : RUN make -f Makefile.min_process MBEDTLS=1
+ ---> Running in e0a6fba99776
+mkdir -p obj/examples/
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -I /usr/local/include -I ./examples/inc -DLIBCSUIT_PSA_CRYPTO_C=1 -Os  -o obj/examples/suit_manifest_process_main_min.o -c examples/suit_manifest_process_main_min.c
+musl-gcc -static -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -Xlinker --wrap=suit_condition_callback -Xlinker --wrap=suit_wait_callback -Xlinker --wrap=suit_report_callback -o bin/suit_manifest_process obj/examples/suit_manifest_process_main_min.o -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm -lmbedcrypto 
+Removing intermediate container e0a6fba99776
+ ---> f294ccb06229
+Step 19/19 : CMD ls -la bin/suit_manifest_process &&     ./bin/suit_manifest_process; echo "exit: $?"
+ ---> Running in 3804de6ce40b
+Removing intermediate container 3804de6ce40b
+ ---> 5513e79e51ac
+Successfully built 5513e79e51ac
+Successfully tagged libcsuit_min2:latest
+Sending build context to Docker daemon  6.846MB
+Step 1/19 : FROM debian:latest
+ ---> 49081a1edb0b
+Step 2/19 : RUN apt-get update
+ ---> Using cache
+ ---> 24b74f31a736
+Step 3/19 : RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ ---> Using cache
+ ---> f84db7c797e7
+Step 4/19 : ENV CC="musl-gcc -static"
+ ---> Using cache
+ ---> 7f496d37be94
+Step 5/19 : RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
+ ---> Using cache
+ ---> 1c303d519524
+Step 6/19 : WORKDIR /root/mbedtls
+ ---> Using cache
+ ---> c22b836cf669
+Step 7/19 : RUN make install -j`nproc`
+ ---> Using cache
+ ---> d31bf3fad87d
+Step 8/19 : RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
+ ---> Using cache
+ ---> 827ef2fd1549
+Step 9/19 : WORKDIR /root/QCBOR
+ ---> Using cache
+ ---> c1fc50442234
+Step 10/19 : RUN make libqcbor.a install
+ ---> Using cache
+ ---> 46929c6c63ae
+Step 11/19 : RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_cose
+ ---> Using cache
+ ---> 8e395fafe7f7
+Step 12/19 : WORKDIR /root/t_cose
+ ---> Using cache
+ ---> 3025dcdc351e
+Step 13/19 : RUN make -f Makefile.psa CMD_LINE="-DT_COSE_DISABLE_SHORT_CIRCUIT_SIGN -DT_COSE_DISABLE_ES384 -DT_COSE_DISABLE_ES512 -DT_COSE_DISABLE_PS256 -DT_COSE_DISABLE_PS384 -DT_COSE_DISABLE_PS512 -DT_COSE_DISABLE_EDDSA" libt_cose.a install
+ ---> Using cache
+ ---> 9f64134aa31a
+Step 14/19 : COPY . /root/libcsuit
+ ---> 85d7fa0b1ed5
+Step 15/19 : RUN cp /root/libcsuit/misc/config/max_config.h /root/libcsuit/inc/csuit/config.h
+ ---> Running in ef1d3657c627
+Removing intermediate container ef1d3657c627
+ ---> e62ee26ebb1e
+Step 16/19 : WORKDIR /root/libcsuit
+ ---> Running in 5c1506b3fa7e
+Removing intermediate container 5c1506b3fa7e
+ ---> 1aadd2507579
+Step 17/19 : RUN make MBEDTLS=1 install
+ ---> Running in 6ec3ed013961
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_common.o -c src/suit_common.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_process.o -c src/suit_manifest_process.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_callbacks.o -c src/suit_manifest_callbacks.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_decode.o -c src/suit_manifest_decode.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_encode.o -c src/suit_manifest_encode.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_print.o -c src/suit_manifest_print.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_cose.o -c src/suit_cose.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_digest.o -c src/suit_digest.c
+ar -r bin/libcsuit.a obj/src/suit_common.o obj/src/suit_manifest_process.o obj/src/suit_manifest_callbacks.o obj/src/suit_manifest_decode.o obj/src/suit_manifest_encode.o obj/src/suit_manifest_print.o obj/src/suit_cose.o obj/src/suit_digest.o
+[91mar: creating bin/libcsuit.a
+[0minstall -d /usr/local/lib/
+install -m 644 ./bin/libcsuit.a /usr/local/lib/
+install -d /usr/local/include/csuit
+install -m 644 inc/csuit/config.h /usr/local/include/csuit/
+install -m 644 inc/csuit/csuit.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_common.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_cose.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_digest.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_decode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_encode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_process.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_callbacks.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_print.h /usr/local/include/csuit/
+Removing intermediate container 6ec3ed013961
+ ---> 7e7e4abc69f0
+Step 18/19 : RUN make -f Makefile.min_process MBEDTLS=1
+ ---> Running in 6e1250e37695
+mkdir -p obj/examples/
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -I /usr/local/include -I ./examples/inc -DLIBCSUIT_PSA_CRYPTO_C=1 -Os  -o obj/examples/suit_manifest_process_main_min.o -c examples/suit_manifest_process_main_min.c
+musl-gcc -static -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -Xlinker --wrap=suit_condition_callback -Xlinker --wrap=suit_wait_callback -Xlinker --wrap=suit_report_callback -o bin/suit_manifest_process obj/examples/suit_manifest_process_main_min.o -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm -lmbedcrypto 
+Removing intermediate container 6e1250e37695
+ ---> 34652dbcdd94
+Step 19/19 : CMD ls -la bin/suit_manifest_process &&     ./bin/suit_manifest_process; echo "exit: $?"
+ ---> Running in a7c1e99a697a
+Removing intermediate container a7c1e99a697a
+ ---> 5c1e86f8401f
+Successfully built 5c1e86f8401f
+Successfully tagged libcsuit_min3:latest
+Sending build context to Docker daemon  6.852MB
+Step 1/19 : FROM debian:latest
+ ---> 49081a1edb0b
+Step 2/19 : RUN apt-get update
+ ---> Using cache
+ ---> 24b74f31a736
+Step 3/19 : RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ ---> Using cache
+ ---> f84db7c797e7
+Step 4/19 : ENV CC="musl-gcc -static"
+ ---> Using cache
+ ---> 7f496d37be94
+Step 5/19 : RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
+ ---> Using cache
+ ---> 1c303d519524
+Step 6/19 : WORKDIR /root/mbedtls
+ ---> Using cache
+ ---> c22b836cf669
+Step 7/19 : RUN make install -j`nproc`
+ ---> Using cache
+ ---> d31bf3fad87d
+Step 8/19 : RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
+ ---> Using cache
+ ---> 827ef2fd1549
+Step 9/19 : WORKDIR /root/QCBOR
+ ---> Using cache
+ ---> c1fc50442234
+Step 10/19 : RUN make libqcbor.a install
+ ---> Using cache
+ ---> 46929c6c63ae
+Step 11/19 : RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_cose
+ ---> Using cache
+ ---> 8e395fafe7f7
+Step 12/19 : WORKDIR /root/t_cose
+ ---> Using cache
+ ---> 3025dcdc351e
+Step 13/19 : RUN make -f Makefile.psa libt_cose.a install
+ ---> Using cache
+ ---> 00694fcda66b
+Step 14/19 : COPY . /root/libcsuit
+ ---> 352751868a53
+Step 15/19 : RUN cp /root/libcsuit/misc/config/max_config.h /root/libcsuit/inc/csuit/config.h
+ ---> Running in 07f872cb96cc
+Removing intermediate container 07f872cb96cc
+ ---> f17e3384dfe8
+Step 16/19 : WORKDIR /root/libcsuit
+ ---> Running in 18eeab628ecf
+Removing intermediate container 18eeab628ecf
+ ---> 2defb0d3f5c9
+Step 17/19 : RUN make MBEDTLS=1 install
+ ---> Running in edbeeec3eeb7
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_common.o -c src/suit_common.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_process.o -c src/suit_manifest_process.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_callbacks.o -c src/suit_manifest_callbacks.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_decode.o -c src/suit_manifest_decode.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_encode.o -c src/suit_manifest_encode.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_print.o -c src/suit_manifest_print.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_cose.o -c src/suit_cose.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_digest.o -c src/suit_digest.c
+ar -r bin/libcsuit.a obj/src/suit_common.o obj/src/suit_manifest_process.o obj/src/suit_manifest_callbacks.o obj/src/suit_manifest_decode.o obj/src/suit_manifest_encode.o obj/src/suit_manifest_print.o obj/src/suit_cose.o obj/src/suit_digest.o
+[91mar: creating bin/libcsuit.a
+[0minstall -d /usr/local/lib/
+install -m 644 ./bin/libcsuit.a /usr/local/lib/
+install -d /usr/local/include/csuit
+install -m 644 inc/csuit/config.h /usr/local/include/csuit/
+install -m 644 inc/csuit/csuit.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_common.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_cose.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_digest.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_decode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_encode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_process.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_callbacks.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_print.h /usr/local/include/csuit/
+Removing intermediate container edbeeec3eeb7
+ ---> eee24a72fbbc
+Step 18/19 : RUN make -f Makefile.min_process MBEDTLS=1
+ ---> Running in 9d74cacae8d4
+mkdir -p obj/examples/
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -I /usr/local/include -I ./examples/inc -DLIBCSUIT_PSA_CRYPTO_C=1 -Os  -o obj/examples/suit_manifest_process_main_min.o -c examples/suit_manifest_process_main_min.c
+musl-gcc -static -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -Xlinker --wrap=suit_condition_callback -Xlinker --wrap=suit_wait_callback -Xlinker --wrap=suit_report_callback -o bin/suit_manifest_process obj/examples/suit_manifest_process_main_min.o -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm -lmbedcrypto 
+Removing intermediate container 9d74cacae8d4
+ ---> da5b8a5c327d
+Step 19/19 : CMD ls -la bin/suit_manifest_process &&     ./bin/suit_manifest_process; echo "exit: $?"
+ ---> Running in de4c910825e4
+Removing intermediate container de4c910825e4
+ ---> 4faef92fb5ed
+Successfully built 4faef92fb5ed
+Successfully tagged libcsuit_min4:latest
+Sending build context to Docker daemon  6.857MB
+Step 1/18 : FROM debian:latest
+ ---> 49081a1edb0b
+Step 2/18 : RUN apt-get update
+ ---> Using cache
+ ---> 24b74f31a736
+Step 3/18 : RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ ---> Using cache
+ ---> f84db7c797e7
+Step 4/18 : ENV CC="musl-gcc -static"
+ ---> Using cache
+ ---> 7f496d37be94
+Step 5/18 : RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
+ ---> Using cache
+ ---> 1c303d519524
+Step 6/18 : WORKDIR /root/mbedtls
+ ---> Using cache
+ ---> c22b836cf669
+Step 7/18 : RUN make install -j`nproc`
+ ---> Using cache
+ ---> d31bf3fad87d
+Step 8/18 : RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
+ ---> Using cache
+ ---> 827ef2fd1549
+Step 9/18 : WORKDIR /root/QCBOR
+ ---> Using cache
+ ---> c1fc50442234
+Step 10/18 : RUN make libqcbor.a install
+ ---> Using cache
+ ---> 46929c6c63ae
+Step 11/18 : RUN git clone --branch dev-deterministic-ecdsa --depth 1 https://github.com/kentakayama/t_cose.git /root/t_cose
+ ---> Using cache
+ ---> 45c7d1306535
+Step 12/18 : WORKDIR /root/t_cose
+ ---> Using cache
+ ---> bf3e423da687
+Step 13/18 : RUN make -f Makefile.psa libt_cose.a install
+ ---> Using cache
+ ---> 4c3abc8e3ae3
+Step 14/18 : COPY . /root/libcsuit
+ ---> c7690da291fc
+Step 15/18 : WORKDIR /root/libcsuit
+ ---> Running in 0fd44ed9d1c2
+Removing intermediate container 0fd44ed9d1c2
+ ---> a18f5a30fa32
+Step 16/18 : RUN make MBEDTLS=1 install
+ ---> Running in 2ac7ba602a0f
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_common.o -c src/suit_common.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_process.o -c src/suit_manifest_process.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_callbacks.o -c src/suit_manifest_callbacks.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_decode.o -c src/suit_manifest_decode.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_encode.o -c src/suit_manifest_encode.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_manifest_print.o -c src/suit_manifest_print.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_cose.o -c src/suit_cose.c
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -fPIC -I /usr/local/include -I ./inc -ffunction-sections -fdata-sections -DLIBCSUIT_PSA_CRYPTO_C=1 -Os -o obj/src/suit_digest.o -c src/suit_digest.c
+ar -r bin/libcsuit.a obj/src/suit_common.o obj/src/suit_manifest_process.o obj/src/suit_manifest_callbacks.o obj/src/suit_manifest_decode.o obj/src/suit_manifest_encode.o obj/src/suit_manifest_print.o obj/src/suit_cose.o obj/src/suit_digest.o
+[91mar: creating bin/libcsuit.a
+[0minstall -d /usr/local/lib/
+install -m 644 ./bin/libcsuit.a /usr/local/lib/
+install -d /usr/local/include/csuit
+install -m 644 inc/csuit/config.h /usr/local/include/csuit/
+install -m 644 inc/csuit/csuit.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_common.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_cose.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_digest.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_decode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_encode.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_process.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_callbacks.h /usr/local/include/csuit/
+install -m 644 inc/csuit/suit_manifest_print.h /usr/local/include/csuit/
+Removing intermediate container 2ac7ba602a0f
+ ---> 4d3904bfa329
+Step 17/18 : RUN make -f Makefile.min_process MBEDTLS=1
+ ---> Running in c16baca32b43
+mkdir -p obj/examples/
+musl-gcc -static -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -I /usr/local/include -I ./examples/inc -DLIBCSUIT_PSA_CRYPTO_C=1 -Os  -o obj/examples/suit_manifest_process_main_min.o -c examples/suit_manifest_process_main_min.c
+musl-gcc -static -Xlinker --wrap=suit_fetch_callback -Xlinker --wrap=suit_store_callback -Xlinker --wrap=suit_invoke_callback -Xlinker --wrap=suit_condition_callback -Xlinker --wrap=suit_wait_callback -Xlinker --wrap=suit_report_callback -o bin/suit_manifest_process obj/examples/suit_manifest_process_main_min.o -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm -lmbedcrypto 
+Removing intermediate container c16baca32b43
+ ---> 6c7bf01ee4b0
+Step 18/18 : CMD ls -la bin/suit_manifest_process &&     ./bin/suit_manifest_process; echo "exit: $?"
+ ---> Running in 834fad604a3c
+Removing intermediate container 834fad604a3c
+ ---> 5c5cf65e776b
+Successfully built 5c5cf65e776b
+Successfully tagged libcsuit_min5:latest
+16 CSWTCH.19
+16 CSWTCH.407
+16 CSWTCH.408
+16 CSWTCH.410
+16 CSWTCH.411
+16 CSWTCH.417
+16 CSWTCH.418
+16 CSWTCH.444
+16 CSWTCH.484
+16 CSWTCH.486
+134 CheckTagRequirement
+97 ConsumeItem
+174 ConvertInt64
+345 ConvertUInt64
+643 DecodeAtomicDataItem
+145 DecodeDateEpoch
+58 DecodeNesting_IsAtEndOfBoundedLevel
+15 DecodeNesting_IsCurrentBounded.isra.0
+16 DecodeNesting_IsCurrentDefiniteLength.isra.0
+113 ExitBoundedLevel
+161 IEEE754_HalfToDouble
+243 InternalEnterBstrWrapped
+256 K
+8 LIBCSUIT_SUPPORTED_VERSIONS
+8 LIBCSUIT_SUPPORTED_VERSIONS_LEN
+755 MapSearch
+33 QCBORDecode_EnterArrayFromMapN
+264 QCBORDecode_EnterBoundedMapOrArray
+86 QCBORDecode_EnterBstrWrapped
+101 QCBORDecode_ExitBoundedMapOrArray
+63 QCBORDecode_ExitBstrWrapped
+40 QCBORDecode_Finish
+21 QCBORDecode_GetByteString
+101 QCBORDecode_GetInt64ConvertInternal
+25 QCBORDecode_GetItemsInMapWithCallback
+20 QCBORDecode_GetNext
+535 QCBORDecode_GetNextMapOrArray
+316 QCBORDecode_GetNextTagContent
+479 QCBORDecode_GetNextTagNumber
+34 QCBORDecode_GetNthTagOfLast
+113 QCBORDecode_GetTaggedStringInternal
+27 QCBORDecode_GetUInt64
+101 QCBORDecode_GetUInt64ConvertInternal
+73 QCBORDecode_Init
+173 QCBORDecode_MantissaAndExponent
+180 QCBORDecode_NestLevelAscender
+62 QCBORDecode_PartialFinish
+98 QCBORDecode_PeekNext
+161 QCBOREncode_EncodeHead
+18 QCBORItem_IsMapOrArray.isra.0
+47 RewindMapOrArray
+149 SearchAndEnter.constprop.0
+48 StringTagMap
+9 TagSpec.0
+9 TagSpec.0
+38 UnMapTagNumber
+34 UsefulBuf_Compare
+43 UsefulBuf_CopyOffset
+30 UsefulInputBuf_BytesUnconsumed
+69 UsefulInputBuf_GetBytes
+23 _Exit
+8 ___environ
+14 ___errno_location
+3 __aio_close
+137 __copy_tls
+4 __default_stacksize
+8 __environ
+14 __errno_location
+496 __fdopen
+181 __fmodeflags
+1 __funcs_on_exit
+8 __hwcap
+552 __init_libc
+75 __init_ssp
+538 __init_tls
+104 __libc
+58 __libc_exit_fini
+576 __libc_free
+1183 __libc_malloc_impl
+50 __libc_start_init
+52 __libc_start_main
+226 __lock
+218 __lockfile
+21 __lseek
+27 __madvise
+817 __malloc_alloc_meta
+406 __malloc_allzerop
+928 __malloc_context
+4 __malloc_lock
+4 __malloc_replaced
+96 __malloc_size_classes
+224 __mmap
+55 __mprotect
+45 __munmap
+41 __ofl_add
+28 __ofl_lock
+12 __ofl_unlock
+8 __progname
+8 __progname_full
+2 __stack_chk_fail
+2 __stack_chk_fail_local
+8 __stack_chk_guard
+8 __stderr_used
+8 __stdin_used
+35 __stdio_close
+70 __stdio_exit
+70 __stdio_exit_needed
+230 __stdio_read
+8 __stdio_seek
+291 __stdio_write
+8 __stdout_used
+238 __strchrnul
+51 __syscall_ret
+8 __sysinfo
+4 __thread_list_lock
+108 __toread
+256 __udivti3
+1 __unlist_locked_file
+68 __unlock
+65 __unlockfile
+1 __vm_wait
+3 __wrap_suit_condition_callback
+3 __wrap_suit_invoke_callback
+3 __wrap_suit_report_callback
+8 _environ
+35 _start_c
+4 aIterate.0
+4 aIterate.0
+2534 alloc_slot
+336 builtin_tls
+230 calloc
+174 check_critical_labels
+105 close_file
+1 completed.0
+215 create_tbs_hash
+32 debruijn32.0
+5 default_malloc
+150 derive_mpi
+1 dummy
+1 dummy
+1 dummy
+8 dummy
+3 dummy
+8 dummy_file
+579 ecdsa_verify_restartable.constprop.0
+1038 ecp_add_mixed
+948 ecp_double_jac
+1751 ecp_mul_restartable_internal.isra.0
+223 ecp_normalize_jac
+698 ecp_normalize_jac_many
+231 ecp_randomize_jac
+113 ecp_safe_invert_jac
+160 ecp_select_comb
+184 entropy_gather_internal.part.0
+175 entropy_update
+8 environ
+27 exit
+205 fclose
+496 fdopen
+394 fflush
+394 fflush_unlocked
+241 fopen
+241 fopen64
+297 fread
+297 fread_unlocked
+5 free
+262 get_meta
+1040 global_data
+1800 global_data
+14 hash_alg_id_from_sig_alg_id
+76 hash_bstr
+121 header_parameter_callback
+258 hmac_drbg_reseed_core
+58 libc_exit_fini
+50 libc_start_init
+49 libc_start_main_stage2
+19 llround
+19 lroundf
+21 lseek
+21 lseek64
+27 madvise
+151 main
+48 main_tls
+5 malloc
+237 manifest_buf
+51 mbedtls_ct_mpi_uint_cond_assign
+26 mbedtls_ct_mpi_uint_lt
+24 mbedtls_ecc_group_of_psa
+5 mbedtls_ecdsa_verify
+74 mbedtls_ecp_check_privkey
+424 mbedtls_ecp_check_pubkey
+56 mbedtls_ecp_copy
+22 mbedtls_ecp_get_type
+149 mbedtls_ecp_group_free
+127 mbedtls_ecp_group_init
+284 mbedtls_ecp_group_load
+22 mbedtls_ecp_is_zero
+40 mbedtls_ecp_keypair_free
+34 mbedtls_ecp_keypair_init
+16 mbedtls_ecp_mul
+16 mbedtls_ecp_mul_restartable
+195 mbedtls_ecp_mul_shortcuts.isra.0
+173 mbedtls_ecp_muladd_restartable
+11 mbedtls_ecp_point_free
+28 mbedtls_ecp_point_free.part.0
+28 mbedtls_ecp_point_init
+189 mbedtls_ecp_point_read_binary
+249 mbedtls_ecp_point_write_binary
+119 mbedtls_ecp_read_key
+50 mbedtls_ecp_set_zero
+31 mbedtls_ecp_write_key
+59 mbedtls_entropy_add_source
+46 mbedtls_entropy_free
+349 mbedtls_entropy_func
+67 mbedtls_entropy_init
+37 mbedtls_hmac_drbg_free
+20 mbedtls_hmac_drbg_init
+10 mbedtls_hmac_drbg_random
+287 mbedtls_hmac_drbg_random_with_add
+7 mbedtls_hmac_drbg_reseed
+193 mbedtls_hmac_drbg_seed
+290 mbedtls_hmac_drbg_update
+2671 mbedtls_internal_sha256_process
+41 mbedtls_md_finish
+105 mbedtls_md_free
+11 mbedtls_md_get_size
+151 mbedtls_md_hmac_finish
+81 mbedtls_md_hmac_reset
+249 mbedtls_md_hmac_starts
+29 mbedtls_md_hmac_update
+32 mbedtls_md_info_from_type
+148 mbedtls_md_setup
+54 mbedtls_md_starts
+41 mbedtls_md_update
+226 mbedtls_mpi_add_abs
+46 mbedtls_mpi_add_mod
+51 mbedtls_mpi_add_mod.part.0
+90 mbedtls_mpi_add_mpi
+81 mbedtls_mpi_bitlen
+131 mbedtls_mpi_cmp_abs
+61 mbedtls_mpi_cmp_int
+154 mbedtls_mpi_cmp_mpi
+167 mbedtls_mpi_copy
+1445 mbedtls_mpi_div_mpi
+63 mbedtls_mpi_free
+380 mbedtls_mpi_gcd
+40 mbedtls_mpi_get_bit
+129 mbedtls_mpi_grow
+17 mbedtls_mpi_init
+1278 mbedtls_mpi_inv_mod
+71 mbedtls_mpi_lsb
+78 mbedtls_mpi_lset
+183 mbedtls_mpi_lt_mpi_ct
+132 mbedtls_mpi_mod_mpi
+141 mbedtls_mpi_mul_int
+224 mbedtls_mpi_mul_mod
+336 mbedtls_mpi_mul_mpi
+363 mbedtls_mpi_random
+117 mbedtls_mpi_read_binary
+87 mbedtls_mpi_resize_clear
+126 mbedtls_mpi_safe_cond_assign
+257 mbedtls_mpi_shift_l
+45 mbedtls_mpi_shift_l_mod.constprop.0
+51 mbedtls_mpi_shift_l_mod.part.0
+184 mbedtls_mpi_shift_r
+181 mbedtls_mpi_shrink
+14 mbedtls_mpi_size
+287 mbedtls_mpi_sub_abs
+61 mbedtls_mpi_sub_int
+80 mbedtls_mpi_sub_mod
+90 mbedtls_mpi_sub_mpi
+146 mbedtls_mpi_write_binary
+107 mbedtls_platform_entropy_poll
+20 mbedtls_platform_zeroize
+63 mbedtls_psa_crypto_free
+324 mbedtls_psa_ecdsa_verify_hash
+232 mbedtls_psa_ecp_export_key
+161 mbedtls_psa_ecp_import_key
+392 mbedtls_psa_ecp_load_representation
+43 mbedtls_psa_hash_abort
+160 mbedtls_psa_hash_compute
+161 mbedtls_psa_hash_finish
+135 mbedtls_psa_hash_setup
+36 mbedtls_psa_hash_update
+8 mbedtls_psa_random_state
+16 mbedtls_sha224_info
+110 mbedtls_sha256
+363 mbedtls_sha256_finish
+16 mbedtls_sha256_free
+16 mbedtls_sha256_info
+10 mbedtls_sha256_init
+189 mbedtls_sha256_starts
+167 mbedtls_sha256_update
+940 mbedtls_to_psa_error
+4 med_cnt_tab
+52 memcmp
+8 memset_func
+224 mmap
+224 mmap64
+94 mpi_bigendian_to_host.part.0
+143 mpi_fill_random_internal
+878 mpi_mul_hlp
+8 mpi_one
+55 mprotect
+45 munmap
+1000 nontrivial_free
+8 ofl_head
+4 ofl_lock
+732 parse_cose_header_parameters
+8 program_invocation_name
+8 program_invocation_short_name
+60 psa_allocate_buffer_to_slot
+247 psa_crypto_init
+1 psa_driver_wrapper_free
+11 psa_driver_wrapper_get_key_buffer_size_from_key_data
+20 psa_driver_wrapper_hash_abort
+5 psa_driver_wrapper_hash_compute
+20 psa_driver_wrapper_hash_finish
+25 psa_driver_wrapper_hash_setup
+20 psa_driver_wrapper_hash_update
+19 psa_driver_wrapper_import_key
+3 psa_driver_wrapper_init
+19 psa_driver_wrapper_verify_hash
+5 psa_driver_wrapper_verify_message
+37 psa_get_and_lock_key_slot
+130 psa_get_and_lock_key_slot_in_memory
+269 psa_get_and_lock_key_slot_with_policy
+228 psa_get_empty_key_slot
+23 psa_hash_abort
+51 psa_hash_finish
+81 psa_hash_setup
+60 psa_hash_update
+378 psa_import_key
+120 psa_import_key_into_slot
+10 psa_initialize_key_slots
+41 psa_is_valid_key_id
+746 psa_key_algorithm_permits
+76 psa_mac_key_can_do
+45 psa_remove_key_data_from_memory
+105 psa_set_key_domain_parameters
+188 psa_sign_verify_check_alg
+188 psa_start_key_creation.constprop.0
+47 psa_status_to_t_cose_error_hash
+75 psa_status_to_t_cose_error_signing
+31 psa_unlock_key_slot
+10 psa_validate_key_location
+8 psa_validate_key_persistence
+35 psa_validate_unstructured_key_bit_size
+29 psa_verify_hash
+124 psa_verify_hash_builtin
+212 psa_verify_internal
+176 psa_verify_message_builtin
+53 psa_wipe_all_key_slots
+38 psa_wipe_key_slot
+180 round
+161 roundf
+1152 secp256r1_T
+32 secp256r1_T_0_X
+32 secp256r1_T_0_Y
+32 secp256r1_T_10_X
+32 secp256r1_T_10_Y
+32 secp256r1_T_11_X
+32 secp256r1_T_11_Y
+32 secp256r1_T_12_X
+32 secp256r1_T_12_Y
+32 secp256r1_T_13_X
+32 secp256r1_T_13_Y
+32 secp256r1_T_14_X
+32 secp256r1_T_14_Y
+32 secp256r1_T_15_X
+32 secp256r1_T_15_Y
+32 secp256r1_T_1_X
+32 secp256r1_T_1_Y
+32 secp256r1_T_2_X
+32 secp256r1_T_2_Y
+32 secp256r1_T_3_X
+32 secp256r1_T_3_Y
+32 secp256r1_T_4_X
+32 secp256r1_T_4_Y
+32 secp256r1_T_5_X
+32 secp256r1_T_5_Y
+32 secp256r1_T_6_X
+32 secp256r1_T_6_Y
+32 secp256r1_T_7_X
+32 secp256r1_T_7_Y
+32 secp256r1_T_8_X
+32 secp256r1_T_8_Y
+32 secp256r1_T_9_X
+32 secp256r1_T_9_Y
+32 secp256r1_b
+32 secp256r1_gx
+32 secp256r1_gy
+32 secp256r1_n
+32 secp256r1_p
+27 small_cnt_tab
+538 static_init_tls
+18 strchr
+238 strchrnul
+125 strlen
+53 suit_continue
+275 suit_create_es_key
+181 suit_decode_component_identifiers_from_item
+280 suit_decode_components_from_item
+271 suit_decode_digest_from_item
+28 suit_error_from_qcbor_error
+430 suit_extract_common
+581 suit_extract_manifest
+135 suit_generate_sha256
+68 suit_index_to_component_identifier
+41 suit_key_init_es256_key_pair
+39 suit_key_init_es256_public_key
+288 suit_process_authentication_wrapper
+586 suit_process_command_sequence_buf
+412 suit_process_common_and_command_sequence
+375 suit_process_condition
+199 suit_process_digest
+827 suit_process_envelope
+244 suit_process_invoke
+536 suit_process_shared_sequence
+270 suit_qcbor_calc_rollback
+30 suit_qcbor_get
+69 suit_qcbor_get_next
+37 suit_qcbor_get_next_uint
+29 suit_qcbor_skip_any
+92 suit_qcbor_skip_array_and_map
+24 suit_qcbor_value_is_uint64
+110 suit_set_index
+105 suit_set_mechanism_from_cose_key
+637 suit_set_mechanism_from_cose_key_from_item
+788 suit_set_parameters
+143 suit_verify_cose_sign1
+34 suit_verify_digest
+86 suit_verify_item
+76 suit_verify_sha256
+47 t_cose_crypto_hash_finish
+78 t_cose_crypto_hash_start
+26 t_cose_crypto_hash_update
+56 t_cose_crypto_verify
+924 t_cose_sign1_verify_internal
+75 trust_anchor_prime256v1_cose_key_public_buf
+[520, ['__wrap_suit_condition_callback', '__wrap_suit_invoke_callback', '__wrap_suit_report_callback', 'main', 'main_tls', 'manifest_buf', 'trust_anchor_prime256v1_cose_key_public_buf']]
+[8395, ['LIBCSUIT_SUPPORTED_VERSIONS', 'LIBCSUIT_SUPPORTED_VERSIONS_LEN', 'suit_continue', 'suit_create_es_key', 'suit_decode_component_identifiers_from_item', 'suit_decode_components_from_item', 'suit_decode_digest_from_item', 'suit_error_from_qcbor_error', 'suit_extract_common', 'suit_extract_manifest', 'suit_generate_sha256', 'suit_index_to_component_identifier', 'suit_key_init_es256_key_pair', 'suit_key_init_es256_public_key', 'suit_process_authentication_wrapper', 'suit_process_command_sequence_buf', 'suit_process_common_and_command_sequence', 'suit_process_condition', 'suit_process_digest', 'suit_process_envelope', 'suit_process_invoke', 'suit_process_shared_sequence', 'suit_qcbor_calc_rollback', 'suit_qcbor_get', 'suit_qcbor_get_next', 'suit_qcbor_get_next_uint', 'suit_qcbor_skip_any', 'suit_qcbor_skip_array_and_map', 'suit_qcbor_value_is_uint64', 'suit_set_index', 'suit_set_mechanism_from_cose_key', 'suit_set_mechanism_from_cose_key_from_item', 'suit_set_parameters', 'suit_verify_cose_sign1', 'suit_verify_digest', 'suit_verify_item', 'suit_verify_sha256']]
+[2289, ['create_tbs_hash', 'hash_alg_id_from_sig_alg_id', 'hash_bstr', 'header_parameter_callback', 'parse_cose_header_parameters', 't_cose_crypto_hash_finish', 't_cose_crypto_hash_start', 't_cose_crypto_hash_update', 't_cose_crypto_verify', 't_cose_sign1_verify_internal']]
+[6499, ['CheckTagRequirement', 'ConsumeItem', 'ConvertInt64', 'ConvertUInt64', 'DecodeAtomicDataItem', 'DecodeDateEpoch', 'DecodeNesting_IsAtEndOfBoundedLevel', 'DecodeNesting_IsCurrentBounded.isra.0', 'DecodeNesting_IsCurrentDefiniteLength.isra.0', 'ExitBoundedLevel', 'IEEE754_HalfToDouble', 'InternalEnterBstrWrapped', 'MapSearch', 'QCBORDecode_EnterArrayFromMapN', 'QCBORDecode_EnterBoundedMapOrArray', 'QCBORDecode_EnterBstrWrapped', 'QCBORDecode_ExitBoundedMapOrArray', 'QCBORDecode_ExitBstrWrapped', 'QCBORDecode_Finish', 'QCBORDecode_GetByteString', 'QCBORDecode_GetInt64ConvertInternal', 'QCBORDecode_GetItemsInMapWithCallback', 'QCBORDecode_GetNext', 'QCBORDecode_GetNextMapOrArray', 'QCBORDecode_GetNextTagContent', 'QCBORDecode_GetNextTagNumber', 'QCBORDecode_GetNthTagOfLast', 'QCBORDecode_GetTaggedStringInternal', 'QCBORDecode_GetUInt64', 'QCBORDecode_GetUInt64ConvertInternal', 'QCBORDecode_Init', 'QCBORDecode_MantissaAndExponent', 'QCBORDecode_NestLevelAscender', 'QCBORDecode_PartialFinish', 'QCBORDecode_PeekNext', 'QCBOREncode_EncodeHead', 'QCBORItem_IsMapOrArray.isra.0', 'RewindMapOrArray', 'SearchAndEnter.constprop.0', 'StringTagMap', 'TagSpec.0', 'TagSpec.0', 'UnMapTagNumber', 'UsefulBuf_Compare', 'UsefulBuf_CopyOffset', 'UsefulInputBuf_BytesUnconsumed', 'UsefulInputBuf_GetBytes']]
+[5784, ['mbedtls_psa_crypto_free', 'mbedtls_psa_ecdsa_verify_hash', 'mbedtls_psa_ecp_export_key', 'mbedtls_psa_ecp_import_key', 'mbedtls_psa_ecp_load_representation', 'mbedtls_psa_hash_abort', 'mbedtls_psa_hash_compute', 'mbedtls_psa_hash_finish', 'mbedtls_psa_hash_setup', 'mbedtls_psa_hash_update', 'mbedtls_psa_random_state', 'psa_allocate_buffer_to_slot', 'psa_crypto_init', 'psa_driver_wrapper_free', 'psa_driver_wrapper_get_key_buffer_size_from_key_data', 'psa_driver_wrapper_hash_abort', 'psa_driver_wrapper_hash_compute', 'psa_driver_wrapper_hash_finish', 'psa_driver_wrapper_hash_setup', 'psa_driver_wrapper_hash_update', 'psa_driver_wrapper_import_key', 'psa_driver_wrapper_init', 'psa_driver_wrapper_verify_hash', 'psa_driver_wrapper_verify_message', 'psa_get_and_lock_key_slot', 'psa_get_and_lock_key_slot_in_memory', 'psa_get_and_lock_key_slot_with_policy', 'psa_get_empty_key_slot', 'psa_hash_abort', 'psa_hash_finish', 'psa_hash_setup', 'psa_hash_update', 'psa_import_key', 'psa_import_key_into_slot', 'psa_initialize_key_slots', 'psa_is_valid_key_id', 'psa_key_algorithm_permits', 'psa_mac_key_can_do', 'psa_remove_key_data_from_memory', 'psa_set_key_domain_parameters', 'psa_sign_verify_check_alg', 'psa_start_key_creation.constprop.0', 'psa_status_to_t_cose_error_hash', 'psa_status_to_t_cose_error_signing', 'psa_unlock_key_slot', 'psa_validate_key_location', 'psa_validate_key_persistence', 'psa_validate_unstructured_key_bit_size', 'psa_verify_hash', 'psa_verify_hash_builtin', 'psa_verify_internal', 'psa_verify_message_builtin', 'psa_wipe_all_key_slots', 'psa_wipe_key_slot']]
+[25682, ['ecdsa_verify_restartable.constprop.0', 'ecp_add_mixed', 'ecp_double_jac', 'ecp_mul_restartable_internal.isra.0', 'ecp_normalize_jac', 'ecp_normalize_jac_many', 'ecp_randomize_jac', 'ecp_safe_invert_jac', 'ecp_select_comb', 'entropy_gather_internal.part.0', 'entropy_update', 'hmac_drbg_reseed_core', 'mbedtls_ct_mpi_uint_cond_assign', 'mbedtls_ct_mpi_uint_lt', 'mbedtls_ecc_group_of_psa', 'mbedtls_ecdsa_verify', 'mbedtls_ecp_check_privkey', 'mbedtls_ecp_check_pubkey', 'mbedtls_ecp_copy', 'mbedtls_ecp_get_type', 'mbedtls_ecp_group_free', 'mbedtls_ecp_group_init', 'mbedtls_ecp_group_load', 'mbedtls_ecp_is_zero', 'mbedtls_ecp_keypair_free', 'mbedtls_ecp_keypair_init', 'mbedtls_ecp_mul', 'mbedtls_ecp_mul_restartable', 'mbedtls_ecp_mul_shortcuts.isra.0', 'mbedtls_ecp_muladd_restartable', 'mbedtls_ecp_point_free', 'mbedtls_ecp_point_free.part.0', 'mbedtls_ecp_point_init', 'mbedtls_ecp_point_read_binary', 'mbedtls_ecp_point_write_binary', 'mbedtls_ecp_read_key', 'mbedtls_ecp_set_zero', 'mbedtls_ecp_write_key', 'mbedtls_entropy_add_source', 'mbedtls_entropy_free', 'mbedtls_entropy_func', 'mbedtls_entropy_init', 'mbedtls_hmac_drbg_free', 'mbedtls_hmac_drbg_init', 'mbedtls_hmac_drbg_random', 'mbedtls_hmac_drbg_random_with_add', 'mbedtls_hmac_drbg_reseed', 'mbedtls_hmac_drbg_seed', 'mbedtls_hmac_drbg_update', 'mbedtls_internal_sha256_process', 'mbedtls_md_finish', 'mbedtls_md_free', 'mbedtls_md_get_size', 'mbedtls_md_hmac_finish', 'mbedtls_md_hmac_reset', 'mbedtls_md_hmac_starts', 'mbedtls_md_hmac_update', 'mbedtls_md_info_from_type', 'mbedtls_md_setup', 'mbedtls_md_starts', 'mbedtls_md_update', 'mbedtls_mpi_add_abs', 'mbedtls_mpi_add_mod', 'mbedtls_mpi_add_mod.part.0', 'mbedtls_mpi_add_mpi', 'mbedtls_mpi_bitlen', 'mbedtls_mpi_cmp_abs', 'mbedtls_mpi_cmp_int', 'mbedtls_mpi_cmp_mpi', 'mbedtls_mpi_copy', 'mbedtls_mpi_div_mpi', 'mbedtls_mpi_free', 'mbedtls_mpi_gcd', 'mbedtls_mpi_get_bit', 'mbedtls_mpi_grow', 'mbedtls_mpi_init', 'mbedtls_mpi_inv_mod', 'mbedtls_mpi_lsb', 'mbedtls_mpi_lset', 'mbedtls_mpi_lt_mpi_ct', 'mbedtls_mpi_mod_mpi', 'mbedtls_mpi_mul_int', 'mbedtls_mpi_mul_mod', 'mbedtls_mpi_mul_mpi', 'mbedtls_mpi_random', 'mbedtls_mpi_read_binary', 'mbedtls_mpi_resize_clear', 'mbedtls_mpi_safe_cond_assign', 'mbedtls_mpi_shift_l', 'mbedtls_mpi_shift_l_mod.constprop.0', 'mbedtls_mpi_shift_l_mod.part.0', 'mbedtls_mpi_shift_r', 'mbedtls_mpi_shrink', 'mbedtls_mpi_size', 'mbedtls_mpi_sub_abs', 'mbedtls_mpi_sub_int', 'mbedtls_mpi_sub_mod', 'mbedtls_mpi_sub_mpi', 'mbedtls_mpi_write_binary', 'mbedtls_platform_entropy_poll', 'mbedtls_platform_zeroize', 'mbedtls_sha224_info', 'mbedtls_sha256', 'mbedtls_sha256_finish', 'mbedtls_sha256_free', 'mbedtls_sha256_info', 'mbedtls_sha256_init', 'mbedtls_sha256_starts', 'mbedtls_sha256_update', 'mbedtls_to_psa_error', 'secp256r1_T', 'secp256r1_T_0_X', 'secp256r1_T_0_Y', 'secp256r1_T_10_X', 'secp256r1_T_10_Y', 'secp256r1_T_11_X', 'secp256r1_T_11_Y', 'secp256r1_T_12_X', 'secp256r1_T_12_Y', 'secp256r1_T_13_X', 'secp256r1_T_13_Y', 'secp256r1_T_14_X', 'secp256r1_T_14_Y', 'secp256r1_T_15_X', 'secp256r1_T_15_Y', 'secp256r1_T_1_X', 'secp256r1_T_1_Y', 'secp256r1_T_2_X', 'secp256r1_T_2_Y', 'secp256r1_T_3_X', 'secp256r1_T_3_Y', 'secp256r1_T_4_X', 'secp256r1_T_4_Y', 'secp256r1_T_5_X', 'secp256r1_T_5_Y', 'secp256r1_T_6_X', 'secp256r1_T_6_Y', 'secp256r1_T_7_X', 'secp256r1_T_7_Y', 'secp256r1_T_8_X', 'secp256r1_T_8_Y', 'secp256r1_T_9_X', 'secp256r1_T_9_Y', 'secp256r1_b', 'secp256r1_gx', 'secp256r1_gy', 'secp256r1_n', 'secp256r1_p']]
+[22875, ['CSWTCH.19', 'CSWTCH.407', 'CSWTCH.408', 'CSWTCH.410', 'CSWTCH.411', 'CSWTCH.417', 'CSWTCH.418', 'CSWTCH.444', 'CSWTCH.484', 'CSWTCH.486', 'K', '_Exit', '___environ', '___errno_location', '__aio_close', '__copy_tls', '__default_stacksize', '__environ', '__errno_location', '__fdopen', '__fmodeflags', '__funcs_on_exit', '__hwcap', '__init_libc', '__init_ssp', '__init_tls', '__libc', '__libc_exit_fini', '__libc_free', '__libc_malloc_impl', '__libc_start_init', '__libc_start_main', '__lock', '__lockfile', '__lseek', '__madvise', '__malloc_alloc_meta', '__malloc_allzerop', '__malloc_context', '__malloc_lock', '__malloc_replaced', '__malloc_size_classes', '__mmap', '__mprotect', '__munmap', '__ofl_add', '__ofl_lock', '__ofl_unlock', '__progname', '__progname_full', '__stack_chk_fail', '__stack_chk_fail_local', '__stack_chk_guard', '__stderr_used', '__stdin_used', '__stdio_close', '__stdio_exit', '__stdio_exit_needed', '__stdio_read', '__stdio_seek', '__stdio_write', '__stdout_used', '__strchrnul', '__syscall_ret', '__sysinfo', '__thread_list_lock', '__toread', '__udivti3', '__unlist_locked_file', '__unlock', '__unlockfile', '__vm_wait', '_environ', '_start_c', 'aIterate.0', 'aIterate.0', 'alloc_slot', 'builtin_tls', 'calloc', 'check_critical_labels', 'close_file', 'completed.0', 'debruijn32.0', 'default_malloc', 'derive_mpi', 'dummy', 'dummy', 'dummy', 'dummy', 'dummy', 'dummy_file', 'environ', 'exit', 'fclose', 'fdopen', 'fflush', 'fflush_unlocked', 'fopen', 'fopen64', 'fread', 'fread_unlocked', 'free', 'get_meta', 'global_data', 'global_data', 'libc_exit_fini', 'libc_start_init', 'libc_start_main_stage2', 'llround', 'lroundf', 'lseek', 'lseek64', 'madvise', 'malloc', 'med_cnt_tab', 'memcmp', 'memset_func', 'mmap', 'mmap64', 'mpi_bigendian_to_host.part.0', 'mpi_fill_random_internal', 'mpi_mul_hlp', 'mpi_one', 'mprotect', 'munmap', 'nontrivial_free', 'ofl_head', 'ofl_lock', 'program_invocation_name', 'program_invocation_short_name', 'round', 'roundf', 'small_cnt_tab', 'static_init_tls', 'strchr', 'strchrnul', 'strlen']]
+calculated other: 63183
+-rwxr-xr-x 1 root root 112352 Jul  4 11:42 bin/suit_manifest_process
+exit: 0
+-rwxr-xr-x 1 root root 243032 Jul  4 11:43 bin/suit_manifest_process
+exit: 0
+-rwxr-xr-x 1 root root 620120 Jul  4 11:43 bin/suit_manifest_process
+exit: 0
+-rwxr-xr-x 1 root root 637800 Jul  4 11:43 bin/suit_manifest_process
+exit: 0
+-rwxr-xr-x 1 root root 642384 Jul  4 11:43 bin/suit_manifest_process
+exit: 0
+-rwxr-xr-x 1 root root 658912 Jul  4 11:43 bin/suit_manifest_process
+exit: 0
