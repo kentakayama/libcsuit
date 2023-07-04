@@ -1,6 +1,5 @@
 .*
 *.md
-suit_*
 libcsuit.a
 libcsuit.so
 bin/*
@@ -8,9 +7,6 @@ tmp/*
 test/libcsuit_test
 test/result.txt
 CMakeLists.txt
-QCBOR
-t_cose
-mbedtls
 obj
 *Dockerfile
 Doxyfile
@@ -19,5 +15,6 @@ tags
 *.pdf
 *.md
 misc/*.md
-misc/*.py
+misc/calc_*.py
 misc/*.patch
+misc/*.txt
