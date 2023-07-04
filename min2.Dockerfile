@@ -15,7 +15,7 @@ RUN make libqcbor.a install
 
 RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_cose
 WORKDIR /root/t_cose
-RUN make -f Makefile.psa libt_cose.a install
+RUN make -f Makefile.psa CMD_LINE="-DT_COSE_DISABLE_SHORT_CIRCUIT_SIGN -DT_COSE_DISABLE_ES384 -DT_COSE_DISABLE_ES512 -DT_COSE_DISABLE_PS256 -DT_COSE_DISABLE_PS384 -DT_COSE_DISABLE_PS512 -DT_COSE_DISABLE_EDDSA" libt_cose.a install
 
 COPY . /root/libcsuit
 RUN cp /root/libcsuit/misc/config/min_config.h /root/libcsuit/inc/csuit/config.h
@@ -25,4 +25,4 @@ RUN make MBEDTLS=1 install
 RUN make -f Makefile.min_process MBEDTLS=1
 
 CMD ls -la bin/suit_manifest_process && \
-    ./bin/suit_manifest_process ./testfiles/suit_manifest_exp0.cbor; echo "exit: $?"
+    ./bin/suit_manifest_process; echo "exit: $?"
