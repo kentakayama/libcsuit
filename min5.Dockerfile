@@ -3,7 +3,8 @@
 FROM debian:latest
 
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git gcc make libcunit1-dev python3
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ENV CC="musl-gcc -static"
 
 RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
 WORKDIR /root/mbedtls

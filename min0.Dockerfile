@@ -3,7 +3,8 @@
 FROM debian:latest
 
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git gcc make libcunit1-dev python3
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
+ENV CC="musl-gcc -static"
 
 RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
 COPY misc/config/mbedtls_config.h /root/mbedtls/include/mbedtls/
@@ -24,7 +25,7 @@ RUN cp /root/libcsuit/misc/config/min_config.h /root/libcsuit/inc/csuit/config.h
 WORKDIR /root/libcsuit
 
 RUN make MBEDTLS=1 install
-RUN make -f Makefile.min_process MBEDTLS=1
+RUN make -f Makefile.min_process CFLAGS="-Os -fdata-sections -ffunction-sections" LDFLAGS="-Wl,--gc-sections" MBEDTLS=1
 
 CMD ls -la bin/suit_manifest_process && \
     ./bin/suit_manifest_process; echo "exit: $?"

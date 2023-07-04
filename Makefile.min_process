@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS ?= -Os -fdata-sections -ffunction-sections
+CFLAGS ?= -Os
 WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
-LOCAL_CFLAGS = $(WARNING_CFLAGS) -I ./examples/inc
-LDFLAGS ?= -Wl,--gc-sections
-LDFLAGS += -lcsuit -lt_cose -lqcbor -lm
+LOCAL_CFLAGS = $(WARNING_CFLAGS) -I /usr/local/include -I ./examples/inc
+LDFLAGS ?=
+LOCAL_LDFLAGS = -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm
 LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \
 	-Xlinker --wrap=suit_store_callback \
@@ -27,10 +27,10 @@ OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
     LOCAL_CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS += -lmbedcrypto
+    LOCAL_LDFLAGS += -lmbedcrypto
 else
     # use OpenSSL
-    LDFLAGS += -lcrypto
+    LOCAL_LDFLAGS += -lcrypto
 endif
 
 .PHONY: all test clean
@@ -38,7 +38,7 @@ endif
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDWRAP) -o $@ $^ $(LDFLAGS)
+	$(CC) $(LDWRAP) -o $@ $^ $(LOCAL_LDFLAGS) $(LDFLAGS)
 
 $(OBJDIR)/%.o:	%.c
 	mkdir -p $(dir $@)
