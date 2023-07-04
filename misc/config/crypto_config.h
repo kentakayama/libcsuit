@@ -69,7 +69,7 @@
 #define PSA_WANT_ALG_GCM                        0
 #define PSA_WANT_ALG_HKDF                       0
 #define PSA_WANT_ALG_HMAC                       1
-#define PSA_WANT_ALG_MD5                        1
+#define PSA_WANT_ALG_MD5                        0
 #define PSA_WANT_ALG_OFB                        0
 /* PBKDF2-HMAC is not yet supported via the PSA API in Mbed TLS.
  * Note: when adding support, also adjust include/mbedtls/config_psa.h */
@@ -115,8 +115,8 @@
 #define PSA_WANT_KEY_TYPE_CAMELLIA              0
 #define PSA_WANT_KEY_TYPE_CHACHA20              0
 #define PSA_WANT_KEY_TYPE_DES                   0
-#define PSA_WANT_KEY_TYPE_ECC_KEY_PAIR          1
-#define PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY        1
+#define PSA_WANT_KEY_TYPE_ECC_KEY_PAIR          0
+#define PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY        0
 #define PSA_WANT_KEY_TYPE_RAW_DATA              0
 #define PSA_WANT_KEY_TYPE_RSA_KEY_PAIR          0
 #define PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY        0
