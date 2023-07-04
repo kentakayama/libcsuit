@@ -16,11 +16,12 @@ This implementation uses
  - the [t_cose](https://github.com/laurencelundblade/t_cose) library for cryptographic processing of COSE structures,
  - OpenSSL or Mbed TLS (based on the PSA Crypto API) for cryptographic algorithms.
 
-This implementation offers the functionality defined in 
+This implementation offers the functionality defined in
 - [draft-ietf-suit-manifest-22](https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest-22)
-- [draft-ietf-suit-trust-domains-02](https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02)
-- [draft-ietf-suit-update-management-01](https://datatracker.ietf.org/doc/html/draft-ietf-suit-update-management-01)
-- [draft-ietf-suit-firmware-encryption-11](https://datatracker.ietf.org/doc/html/draft-ietf-suit-firmware-encryption-11)
+- [draft-ietf-suit-trust-domains-03](https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-03)
+- [draft-ietf-suit-update-management-02](https://datatracker.ietf.org/doc/html/draft-ietf-suit-update-management-02)
+- [draft-ietf-suit-firmware-encryption-12](https://datatracker.ietf.org/doc/html/draft-ietf-suit-firmware-encryption-12)
+- ~~[draft-ietf-suit-mud-03](https://datatracker.ietf.org/doc/html/draft-ietf-suit-mud-03)~~
 - ~~[draft-ietf-suit-report-05](https://datatracker.ietf.org/doc/html/draft-ietf-suit-report-05)~~
 
 Example programs are offered for testing.

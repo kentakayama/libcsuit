@@ -7,7 +7,7 @@ supported_str = "^[-A-Za-z ()]+ \| [?0-9]+ \| ([-a-z]+) \| ([A-Za-z ]+) \| [A-Za
 def calc_suit_manifest():
     # const
     table_str = "Name | Label | CDDL Structure | IN | IS | Supported?"
-    documents = [ "SUIT Manifest", "SUIT Multiple Trust Domains", "SUIT Update Management", "SUIT Encrypted Payload" ]
+    documents = [ "SUIT Manifest", "SUIT Multiple Trust Domains", "SUIT Update Management", "SUIT Encrypted Payload", "SUIT MUD" ]
 
     pos_list = [2, 4, 5, 6, 7]
     # regex pattern

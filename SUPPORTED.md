@@ -27,6 +27,12 @@ Operation | Metadata | Condition | Directive | Parameter | Text
 decode |  |  |  | :green_square::green_square::green_square::red_square: | 
 encode |  |  |  | :green_square::green_square::green_square::red_square: | 
 process |  |  |  | :green_square::red_square::red_square::red_square: | 
+### SUIT MUD
+Operation | Metadata | Condition | Directive | Parameter | Text
+---|---|---|---|---|---
+decode | :red_square: |  |  |  | 
+encode | :red_square: |  |  |  | 
+process | :red_square: |  |  |  | 
 ### SUIT Report
 Operation | Metadata | Capabilities
 ---|---|---
@@ -71,6 +77,7 @@ CoSWID (s) | 14 | suit-coswid | SUIT Update Management | RECOMMENDED | RWX
 Payload Fetch (s) | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
 Payload Installation (s) | 17 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description (s) | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
+SUIT MUD (s) | ? | suit-mud | SUIT MUD | OPTIONAL | ---
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
@@ -88,6 +95,7 @@ Payload Fetch | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
 Payload Installation | 17 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
 Uninstall | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RWX
+SUIT MUD | ? | suit-mud | SUIT MUD | OPTIONAL | ---
 
 ### SUIT Common
 
@@ -115,7 +123,6 @@ Image Not Match | 25 | suit-condition-image-not-match | SUIT Update Management |
 Minimum Battery | 26 | suit-condition-minimum-battery | SUIT Update Management | OPTIONAL | RWX
 Update Authorized | 27 | suit-condition-update-authorized | SUIT Update Management | OPTIONAL | RWX
 Version | 28 | suit-condition-version | SUIT Update Management | N/M | RWX
-Custom Condition | - | suit-condition-custom | SUIT Manifest | N/M | ---
 
 ### SUIT Directive
 
@@ -163,7 +170,6 @@ Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management |
 Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX
 Wait Info | 29 | suit-parameter-wait-info | SUIT Update Management | N/M | RWX
 Fetch Arguments | 30? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | RWX
-Custom | - | suit-parameter-custom | SUIT Manifest | N/M | ---
 
 ### SUIT Text
 
