@@ -7,7 +7,7 @@
 NAME = libcsuit
 CFLAGS ?= -Os
 WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
-LOCAL_CFLAGS = $(WARNING_CFLAGS) -fPIC -I ./inc
+LOCAL_CFLAGS = $(WARNING_CFLAGS) -fPIC -I /usr/local/include -I ./inc
 LOCAL_CFLAGS += -ffunction-sections -fdata-sections
 # link me with -Wl,--gc-sections
 
