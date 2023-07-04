@@ -18,11 +18,11 @@ WORKDIR /root/t_cose
 RUN make -f Makefile.psa libt_cose.a install
 
 COPY . /root/libcsuit
-RUN cp /root/libcsuit/misc/config/max_config.h /root/libcsuit/inc/csuit/config.h
+RUN cp /root/libcsuit/misc/config/min_config.h /root/libcsuit/inc/csuit/config.h
 WORKDIR /root/libcsuit
 
 RUN make MBEDTLS=1 install
 RUN make -f Makefile.min_process MBEDTLS=1
 
 CMD ls -la bin/suit_manifest_process && \
-    ./bin/suit_manifest_process ./testfiles/suit_manifest_exp0.cbor; echo "exit: $?"
+    ./bin/suit_manifest_process; echo "exit: $?"
