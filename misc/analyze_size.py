@@ -28,25 +28,56 @@ for line in f.read().splitlines():
         elif name.startswith(("trust_anchor_", "main", "__wrap", )):
             result["app"][0] += size
             result["app"][1].append(name)
-        elif name.startswith(("LIBCSUIT_", "suit_")):
+        elif name.startswith((
+            "LIBCSUIT_", "suit_", "is_suit_directive_only",
+            )):
             result["libcsuit"][0] += size
             result["libcsuit"][1].append(name)
-        elif name.startswith(("t_cose", "parse_cose_header_parameters", "header_parameter", "hash_bstr", "hash_alg", "create_tbs_hash")):
+        elif name.startswith((
+            "t_cose", "parse_cose_header_parameters", "header_parameter",
+            "hash_bstr", "hash_alg", "create_tbs_hash", "short_circuit_",
+            "signature_algorithm_id_is_supported", "supported_algs",
+            "defined_short_",
+            )):
             result["t_cose"][0] += size
             result["t_cose"][1].append(name)
-        elif name.startswith(("QCBOR", "Useful", "Inetrnal", "IEEE", "Decode", "Con", "Check", "RewindMapOrArray", "SearchAndError", "StringTagMap", "TagSpec", "UnMapTagNumber", "SearchAndEnter", "MapSearch", "ExitBounded", "InternalEnter")):
+        elif name.startswith((
+            "QCBOR", "Useful", "Inetrnal", "IEEE", "Decode", "Con", "Check",
+            "RewindMapOrArray", "SearchAndError", "StringTagMap", "TagSpec",
+            "UnMapTagNumber", "SearchAndEnter", "MapSearch", "ExitBounded",
+            "InternalEnter", "AppendCBORHead", "DoubleConvertAll",
+            "Exponent", "Mantissa", "MemPool_", "Process", "UInt64", "Int64",
+            "Insert", "Increment",
+            )):
             result["QCBOR"][0] += size
             result["QCBOR"][1].append(name)
         elif name.startswith(("psa_", "mbedtls_psa")):
             result["psa"][0] += size
             result["psa"][1].append(name)
-        elif name.startswith(("mbedtls", "secp", "ec", "entropy", "hmac_drbg_reseed_core")):
+        elif name.startswith((
+            "mbedtls", "secp", "ec", "entropy", "hmac_drbg_reseed_core",
+            "NIST_KW_ICV", "SIGMA_CHARS",
+            "LHs", "FS", "FT", "PRK", "RCON", "RHs", "RSb" "RT", "SB",
+            "aes_", "add_", "aria_", "asn1_", "base64", "block_cipher_df",
+            "brainpool", "camellia_", "ccm", "ccs_", "chacha20_", "cmac_",
+            "ct_test", "ctr_drbg", "curve", "des3_", "des_", "gcm_",
+            "key_", "iv_", "kw_", "kwp_", "msg_len_test_data", "msg_test_data",
+            "oid_", "password_test_data", "pem_", "pers_", "pk_", "plen_test_data",
+            "poly1305", "pt_", "res_test_data", "result_", "ripemd160_",
+            "rsa_", "salt_test_data", "self_test_rng", "slen_test_data",
+            "sha1_", "sha256_", "sha512_", "tag_test_data", "weak_key_table",
+            "supported_init", "supported_digests", "md5_test_", "x25519_bad_point_",
+            "tag_len_test_data", "ad_test_data", "additional_test_data", "test_",
+            "xts_aes", "get_zeros", "get_pkcs", "get_one_and_zeros", "get_no_padding",
+            "hmac_drbg_", "chachapoly_", "it_cnt_test_data", "odd_parity_table",
+            )):
             result["mbedtls"][0] += size
             result["mbedtls"][1].append(name)
         else:
             result["other"][0] += size
             result["other"][1].append(name)
 
+"""
 print(result["manifest"])
 print(result["app"])
 print(result["libcsuit"])
@@ -55,6 +86,7 @@ print(result["QCBOR"])
 print(result["psa"])
 print(result["mbedtls"])
 print(result["other"])
+"""
 
 import os
 script_path = os.path.dirname(__file__)
@@ -69,15 +101,13 @@ other_size -= result["QCBOR"][0]
 other_size -= result["psa"][0]
 other_size -= result["mbedtls"][0]
 
-print(f"calculated other: {other_size}")
-print()
-print( f"| TOTAL           | {process_binary_size:7,} |\n" \
-       f"|-----------------|--------:|\n" \
-       f"| SUIT Manifest 0 | {result['manifest'][0]:7,d} |\n" \
-       f"| app             | {result['app'][0]:7,d} |\n" \
-       f"| libcsuit        | {result['libcsuit'][0]:7,d} |\n" \
-       f"| t_cose          | {result['t_cose'][0]:7,d} |\n" \
-       f"| QCBOR           | {result['QCBOR'][0]:7,d} |\n" \
-       f"| psa             | {result['psa'][0]:7,d} |\n" \
-       f"| mbedtls         | {result['mbedtls'][0]:7,d} |\n" \
-       f"| other           | {other_size:7,d} |\n")
+print( f"|-----------------|--------:|\n" \
+       f"| SUIT Manifest 0 | {result['manifest'][0]} |\n" \
+       f"| app | {result['app'][0]} |\n" \
+       f"| libcsuit | {result['libcsuit'][0]} |\n" \
+       f"| t_cose | {result['t_cose'][0]} |\n" \
+       f"| QCBOR | {result['QCBOR'][0]} |\n" \
+       f"| psa | {result['psa'][0]} |\n" \
+       f"| mbedtls | {result['mbedtls'][0]} |\n" \
+       f"| other | {other_size} |\n" \
+       f"| TOTAL | {process_binary_size} |")

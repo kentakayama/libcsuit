@@ -1,52 +1,70 @@
-docker build -f min0.Dockerfile -t libcsuit_min0 .
-docker build -f min1.Dockerfile -t libcsuit_min1 .
-docker build -f min2.Dockerfile -t libcsuit_min2 .
-docker build -f min3.Dockerfile -t libcsuit_min3 .
-docker build -f min4.Dockerfile -t libcsuit_min4 .
-docker build -f min5.Dockerfile -t libcsuit_min5 .
+docker build 5
+docker build 4
+docker build 3
+docker build 2
+docker build 1
 ====================================
-[237, ['manifest_buf']]
-[283, ['__wrap_suit_condition_callback', '__wrap_suit_invoke_callback', '__wrap_suit_report_callback', 'main', 'main_tls', 'trust_anchor_prime256v1_cose_key_public_buf']]
-[8395, ['LIBCSUIT_SUPPORTED_VERSIONS', 'LIBCSUIT_SUPPORTED_VERSIONS_LEN', 'suit_continue', 'suit_create_es_key', 'suit_decode_component_identifiers_from_item', 'suit_decode_components_from_item', 'suit_decode_digest_from_item', 'suit_error_from_qcbor_error', 'suit_extract_common', 'suit_extract_manifest', 'suit_generate_sha256', 'suit_index_to_component_identifier', 'suit_key_init_es256_key_pair', 'suit_key_init_es256_public_key', 'suit_process_authentication_wrapper', 'suit_process_command_sequence_buf', 'suit_process_common_and_command_sequence', 'suit_process_condition', 'suit_process_digest', 'suit_process_envelope', 'suit_process_invoke', 'suit_process_shared_sequence', 'suit_qcbor_calc_rollback', 'suit_qcbor_get', 'suit_qcbor_get_next', 'suit_qcbor_get_next_uint', 'suit_qcbor_skip_any', 'suit_qcbor_skip_array_and_map', 'suit_qcbor_value_is_uint64', 'suit_set_index', 'suit_set_mechanism_from_cose_key', 'suit_set_mechanism_from_cose_key_from_item', 'suit_set_parameters', 'suit_verify_cose_sign1', 'suit_verify_digest', 'suit_verify_item', 'suit_verify_sha256']]
-[2289, ['create_tbs_hash', 'hash_alg_id_from_sig_alg_id', 'hash_bstr', 'header_parameter_callback', 'parse_cose_header_parameters', 't_cose_crypto_hash_finish', 't_cose_crypto_hash_start', 't_cose_crypto_hash_update', 't_cose_crypto_verify', 't_cose_sign1_verify_internal']]
-[6499, ['CheckTagRequirement', 'ConsumeItem', 'ConvertInt64', 'ConvertUInt64', 'DecodeAtomicDataItem', 'DecodeDateEpoch', 'DecodeNesting_IsAtEndOfBoundedLevel', 'DecodeNesting_IsCurrentBounded.isra.0', 'DecodeNesting_IsCurrentDefiniteLength.isra.0', 'ExitBoundedLevel', 'IEEE754_HalfToDouble', 'InternalEnterBstrWrapped', 'MapSearch', 'QCBORDecode_EnterArrayFromMapN', 'QCBORDecode_EnterBoundedMapOrArray', 'QCBORDecode_EnterBstrWrapped', 'QCBORDecode_ExitBoundedMapOrArray', 'QCBORDecode_ExitBstrWrapped', 'QCBORDecode_Finish', 'QCBORDecode_GetByteString', 'QCBORDecode_GetInt64ConvertInternal', 'QCBORDecode_GetItemsInMapWithCallback', 'QCBORDecode_GetNext', 'QCBORDecode_GetNextMapOrArray', 'QCBORDecode_GetNextTagContent', 'QCBORDecode_GetNextTagNumber', 'QCBORDecode_GetNthTagOfLast', 'QCBORDecode_GetTaggedStringInternal', 'QCBORDecode_GetUInt64', 'QCBORDecode_GetUInt64ConvertInternal', 'QCBORDecode_Init', 'QCBORDecode_MantissaAndExponent', 'QCBORDecode_NestLevelAscender', 'QCBORDecode_PartialFinish', 'QCBORDecode_PeekNext', 'QCBOREncode_EncodeHead', 'QCBORItem_IsMapOrArray.isra.0', 'RewindMapOrArray', 'SearchAndEnter.constprop.0', 'StringTagMap', 'TagSpec.0', 'TagSpec.0', 'UnMapTagNumber', 'UsefulBuf_Compare', 'UsefulBuf_CopyOffset', 'UsefulInputBuf_BytesUnconsumed', 'UsefulInputBuf_GetBytes']]
-[5784, ['mbedtls_psa_crypto_free', 'mbedtls_psa_ecdsa_verify_hash', 'mbedtls_psa_ecp_export_key', 'mbedtls_psa_ecp_import_key', 'mbedtls_psa_ecp_load_representation', 'mbedtls_psa_hash_abort', 'mbedtls_psa_hash_compute', 'mbedtls_psa_hash_finish', 'mbedtls_psa_hash_setup', 'mbedtls_psa_hash_update', 'mbedtls_psa_random_state', 'psa_allocate_buffer_to_slot', 'psa_crypto_init', 'psa_driver_wrapper_free', 'psa_driver_wrapper_get_key_buffer_size_from_key_data', 'psa_driver_wrapper_hash_abort', 'psa_driver_wrapper_hash_compute', 'psa_driver_wrapper_hash_finish', 'psa_driver_wrapper_hash_setup', 'psa_driver_wrapper_hash_update', 'psa_driver_wrapper_import_key', 'psa_driver_wrapper_init', 'psa_driver_wrapper_verify_hash', 'psa_driver_wrapper_verify_message', 'psa_get_and_lock_key_slot', 'psa_get_and_lock_key_slot_in_memory', 'psa_get_and_lock_key_slot_with_policy', 'psa_get_empty_key_slot', 'psa_hash_abort', 'psa_hash_finish', 'psa_hash_setup', 'psa_hash_update', 'psa_import_key', 'psa_import_key_into_slot', 'psa_initialize_key_slots', 'psa_is_valid_key_id', 'psa_key_algorithm_permits', 'psa_mac_key_can_do', 'psa_remove_key_data_from_memory', 'psa_set_key_domain_parameters', 'psa_sign_verify_check_alg', 'psa_start_key_creation.constprop.0', 'psa_status_to_t_cose_error_hash', 'psa_status_to_t_cose_error_signing', 'psa_unlock_key_slot', 'psa_validate_key_location', 'psa_validate_key_persistence', 'psa_validate_unstructured_key_bit_size', 'psa_verify_hash', 'psa_verify_hash_builtin', 'psa_verify_internal', 'psa_verify_message_builtin', 'psa_wipe_all_key_slots', 'psa_wipe_key_slot']]
-[25682, ['ecdsa_verify_restartable.constprop.0', 'ecp_add_mixed', 'ecp_double_jac', 'ecp_mul_restartable_internal.isra.0', 'ecp_normalize_jac', 'ecp_normalize_jac_many', 'ecp_randomize_jac', 'ecp_safe_invert_jac', 'ecp_select_comb', 'entropy_gather_internal.part.0', 'entropy_update', 'hmac_drbg_reseed_core', 'mbedtls_ct_mpi_uint_cond_assign', 'mbedtls_ct_mpi_uint_lt', 'mbedtls_ecc_group_of_psa', 'mbedtls_ecdsa_verify', 'mbedtls_ecp_check_privkey', 'mbedtls_ecp_check_pubkey', 'mbedtls_ecp_copy', 'mbedtls_ecp_get_type', 'mbedtls_ecp_group_free', 'mbedtls_ecp_group_init', 'mbedtls_ecp_group_load', 'mbedtls_ecp_is_zero', 'mbedtls_ecp_keypair_free', 'mbedtls_ecp_keypair_init', 'mbedtls_ecp_mul', 'mbedtls_ecp_mul_restartable', 'mbedtls_ecp_mul_shortcuts.isra.0', 'mbedtls_ecp_muladd_restartable', 'mbedtls_ecp_point_free', 'mbedtls_ecp_point_free.part.0', 'mbedtls_ecp_point_init', 'mbedtls_ecp_point_read_binary', 'mbedtls_ecp_point_write_binary', 'mbedtls_ecp_read_key', 'mbedtls_ecp_set_zero', 'mbedtls_ecp_write_key', 'mbedtls_entropy_add_source', 'mbedtls_entropy_free', 'mbedtls_entropy_func', 'mbedtls_entropy_init', 'mbedtls_hmac_drbg_free', 'mbedtls_hmac_drbg_init', 'mbedtls_hmac_drbg_random', 'mbedtls_hmac_drbg_random_with_add', 'mbedtls_hmac_drbg_reseed', 'mbedtls_hmac_drbg_seed', 'mbedtls_hmac_drbg_update', 'mbedtls_internal_sha256_process', 'mbedtls_md_finish', 'mbedtls_md_free', 'mbedtls_md_get_size', 'mbedtls_md_hmac_finish', 'mbedtls_md_hmac_reset', 'mbedtls_md_hmac_starts', 'mbedtls_md_hmac_update', 'mbedtls_md_info_from_type', 'mbedtls_md_setup', 'mbedtls_md_starts', 'mbedtls_md_update', 'mbedtls_mpi_add_abs', 'mbedtls_mpi_add_mod', 'mbedtls_mpi_add_mod.part.0', 'mbedtls_mpi_add_mpi', 'mbedtls_mpi_bitlen', 'mbedtls_mpi_cmp_abs', 'mbedtls_mpi_cmp_int', 'mbedtls_mpi_cmp_mpi', 'mbedtls_mpi_copy', 'mbedtls_mpi_div_mpi', 'mbedtls_mpi_free', 'mbedtls_mpi_gcd', 'mbedtls_mpi_get_bit', 'mbedtls_mpi_grow', 'mbedtls_mpi_init', 'mbedtls_mpi_inv_mod', 'mbedtls_mpi_lsb', 'mbedtls_mpi_lset', 'mbedtls_mpi_lt_mpi_ct', 'mbedtls_mpi_mod_mpi', 'mbedtls_mpi_mul_int', 'mbedtls_mpi_mul_mod', 'mbedtls_mpi_mul_mpi', 'mbedtls_mpi_random', 'mbedtls_mpi_read_binary', 'mbedtls_mpi_resize_clear', 'mbedtls_mpi_safe_cond_assign', 'mbedtls_mpi_shift_l', 'mbedtls_mpi_shift_l_mod.constprop.0', 'mbedtls_mpi_shift_l_mod.part.0', 'mbedtls_mpi_shift_r', 'mbedtls_mpi_shrink', 'mbedtls_mpi_size', 'mbedtls_mpi_sub_abs', 'mbedtls_mpi_sub_int', 'mbedtls_mpi_sub_mod', 'mbedtls_mpi_sub_mpi', 'mbedtls_mpi_write_binary', 'mbedtls_platform_entropy_poll', 'mbedtls_platform_zeroize', 'mbedtls_sha224_info', 'mbedtls_sha256', 'mbedtls_sha256_finish', 'mbedtls_sha256_free', 'mbedtls_sha256_info', 'mbedtls_sha256_init', 'mbedtls_sha256_starts', 'mbedtls_sha256_update', 'mbedtls_to_psa_error', 'secp256r1_T', 'secp256r1_T_0_X', 'secp256r1_T_0_Y', 'secp256r1_T_10_X', 'secp256r1_T_10_Y', 'secp256r1_T_11_X', 'secp256r1_T_11_Y', 'secp256r1_T_12_X', 'secp256r1_T_12_Y', 'secp256r1_T_13_X', 'secp256r1_T_13_Y', 'secp256r1_T_14_X', 'secp256r1_T_14_Y', 'secp256r1_T_15_X', 'secp256r1_T_15_Y', 'secp256r1_T_1_X', 'secp256r1_T_1_Y', 'secp256r1_T_2_X', 'secp256r1_T_2_Y', 'secp256r1_T_3_X', 'secp256r1_T_3_Y', 'secp256r1_T_4_X', 'secp256r1_T_4_Y', 'secp256r1_T_5_X', 'secp256r1_T_5_Y', 'secp256r1_T_6_X', 'secp256r1_T_6_Y', 'secp256r1_T_7_X', 'secp256r1_T_7_Y', 'secp256r1_T_8_X', 'secp256r1_T_8_Y', 'secp256r1_T_9_X', 'secp256r1_T_9_Y', 'secp256r1_b', 'secp256r1_gx', 'secp256r1_gy', 'secp256r1_n', 'secp256r1_p']]
-[22875, ['CSWTCH.19', 'CSWTCH.407', 'CSWTCH.408', 'CSWTCH.410', 'CSWTCH.411', 'CSWTCH.417', 'CSWTCH.418', 'CSWTCH.444', 'CSWTCH.484', 'CSWTCH.486', 'K', '_Exit', '___environ', '___errno_location', '__aio_close', '__copy_tls', '__default_stacksize', '__environ', '__errno_location', '__fdopen', '__fmodeflags', '__funcs_on_exit', '__hwcap', '__init_libc', '__init_ssp', '__init_tls', '__libc', '__libc_exit_fini', '__libc_free', '__libc_malloc_impl', '__libc_start_init', '__libc_start_main', '__lock', '__lockfile', '__lseek', '__madvise', '__malloc_alloc_meta', '__malloc_allzerop', '__malloc_context', '__malloc_lock', '__malloc_replaced', '__malloc_size_classes', '__mmap', '__mprotect', '__munmap', '__ofl_add', '__ofl_lock', '__ofl_unlock', '__progname', '__progname_full', '__stack_chk_fail', '__stack_chk_fail_local', '__stack_chk_guard', '__stderr_used', '__stdin_used', '__stdio_close', '__stdio_exit', '__stdio_exit_needed', '__stdio_read', '__stdio_seek', '__stdio_write', '__stdout_used', '__strchrnul', '__syscall_ret', '__sysinfo', '__thread_list_lock', '__toread', '__udivti3', '__unlist_locked_file', '__unlock', '__unlockfile', '__vm_wait', '_environ', '_start_c', 'aIterate.0', 'aIterate.0', 'alloc_slot', 'builtin_tls', 'calloc', 'check_critical_labels', 'close_file', 'completed.0', 'debruijn32.0', 'default_malloc', 'derive_mpi', 'dummy', 'dummy', 'dummy', 'dummy', 'dummy', 'dummy_file', 'environ', 'exit', 'fclose', 'fdopen', 'fflush', 'fflush_unlocked', 'fopen', 'fopen64', 'fread', 'fread_unlocked', 'free', 'get_meta', 'global_data', 'global_data', 'libc_exit_fini', 'libc_start_init', 'libc_start_main_stage2', 'llround', 'lroundf', 'lseek', 'lseek64', 'madvise', 'malloc', 'med_cnt_tab', 'memcmp', 'memset_func', 'mmap', 'mmap64', 'mpi_bigendian_to_host.part.0', 'mpi_fill_random_internal', 'mpi_mul_hlp', 'mpi_one', 'mprotect', 'munmap', 'nontrivial_free', 'ofl_head', 'ofl_lock', 'program_invocation_name', 'program_invocation_short_name', 'round', 'roundf', 'small_cnt_tab', 'static_init_tls', 'strchr', 'strchrnul', 'strlen']]
-calculated other: 63183
-
-| TOTAL           | 112,352 |
-|-----------------|--------:|
-| SUIT Manifest 0 |     237 |
-| app             |     283 |
-| libcsuit        |   8,395 |
-| t_cose          |   2,289 |
-| QCBOR           |   6,499 |
-| psa             |   5,784 |
-| mbedtls         |  25,682 |
-| other           |  63,183 |
-
-# libcsuit minimize
--rwxr-xr-x 1 root root 112352 Jul  4 13:25 bin/suit_manifest_process
-exit: 0
-
-# mbedtls minimize
--rwxr-xr-x 1 root root 126064 Jul  4 13:25 bin/suit_manifest_process
-exit: 0
-
-# t_cose minimize
--rwxr-xr-x 1 root root 372616 Jul  4 13:25 bin/suit_manifest_process
-exit: 0
-
-# compiler optimize
--rwxr-xr-x 1 root root 373544 Jul  4 13:25 bin/suit_manifest_process
-exit: 0
-
 # default
--rwxr-xr-x 1 root root 642384 Jul  4 13:26 bin/suit_manifest_process
-exit: 0
-
-github.com/AlDanial/cloc v 1.97  T=0.07 s (286.3 files/s, 169390.6 lines/s)
+|                 | default |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 308 |
+| libcsuit | 27282 |
+| t_cose | 4651 |
+| QCBOR | 16837 |
+| psa | 45146 |
+| mbedtls | 282576 |
+| other | 265347 |
+| TOTAL | 642384 |
+# +optimize compiler
+|                 | +optimize compiler |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 292 |
+| libcsuit | 18877 |
+| t_cose | 2781 |
+| QCBOR | 7451 |
+| psa | 9654 |
+| mbedtls | 170754 |
+| other | 163498 |
+| TOTAL | 373544 |
+# +minimize t_cose
+|                 | +minimize t_cose |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 292 |
+| libcsuit | 18877 |
+| t_cose | 2313 |
+| QCBOR | 6702 |
+| psa | 9654 |
+| mbedtls | 170754 |
+| other | 163787 |
+| TOTAL | 372616 |
+# +minimize mbedtls
+|                 | +minimize mbedtls |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 292 |
+| libcsuit | 18866 |
+| t_cose | 2289 |
+| QCBOR | 6702 |
+| psa | 5784 |
+| mbedtls | 25682 |
+| other | 66212 |
+| TOTAL | 126064 |
+# +minimize libcsuit
+|                 | +minimize libcsuit |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 283 |
+| libcsuit | 8395 |
+| t_cose | 2289 |
+| QCBOR | 6499 |
+| psa | 5784 |
+| mbedtls | 25682 |
+| other | 63183 |
+| TOTAL | 112352 |
+github.com/AlDanial/cloc v 1.97  T=0.03 s (734.3 files/s, 434550.6 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------

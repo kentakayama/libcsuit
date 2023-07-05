@@ -19,9 +19,13 @@ RUN git clone --depth 1 https://github.com/laurencelundblade/t_cose.git /root/t_
 WORKDIR /root/t_cose
 RUN make -f Makefile.psa libt_cose.a install
 
-COPY . /root/libcsuit
-RUN cp /root/libcsuit/misc/config/max_config.h /root/libcsuit/inc/csuit/config.h
 WORKDIR /root/libcsuit
+COPY src /root/libcsuit/src/
+COPY inc /root/libcsuit/inc/
+COPY examples /root/libcsuit/examples/
+COPY ["Makefile", "Makefile.min_process", "/root/libcsuit/"]
+COPY misc/config/max_config.h /root/libcsuit/inc/csuit/config.h
+RUN mkdir -p ./bin
 
 RUN make MBEDTLS=1 install
 RUN make -f Makefile.min_process MBEDTLS=1
