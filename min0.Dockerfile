@@ -1,5 +1,6 @@
 # Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 # SPDX-License-Identifier: BSD-2-Clause
+# libcsuit minimize
 FROM debian:latest
 
 RUN apt-get update
@@ -28,6 +29,4 @@ RUN make MBEDTLS=1 install
 RUN make -f Makefile.min_process CFLAGS="-Os -fdata-sections -ffunction-sections" LDFLAGS="-Wl,--gc-sections" MBEDTLS=1
 
 CMD nm -S bin/suit_manifest_process > min_nm.txt && \
-    python3 misc/analyze_size.py && \
-    ls -la bin/suit_manifest_process && \
-    ./bin/suit_manifest_process; echo "exit: $?"
+    python3 misc/analyze_size.py
