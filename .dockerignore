@@ -15,6 +15,7 @@ tags
 *.pdf
 *.md
 misc/*.md
+misc/calc_*.sh
 misc/calc_*.py
 misc/*.patch
 misc/*.txt
