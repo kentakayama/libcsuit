@@ -40,12 +40,19 @@ print(df)
 df.to_csv(script_path + "/table_size.csv")
 
 plt.figure()
-df = df.rename(columns = {"+optimize compiler": "+opt compiler", "+minimize t_cose": "+min t_cose", "+minimize mbedtls": "+min mbedtls", "+minimize libcsuit": "+min libcsuit"})
-df = df["SUIT Manifest 0":"other"].transpose()
-df.plot.bar(stacked=True)
+ndf = df.rename(columns = {"+optimize compiler": "+opt compiler", "+minimize t_cose": "+min t_cose", "+minimize mbedtls": "+min mbedtls", "+minimize libcsuit": "+min libcsuit"})
+
+tmp = [ndf[column]["TOTAL"] for column in ndf.columns.values]
+
+ndf = ndf["SUIT Manifest 0":"other"].transpose()
+ndf.plot.bar(stacked=True)
 plt.xlabel("Size Optimizations", fontsize=12)
 plt.xticks(rotation = 0)
+plt.ylim([0, 700000])
 plt.yticks(plt.yticks()[0], ["{:,}".format(int(i)) for i in plt.yticks()[0]])
+
+for i in range(len(tmp)):
+    plt.text(i, tmp[i] + 2000, f"{tmp[i]:,}", ha='center', va='bottom')
 
 plt.savefig(script_path + "/bar_size.png")
 plt.close("all")
