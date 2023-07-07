@@ -14,8 +14,8 @@ docker build 1
 | QCBOR | 16837 |
 | psa | 45146 |
 | mbedtls | 282576 |
-| other | 265347 |
-| TOTAL | 642384 |
+| other | 153099 |
+| TOTAL | 530136 |
 # +optimize compiler
 |                 | +optimize compiler |
 |-----------------|--------:|
@@ -26,8 +26,8 @@ docker build 1
 | QCBOR | 7451 |
 | psa | 9654 |
 | mbedtls | 170754 |
-| other | 163498 |
-| TOTAL | 373544 |
+| other | 86594 |
+| TOTAL | 296640 |
 # +minimize t_cose
 |                 | +minimize t_cose |
 |-----------------|--------:|
@@ -38,8 +38,8 @@ docker build 1
 | QCBOR | 6702 |
 | psa | 9654 |
 | mbedtls | 170754 |
-| other | 163787 |
-| TOTAL | 372616 |
+| other | 87811 |
+| TOTAL | 296640 |
 # +minimize mbedtls
 |                 | +minimize mbedtls |
 |-----------------|--------:|
@@ -50,8 +50,8 @@ docker build 1
 | QCBOR | 6702 |
 | psa | 5784 |
 | mbedtls | 25682 |
-| other | 66212 |
-| TOTAL | 126064 |
+| other | 39900 |
+| TOTAL | 99752 |
 # +minimize libcsuit
 |                 | +minimize libcsuit |
 |-----------------|--------:|
@@ -62,9 +62,9 @@ docker build 1
 | QCBOR | 6499 |
 | psa | 5784 |
 | mbedtls | 25682 |
-| other | 63183 |
-| TOTAL | 112352 |
-github.com/AlDanial/cloc v 1.97  T=0.03 s (734.3 files/s, 434550.6 lines/s)
+| other | 38295 |
+| TOTAL | 87464 |
+github.com/AlDanial/cloc v 1.97  T=0.14 s (148.0 files/s, 87552.6 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
