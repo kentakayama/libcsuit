@@ -77,20 +77,11 @@ for line in f.read().splitlines():
             result["other"][0] += size
             result["other"][1].append(name)
 
-"""
-print(result["manifest"])
-print(result["app"])
-print(result["libcsuit"])
-print(result["t_cose"])
-print(result["QCBOR"])
-print(result["psa"])
-print(result["mbedtls"])
-print(result["other"])
-"""
-
 import os
 script_path = os.path.dirname(__file__)
-process_binary_size = os.path.getsize(script_path + "/../bin/suit_manifest_process")
+binary_path = script_path + "/../bin/suit_manifest_process"
+os.system(f"strip {binary_path}")
+process_binary_size = os.path.getsize(binary_path)
 
 other_size = process_binary_size
 other_size -= result["manifest"][0]
@@ -111,3 +102,12 @@ print( f"|-----------------|--------:|\n" \
        f"| mbedtls | {result['mbedtls'][0]} |\n" \
        f"| other | {other_size} |\n" \
        f"| TOTAL | {process_binary_size} |")
+
+#print(result["manifest"])
+#print(result["app"])
+#print(result["libcsuit"])
+#print(result["t_cose"])
+#print(result["QCBOR"])
+#print(result["psa"])
+#print(result["mbedtls"])
+#print(result["other"])
