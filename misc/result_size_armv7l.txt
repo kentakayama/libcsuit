@@ -1,0 +1,60 @@
+# default
+|                 | default |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 327 |
+| libcsuit | 23714 |
+| t_cose | 4176 |
+| QCBOR | 15738 |
+| psa | 31396 |
+| mbedtls | 194956 |
+| other | 50420 |
+| TOTAL | 320964 |
+# +optimize compiler
+|                 | +optimize compiler |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 327 |
+| libcsuit | 17150 |
+| t_cose | 2464 |
+| QCBOR | 6438 |
+| psa | 7506 |
+| mbedtls | 128796 |
+| other | 30982 |
+| TOTAL | 193900 |
+# +minimize t_cose
+|                 | +minimize t_cose |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 327 |
+| libcsuit | 17150 |
+| t_cose | 1892 |
+| QCBOR | 5732 |
+| psa | 7506 |
+| mbedtls | 128796 |
+| other | 32260 |
+| TOTAL | 193900 |
+# +minimize mbedtls
+|                 | +minimize mbedtls |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 327 |
+| libcsuit | 17150 |
+| t_cose | 1878 |
+| QCBOR | 5732 |
+| psa | 4394 |
+| mbedtls | 17860 |
+| other | 15074 |
+| TOTAL | 62652 |
+# +minimize libcsuit
+|                 | +minimize libcsuit |
+|-----------------|--------:|
+| SUIT Manifest 0 | 237 |
+| app | 291 |
+| libcsuit | 7642 |
+| t_cose | 1878 |
+| QCBOR | 5510 |
+| psa | 4394 |
+| mbedtls | 17860 |
+| other | 16648 |
+| TOTAL | 54460 |

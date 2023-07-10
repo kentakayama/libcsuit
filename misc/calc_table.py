@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import os
 import re
 import pandas as pd
@@ -7,8 +8,10 @@ import matplotlib.pylab as pylab
 
 pat = re.compile(r"\| ([a-zA-Z0-9_ ]+) \| ([a-zA-Z0-9_ +]+) \|")
 
+args = sys.argv
+arch = "unknown" if len(args) <= 1 else args[1]
 script_path = os.path.dirname(__file__)
-f = open(script_path + "/result_size.txt")
+f = open(f"{script_path}/result_size_{arch}.txt")
 
 tmp = {}
 column = "UNKNOWN"
@@ -37,22 +40,23 @@ for key in tmp.keys():
     df[key] = tmp[key]
 
 print(df)
-df.to_csv(script_path + "/table_size.csv")
+df.to_csv(f"{script_path}/table_size_{arch}.csv")
 
 plt.figure()
 ndf = df.rename(columns = {"+optimize compiler": "+opt compiler", "+minimize t_cose": "+min t_cose", "+minimize mbedtls": "+min mbedtls", "+minimize libcsuit": "+min libcsuit"})
 
 tmp = [ndf[column]["TOTAL"] for column in ndf.columns.values]
+max_total = max(tmp)
 
 ndf = ndf["SUIT Manifest 0":"other"].transpose()
 ndf.plot.bar(stacked=True)
-plt.xlabel("Size Optimizations", fontsize=12)
+plt.xlabel(f"Size Optimizations ({arch})", fontsize=12)
 plt.xticks(rotation = 0)
-plt.ylim([0, 600000])
+plt.ylim([0, (max_total // 100000 + 1) * 100000])
 plt.yticks(plt.yticks()[0], ["{:,}".format(int(i)) for i in plt.yticks()[0]])
 
 for i in range(len(tmp)):
     plt.text(i, tmp[i] + 2000, f"{tmp[i]:,}", ha='center', va='bottom')
 
-plt.savefig(script_path + "/bar_size.png")
+plt.savefig(f"{script_path}/bar_size_{arch}.png")
 plt.close("all")
