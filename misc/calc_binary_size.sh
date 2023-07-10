@@ -10,7 +10,7 @@ case "${ARCH}" in
     ;;
 esac
 
-SEQ="5 4 3 2 1"
+SEQ="5 4 2 1"
 for N in ${SEQ}; do
   echo "docker build ${N}"
   sudo docker build -f ./misc/dockerfile/min${N}.Dockerfile -t libcsuit_min${N} --build-arg FROM_IMAGE=$FROM_IMAGE . > /dev/null
