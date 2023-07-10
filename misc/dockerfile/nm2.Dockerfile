@@ -1,6 +1,6 @@
 # Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 # SPDX-License-Identifier: BSD-2-Clause
-# +minimize mbedtls
+# +minimize t_cose&mbedtls
 FROM libcsuit_min2:latest
 
 WORKDIR /root/libcsuit

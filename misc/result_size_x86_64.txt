@@ -22,8 +22,8 @@
 | mbedtls | 170754 |
 | other | 86594 |
 | TOTAL | 296640 |
-# +minimize mbedtls
-|                 | +minimize mbedtls |
+# +minimize t_cose&mbedtls
+|                 | +minimize t_cose&mbedtls |
 |-----------------|--------:|
 | SUIT Manifest 0 | 237 |
 | app | 292 |

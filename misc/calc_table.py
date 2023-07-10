@@ -4,9 +4,8 @@ import os
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.pylab as pylab
 
-pat = re.compile(r"\| ([a-zA-Z0-9_ ]+) \| ([a-zA-Z0-9_ +]+) \|")
+pat = re.compile(r"\| ([a-zA-Z0-9_ ]+) \| ([a-zA-Z0-9_ +&]+) \|")
 
 args = sys.argv
 arch = "unknown" if len(args) <= 1 else args[1]
@@ -42,12 +41,12 @@ for key in tmp.keys():
 print(df)
 df.to_csv(f"{script_path}/table_size_{arch}.csv")
 
-plt.figure()
-ndf = df.rename(columns = {"+optimize compiler": "+opt compiler", "+minimize t_cose": "+min t_cose", "+minimize mbedtls": "+min mbedtls", "+minimize libcsuit": "+min libcsuit"})
+ndf = df.rename(columns = {"+optimize compiler": "+opt compiler", "+minimize t_cose": "+min t_cose", "+minimize mbedtls": "+min mbedtls", "+minimize t_cose&mbedtls": "+min t_cose&mbedtls", "+minimize libcsuit": "+min libcsuit"})
 
 tmp = [ndf[column]["TOTAL"] for column in ndf.columns.values]
 max_total = max(tmp)
 
+plt.figure()
 ndf = ndf["SUIT Manifest 0":"other"].transpose()
 ndf.plot.bar(stacked=True)
 plt.xlabel(f"Size Optimizations ({arch})", fontsize=12)
@@ -57,6 +56,8 @@ plt.yticks(plt.yticks()[0], ["{:,}".format(int(i)) for i in plt.yticks()[0]])
 
 for i in range(len(tmp)):
     plt.text(i, tmp[i] + 2000, f"{tmp[i]:,}", ha='center', va='bottom')
+
+plt.gcf().set_size_inches(7.2, 4.8)
 
 plt.savefig(f"{script_path}/bar_size_{arch}.png")
 plt.close("all")

@@ -1,6 +1,6 @@
 # Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 # SPDX-License-Identifier: BSD-2-Clause
-# +minimize mbedtls
+# +minimize t_cose&mbedtls
 ARG FROM_IMAGE=debian:latest
 FROM ${FROM_IMAGE}
 ARG FROM_IMAGE

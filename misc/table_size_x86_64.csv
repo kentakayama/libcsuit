@@ -1,4 +1,4 @@
-,default,+optimize compiler,+minimize mbedtls,+minimize libcsuit
+,default,+optimize compiler,+minimize t_cose&mbedtls,+minimize libcsuit
 SUIT Manifest 0,237,237,237,237
 app,308,292,292,283
 libcsuit,27282,18877,18866,8395
