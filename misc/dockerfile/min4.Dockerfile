@@ -1,7 +1,9 @@
 # Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 # SPDX-License-Identifier: BSD-2-Clause
 # +optimize compiler
-FROM debian:latest
+ARG FROM_IMAGE=debian:latest
+FROM ${FROM_IMAGE}
+ARG FROM_IMAGE
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl git musl-tools make python3
