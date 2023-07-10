@@ -22,20 +22,8 @@
 | mbedtls | 128796 |
 | other | 30982 |
 | TOTAL | 193900 |
-# +minimize t_cose
-|                 | +minimize t_cose |
-|-----------------|--------:|
-| SUIT Manifest 0 | 237 |
-| app | 327 |
-| libcsuit | 17150 |
-| t_cose | 1892 |
-| QCBOR | 5732 |
-| psa | 7506 |
-| mbedtls | 128796 |
-| other | 32260 |
-| TOTAL | 193900 |
-# +minimize mbedtls
-|                 | +minimize mbedtls |
+# +minimize t_cose&mbedtls
+|                 | +minimize t_cose&mbedtls |
 |-----------------|--------:|
 | SUIT Manifest 0 | 237 |
 | app | 327 |
