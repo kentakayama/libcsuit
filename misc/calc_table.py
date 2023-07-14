@@ -51,7 +51,7 @@ ndf = ndf["SUIT Manifest 0":"other"].transpose()
 ndf.plot.bar(stacked=True)
 plt.xlabel(f"Size Optimizations ({arch})", fontsize=12)
 plt.xticks(rotation = 0)
-plt.ylim([0, (max_total // 100000 + 1) * 100000])
+plt.ylim([0, 600000])
 plt.yticks(plt.yticks()[0], ["{:,}".format(int(i)) for i in plt.yticks()[0]])
 
 for i in range(len(tmp)):
