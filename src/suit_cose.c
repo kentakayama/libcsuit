@@ -187,7 +187,6 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
 {
     struct t_cose_encrypt_enc        enc_ctx;
     struct t_cose_recipient_enc_esdh recipient;
-    struct t_cose_info_t info;
 
     t_cose_encrypt_enc_init(&enc_ctx,
                              T_COSE_OPT_MESSAGE_TYPE_ENCRYPT,
@@ -198,19 +197,6 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
     t_cose_recipient_enc_esdh_set_key(&recipient,
                                        mechanism->rkey.cose_key,
                                        mechanism->rkid);
-    /* Set Context Info structure */
-    info.enc_alg = T_COSE_ALGORITHM_A128GCM;
-    info.sender_identity_type_id = 1;
-    info.recipient_identity_type_id = 1;
-    info.sender_identity = mechanism->kid;
-    info.recipient_identity = mechanism->rkid;
-    info.enc_ctx = &enc_ctx;
-
-    t_cose_recipient_enc_esdh_set_info(&recipient, &info);
-
-    /* Give the recipient object to the main encryption context.
-     * (Only one recipient is set here, but there could be more).
-     */
     t_cose_encrypt_add_recipient(&enc_ctx,
                                  (struct t_cose_recipient_enc *)&recipient);
 
