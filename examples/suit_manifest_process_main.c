@@ -532,7 +532,8 @@ int main(int argc, char *argv[])
 
     printf("\nmain : Read public keys.\n");
     for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
-        result = suit_set_mechanism_from_cose_key(public_keys[i], &suit_inputs->mechanisms[i]);
+        suit_inputs->mechanisms[i].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+        result = suit_set_suit_key_from_cose_key(public_keys[i], &suit_inputs->mechanisms[i].key);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
@@ -544,7 +545,8 @@ int main(int argc, char *argv[])
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys.\n");
     for (size_t j = 0; j < NUM_SECRET_KEYS; j++) {
-        result = suit_set_mechanism_from_cose_key(secret_keys[j], &suit_inputs->mechanisms[i + j]);
+        suit_inputs->mechanisms[i + j].key.cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
+        result = suit_set_suit_key_from_cose_key(secret_keys[j], &suit_inputs->mechanisms[i + j].key);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;

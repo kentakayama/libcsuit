@@ -35,7 +35,8 @@ int main(int argc,
     char *manifest_file = argv[1];
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
 
-    result = suit_set_mechanism_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanisms[0]);
+    mechanisms[0].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+    result = suit_set_suit_key_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
