@@ -372,7 +372,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     const char *group_name;
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_ES256:
-    case T_COSE_ALGORITHM_ESDH_ES_A128KW:
+    case T_COSE_ALGORITHM_ECDH_ES_A128KW:
         group_name = "prime256v1";
         break;
     case T_COSE_ALGORITHM_ES384:
