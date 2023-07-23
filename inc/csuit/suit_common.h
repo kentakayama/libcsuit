@@ -155,6 +155,8 @@ typedef struct suit_mechanism {
     cbor_tag_key_t cose_tag; // COSE_Sign1, COSE_Sign, COSE_Encrypt0, COSE_Encrypt, etc.
     suit_key_t key;
     UsefulBufC kid;
+    suit_key_t rkey; // receiver's key, e.g. ECDH
+    UsefulBufC rkid;
     bool use;
 } suit_mechanism_t;
 

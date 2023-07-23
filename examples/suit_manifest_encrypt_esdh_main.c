@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include "csuit/suit_manifest_print.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_a128_cose_key_secret.h"
+#include "trust_anchor_prime256v1_cose_key_private.h"
+#include "device_es256_cose_key_private.h"
 
 #define MAX_FILE_BUFFER_SIZE            2048
 
@@ -25,13 +26,21 @@ int main(int argc, char *argv[]) {
 
     // Load secret key
     suit_mechanism_t mechanism = {0};
-    result = suit_set_mechanism_from_cose_key(trust_anchor_a128_cose_key_secret, &mechanism);
+    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    result = suit_set_suit_key_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanism.key);
     if (result != SUIT_SUCCESS) {
-        printf("main : Failed to create A128KW secret key. %s(%d)\n", suit_err_to_str(result), result);
+        printf("main : Failed to create sender key. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+    mechanism.rkey.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    result = suit_set_suit_key_from_cose_key(device_es256_cose_key_private, &mechanism.rkey);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to create receiver key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
     mechanism.cose_tag = CBOR_TAG_COSE_ENCRYPT;
-    mechanism.kid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-1");
+    mechanism.kid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-2");
+    mechanism.rkid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-3");
     mechanism.use = true;
 
     // Load raw image

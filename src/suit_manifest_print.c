@@ -315,6 +315,8 @@ char* suit_wait_event_key_to_str(suit_wait_event_key_t key)
 char* suit_cose_protected_key_to_str(int64_t key)
 {
     switch (key) {
+    case -1:
+        return "ephemeral key";
     case 1:
         return "alg";
     case 2:
@@ -430,9 +432,91 @@ char* suit_cose_alg_to_str(int64_t id)
     return NULL;
 }
 
-void suit_print_cose_header_value(QCBORItem *item)
+char* suit_cose_kty_to_str(int64_t kty)
 {
-    switch (item->label.uint64) {
+    switch (kty) {
+    case 1:
+        return "OKP";
+    case 2:
+        return "EC2";
+    case 3:
+        return "RSA";
+    case 4:
+        return "Symmetric";
+    case 5:
+        return "HSS-LMS";
+    case 6:
+        return "WalnutDSA";
+    }
+    return NULL;
+}
+
+char* suit_cose_crv_to_str(int64_t crv)
+{
+    switch (crv) {
+    case 1:
+        return "P-256";
+    case 2:
+        return "P-384";
+    case 3:
+        return "P-521";
+    case 4:
+        return "X25519";
+    case 5:
+        return "X448";
+    case 6:
+        return "Ed25519";
+    case 7:
+        return "Ed448";
+    case 8:
+        return "secp256k1";
+    }
+    return NULL;
+}
+void suit_print_cose_key(QCBORDecodeContext *context,
+                         QCBORItem *item,
+                         const uint8_t indent_space,
+                         const uint8_t indent_delta)
+{
+    printf("{\n");
+    const size_t map_count = item->val.uCount;
+    for (size_t i = 0; i < map_count; i++) {
+        QCBORDecode_GetNext(context, item);
+        printf("%*s", indent_space + indent_delta, "");
+        switch (item->label.int64) {
+        case 1: /* kty */
+            printf("/ kty / 1: %ld / %s /", item->val.int64, suit_cose_kty_to_str(item->val.int64));
+            break;
+        case -1: /* crv */
+            printf("/ crv / -1: %ld / %s /", item->val.int64, suit_cose_crv_to_str(item->val.int64));
+            break;
+        case -2: /* x */
+            printf("/ x / -2: / ");
+            suit_print_hex(item->val.string.ptr, item->val.string.len);
+            break;
+        case -3: /* y */
+            printf("/ y / -3: / ");
+            suit_print_hex(item->val.string.ptr, item->val.string.len);
+            break;
+        }
+        if (i + 1 != item->val.uCount) {
+            printf(",");
+        }
+        printf("\n");
+    }
+
+    printf("%*s}", indent_space, "");
+}
+
+void suit_print_cose_header_value(QCBORDecodeContext *context,
+                                  QCBORItem *item,
+                                  const uint8_t indent_space,
+                                  const uint8_t indent_delta)
+{
+    switch (item->label.int64) {
+    case -1: /* ephemeral key */
+        suit_print_cose_key(context, item, indent_space, indent_delta);
+        break;
     case 1: /* alg */
         printf("%ld / %s /", item->val.int64, suit_cose_alg_to_str(item->val.int64));
         break;
@@ -647,7 +731,7 @@ suit_err_t suit_print_cose_header(QCBORDecodeContext *context,
             return result;
         }
         printf("\n%*s/ %s / %ld: ", indent_space + indent_delta, "", suit_cose_protected_key_to_str(item.label.int64), item.label.int64);
-        suit_print_cose_header_value(&item);
+        suit_print_cose_header_value(context, &item, indent_space + indent_delta, indent_delta);
         if (i + 1 != len) {
             printf(",");
         }

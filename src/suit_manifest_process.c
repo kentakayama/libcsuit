@@ -2255,7 +2255,7 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
                 result = SUIT_ERR_NO_MEMORY;
                 goto error;
             }
-            result = suit_set_mechanism_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k]);
+            result = suit_set_suit_key_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k].key);
             if (result != SUIT_SUCCESS) {
                 goto error;
             }
