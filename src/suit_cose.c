@@ -112,17 +112,17 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
                                                  const suit_mechanism_t *mechanism,
                                                  UsefulBufC *returned_payload)
 {
-    struct t_cose_encrypt_dec_ctx    dec_ctx;
+    struct t_cose_encrypt_dec_ctx    decrypt_context;
     struct t_cose_recipient_dec_esdh dec_recipient;
     struct t_cose_parameter         *params;
 
-    t_cose_encrypt_dec_init(&dec_ctx, 0); 
+    t_cose_encrypt_dec_init(&decrypt_context, 0); 
     t_cose_recipient_dec_esdh_init(&dec_recipient);
-    t_cose_recipient_dec_esdh_set_key(&dec_recipient, mechanism->rkey.cose_key, NULL_Q_USEFUL_BUF_C);
-    t_cose_encrypt_dec_add_recipient(&dec_ctx,
+    t_cose_recipient_dec_esdh_set_key(&dec_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
+    t_cose_encrypt_dec_add_recipient(&decrypt_context,
                                      (struct t_cose_recipient_dec *)&dec_recipient);
 
-    return t_cose_encrypt_dec_detached(&dec_ctx,
+    return t_cose_encrypt_dec_detached(&decrypt_context,
                                         encryption_info,
                                         NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
 					encrypted_payload,
@@ -185,10 +185,10 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
                                                  UsefulBufC *encrypted_payload,
                                                  UsefulBufC *encryption_info)
 {
-    struct t_cose_encrypt_enc        enc_ctx;
+    struct t_cose_encrypt_enc        encrypt_context;
     struct t_cose_recipient_enc_esdh recipient;
 
-    t_cose_encrypt_enc_init(&enc_ctx,
+    t_cose_encrypt_enc_init(&encrypt_context,
                              T_COSE_OPT_MESSAGE_TYPE_ENCRYPT,
                              T_COSE_ALGORITHM_A128GCM);
     t_cose_recipient_enc_esdh_init(&recipient,
@@ -197,11 +197,11 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
     t_cose_recipient_enc_esdh_set_key(&recipient,
                                        mechanism->rkey.cose_key,
                                        mechanism->rkid);
-    t_cose_encrypt_add_recipient(&enc_ctx,
+    t_cose_encrypt_add_recipient(&encrypt_context,
                                  (struct t_cose_recipient_enc *)&recipient);
 
     /* Now do the actual encryption */
-    return t_cose_encrypt_enc_detached(&enc_ctx, /* in: encryption context */
+    return t_cose_encrypt_enc_detached(&encrypt_context, /* in: encryption context */
                                plaintext_payload, /* in: payload to encrypt */
                                NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
 			       encrypted_payload_buf, /* in: buffer for encrypted binary */

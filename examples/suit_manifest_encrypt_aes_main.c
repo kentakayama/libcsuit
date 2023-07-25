@@ -76,6 +76,6 @@ int main(int argc, char *argv[]) {
         printf("\n");
         return EXIT_FAILURE;
     }
-    printf("\n main : Succeed to decrypt.\n");
+    printf("\nmain : Succeed to decrypt.\n");
     return EXIT_SUCCESS;
 }
