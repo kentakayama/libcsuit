@@ -40,8 +40,6 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     mechanism.cose_tag = CBOR_TAG_COSE_ENCRYPT;
-    mechanism.kid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-2");
-    mechanism.rkid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-3");
     mechanism.use = true;
 
     // Load raw image
