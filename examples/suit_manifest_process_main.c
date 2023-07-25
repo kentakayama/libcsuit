@@ -24,6 +24,7 @@
 #include "suit_examples_common.h"
 #include "trust_anchor_prime256v1_cose_key_public.h"
 #include "trust_anchor_a128_cose_key_secret.h"
+#include "device_es256_cose_key_private.h"
 
 const uint8_t tc_uri[] = {
     0x68, 0x74, 0x74, 0x70, 0x73, 0x3A, 0x2F, 0x2F, 0x65, 0x78,
@@ -215,8 +216,6 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
 
     if (result != SUIT_SUCCESS) {
         printf("callback : error = %s(%d)\n", suit_err_to_str(result), result);
-        printf("callback : suppress it for testing.\n\n");
-        result = SUIT_SUCCESS;
     }
     else {
         printf("callback : %s SUCCESS\n\n", suit_command_sequence_key_to_str(SUIT_DIRECTIVE_FETCH));
@@ -493,8 +492,6 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
     }
     if (result != SUIT_SUCCESS) {
         printf("callback : error = %s(%d)\n", suit_err_to_str(result), result);
-        printf("callback : suppress it for testing.\n\n");
-        result = SUIT_SUCCESS;
     }
     else {
         printf("callback : %s SUCCESS\n\n", suit_store_key_to_str(store_args.operation));
@@ -511,14 +508,18 @@ int main(int argc, char *argv[])
     }
     suit_err_t result = 0;
 
-    int i;
-    #define NUM_PUBLIC_KEYS                 1
-    UsefulBufC public_keys[NUM_PUBLIC_KEYS] = {
+    int num_key = 0;
+    #define NUM_PUBLIC_KEYS_FOR_ECDH        1
+    UsefulBufC public_keys_for_ecdh[NUM_PUBLIC_KEYS_FOR_ECDH] = {
         trust_anchor_prime256v1_cose_key_public
     };
-    #define NUM_SECRET_KEYS                 1
-    UsefulBufC secret_keys[NUM_SECRET_KEYS] = {
+    #define NUM_SECRET_KEYS_FOR_AESKW       1
+    UsefulBufC secret_keys_for_aeskw[NUM_SECRET_KEYS_FOR_AESKW] = {
         trust_anchor_a128_cose_key_secret,
+    };
+    #define NUM_PRIVATE_KEYS_FOR_ESDH       1
+    UsefulBufC private_keys_for_esdh[NUM_PRIVATE_KEYS_FOR_ESDH] = {
+        device_es256_cose_key_private
     };
 
     suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
@@ -528,33 +529,48 @@ int main(int argc, char *argv[])
     }
     suit_inputs->left_len = SUIT_MAX_DATA_SIZE;
     suit_inputs->ptr = suit_inputs->buf;
-    suit_inputs->key_len = NUM_PUBLIC_KEYS;
 
     printf("\nmain : Read public keys.\n");
-    for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
-        suit_inputs->mechanisms[i].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
-        result = suit_set_suit_key_from_cose_key(public_keys[i], &suit_inputs->mechanisms[i].key);
+    for (int i = 0; i < NUM_PUBLIC_KEYS_FOR_ECDH; i++) {
+        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+        result = suit_set_suit_key_from_cose_key(public_keys_for_ecdh[i], &suit_inputs->mechanisms[num_key].key);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
         }
-        suit_inputs->mechanisms[i].use = true;
-        suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
+        suit_inputs->mechanisms[num_key].use = true;
+        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_SIGN1;
+        num_key++;
     }
 
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
-    printf("\nmain : Read secret keys.\n");
-    for (size_t j = 0; j < NUM_SECRET_KEYS; j++) {
-        suit_inputs->mechanisms[i + j].key.cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
-        result = suit_set_suit_key_from_cose_key(secret_keys[j], &suit_inputs->mechanisms[i + j].key);
+    printf("\nmain : Read secret keys for AES-KW.\n");
+    for (size_t i = 0; i < NUM_SECRET_KEYS_FOR_AESKW; i++) {
+        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
+        result = suit_set_suit_key_from_cose_key(secret_keys_for_aeskw[i], &suit_inputs->mechanisms[num_key].key);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
         }
-        suit_inputs->mechanisms[i + j].use = true;
-        suit_inputs->mechanisms[i + j].cose_tag = CBOR_TAG_COSE_ENCRYPT;
+        suit_inputs->mechanisms[num_key].use = true;
+        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_ENCRYPT;
+        num_key++;
+    }
+    printf("\nmain : Load private keys for ES-ECDH.\n");
+    for (size_t i = 0; i < NUM_PRIVATE_KEYS_FOR_ESDH; i++) {
+        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+        result = suit_set_suit_key_from_cose_key(private_keys_for_esdh[i], &suit_inputs->mechanisms[num_key].key);
+        if (result != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
+            return EXIT_FAILURE;
+        }
+        suit_inputs->mechanisms[num_key].use = true;
+        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_ENCRYPT;
+        num_key++;
     }
 #endif
+
+    suit_inputs->key_len = num_key;
 
     // Read manifest file.
     printf("\nmain : Read Manifest file.\n");
@@ -569,6 +585,7 @@ int main(int argc, char *argv[])
     // Process manifest file.
     printf("\nmain : Process Manifest file.\n");
     suit_inputs->process_flags.all = UINT16_MAX;
+    suit_inputs->process_flags.uninstall = 0;
     result = suit_process_envelope(suit_inputs);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to install and invoke a Manifest file. %s(%d)\n", suit_err_to_str(result), result);
