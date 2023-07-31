@@ -91,7 +91,7 @@ typedef union {
 #endif
 
 #ifndef SUIT_MAX_KEY_NUM
-#define SUIT_MAX_KEY_NUM                4 /* must be <=64 */
+#define SUIT_MAX_KEY_NUM                6 /* must be <=64 */
 #endif
 
 #ifndef SUIT_MAX_NAME_LENGTH

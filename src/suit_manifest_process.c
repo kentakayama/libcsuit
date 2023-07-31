@@ -939,7 +939,7 @@ suit_err_t suit_process_write(const suit_extracted_t *extracted,
             if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
                 store.encryption_info = parameters[tmp_index].encryption_info;
                 memcpy(store.mechanisms, suit_inputs->mechanisms, sizeof(store.mechanisms));
-                if (sizeof(store.mechanisms) != sizeof(suit_mechanism_t) * 4) {
+                if (sizeof(store.mechanisms) != sizeof(suit_mechanism_t) * SUIT_MAX_KEY_NUM) {
                     return SUIT_ERR_FATAL;
                 }
             }
@@ -2255,11 +2255,30 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
                 result = SUIT_ERR_NO_MEMORY;
                 goto error;
             }
+            suit_inputs->mechanisms[k].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
             result = suit_set_suit_key_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k].key);
             if (result != SUIT_SUCCESS) {
                 goto error;
             }
             suit_inputs->mechanisms[k].cose_tag = CBOR_TAG_COSE_SIGN1;
+            suit_inputs->mechanisms[k].use = true;
+
+            // search empty slot
+            for (k; k < SUIT_MAX_KEY_NUM; k++) {
+                if (!suit_inputs->mechanisms[k].use) {
+                    break;
+                }
+            }
+            if (k == SUIT_MAX_KEY_NUM) {
+                result = SUIT_ERR_NO_MEMORY;
+                goto error;
+            }
+            suit_inputs->mechanisms[k].key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+            result = suit_set_suit_key_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k].key);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+            suit_inputs->mechanisms[k].cose_tag = CBOR_TAG_COSE_ENCRYPT;
             suit_inputs->mechanisms[k].use = true;
         }
         QCBORDecode_ExitArray(context);

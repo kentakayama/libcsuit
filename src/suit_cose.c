@@ -169,7 +169,7 @@ suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
          t_cose_err = suit_decrypt_cose_encrypt_esdh(encrypted_payload, encryption_info, working_buf, mechanism, returned_payload);
     }
     else {
-	return SUIT_ERR_NOT_IMPLEMENTED;
+        return SUIT_ERR_NOT_IMPLEMENTED;
     }
 
     if (t_cose_err != T_COSE_SUCCESS) {
