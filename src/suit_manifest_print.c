@@ -2122,8 +2122,8 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     case SUIT_CONDITION_IMAGE_MATCH:
     case SUIT_CONDITION_IMAGE_NOT_MATCH:
         printf("{\n    image_size : %lu\n    image_digest : ", condition_args.expected.image_size);
-        suit_print_digest(&condition_args.expected.image_digest, 2, 2);
-        printf("\n");
+        suit_print_digest(&condition_args.expected.image_digest, 4, 2);
+        printf("\n%*s}\n", 2, "");
         break;
 
     /* must be handled in the library */
