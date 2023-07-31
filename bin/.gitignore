@@ -3,6 +3,7 @@ libcsuit.so
 suit_manifest_encode
 suit_manifest_encrypt_aes
 suit_manifest_encrypt_esdh
+suit_manifest_decrypt
 suit_manifest_parser
 suit_manifest_sign
 suit_manifest_sign_delegate
