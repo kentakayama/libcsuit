@@ -13,15 +13,14 @@
 
 int main(int argc, char *argv[]) {
     // check arguments.
-    if (argc < 3) {
-        printf("%s <raw image> <encrypted image> <encryption info>]", argv[0]);
+    if (argc < 4) {
+        printf("%s <raw image> <encrypted image> <encryption info>\n", argv[0]);
         return EXIT_FAILURE;
     }
     char *src_file = argv[1];
     char *enc_file = argv[2];
     char *encryption_info_file = argv[3];
     suit_err_t result = SUIT_SUCCESS;
-    printf("%s %s %s %s\n", argv[0], src_file, enc_file, encryption_info_file);
 
     // Load secret key
     suit_mechanism_t mechanism = {0};

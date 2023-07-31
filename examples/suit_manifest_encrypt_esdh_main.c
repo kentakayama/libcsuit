@@ -14,15 +14,14 @@
 
 int main(int argc, char *argv[]) {
     // check arguments.
-    if (argc < 3) {
-        printf("%s <raw image> <encrypted image> <encryption info>]", argv[0]);
+    if (argc < 4) {
+        printf("%s <raw image> <encrypted image> <encryption info>\n", argv[0]);
         return EXIT_FAILURE;
     }
     char *src_file = argv[1];
     char *enc_file = argv[2];
     char *encryption_info_file = argv[3];
     suit_err_t result = SUIT_SUCCESS;
-    printf("%s %s %s %s\n", argv[0], src_file, enc_file, encryption_info_file);
 
     // Load sender's private key
     suit_mechanism_t mechanism = {0};
@@ -34,6 +33,7 @@ int main(int argc, char *argv[]) {
     }
     // Load receiver's public key
     mechanism.rkey.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    mechanism.rkid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-2");
     result = suit_set_suit_key_from_cose_key(device_es256_cose_key_private, &mechanism.rkey);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create receiver key. %s(%d)\n", suit_err_to_str(result), result);
