@@ -1749,9 +1749,8 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
                                                     suit_inputs_t *suit_inputs)
 {
     suit_err_t result = SUIT_SUCCESS;
-    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM] = {0};
     for (size_t i = 0; i < SUIT_MAX_INDEX_NUM; i++) {
-        parameters[i].soft_failure = true;
+        suit_inputs->parameters[i].soft_failure = true;
     }
 
     UsefulBufC command_buf;
@@ -1785,13 +1784,13 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
         return SUIT_SUCCESS;
     }
 
-    result = suit_process_shared_sequence(extracted, parameters, suit_inputs);
+    result = suit_process_shared_sequence(extracted, suit_inputs->parameters, suit_inputs);
     if (result != SUIT_SUCCESS) {
         goto error;
     }
 
     suit_index_t suit_index = {.len = 1, .index[0] = 0};
-    result = suit_process_command_sequence_buf(extracted, command_key, parameters, command_buf, &suit_index, suit_inputs, false);
+    result = suit_process_command_sequence_buf(extracted, command_key, suit_inputs->parameters, command_buf, &suit_index, suit_inputs, false);
     if (result != SUIT_SUCCESS) {
         goto error;
     }
@@ -2245,6 +2244,7 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
                 result = SUIT_ERR_FAILED_TO_VERIFY_DELEGATION;
                 goto error;
             }
+
             // search empty slot
             for (k = 0; k < SUIT_MAX_KEY_NUM; k++) {
                 if (!suit_inputs->mechanisms[k].use) {

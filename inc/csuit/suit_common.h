@@ -1064,15 +1064,20 @@ typedef union {
 } suit_process_flag_t;
 
 typedef struct suit_inputs {
+    /* sections requested to process */
+    suit_process_flag_t process_flags;
+
     UsefulBufC manifest;
     suit_digest_t expected_manifest_digest;
-    size_t left_len;
+    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
+
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
-    suit_process_flag_t process_flags;
+
     UsefulBufC suit_nonce;
     uint8_t dependency_depth;
 
+    size_t left_len;
     uint8_t *ptr;
     uint8_t buf[];
 } suit_inputs_t;
