@@ -1,48 +1,48 @@
 # default
 |                 | default |
 |-----------------|--------:|
-| SUIT Manifest 0 | 237 |
-| app | 327 |
-| libcsuit | 23714 |
+| Example 0 | 237 |
+| app | 315 |
+| libcsuit | 33230 |
 | t_cose | 4176 |
 | QCBOR | 15738 |
 | psa | 31396 |
 | mbedtls | 194956 |
-| other | 50420 |
-| TOTAL | 320964 |
+| other | 57300 |
+| TOTAL | 337348 |
 # +optimize compiler
 |                 | +optimize compiler |
 |-----------------|--------:|
-| SUIT Manifest 0 | 237 |
-| app | 327 |
-| libcsuit | 17150 |
+| Example 0 | 237 |
+| app | 315 |
+| libcsuit | 17630 |
 | t_cose | 2464 |
 | QCBOR | 6438 |
 | psa | 7506 |
 | mbedtls | 128796 |
-| other | 30982 |
-| TOTAL | 193900 |
+| other | 38762 |
+| TOTAL | 202148 |
 # +minimize t_cose&mbedtls
 |                 | +minimize t_cose&mbedtls |
 |-----------------|--------:|
-| SUIT Manifest 0 | 237 |
-| app | 327 |
-| libcsuit | 17150 |
+| Example 0 | 237 |
+| app | 315 |
+| libcsuit | 17630 |
 | t_cose | 1878 |
 | QCBOR | 5732 |
 | psa | 4394 |
 | mbedtls | 17860 |
-| other | 15074 |
-| TOTAL | 62652 |
+| other | 31198 |
+| TOTAL | 79244 |
 # +minimize libcsuit
 |                 | +minimize libcsuit |
 |-----------------|--------:|
-| SUIT Manifest 0 | 237 |
-| app | 291 |
-| libcsuit | 7642 |
+| Example 0 | 237 |
+| app | 279 |
+| libcsuit | 5642 |
 | t_cose | 1878 |
 | QCBOR | 5510 |
 | psa | 4394 |
 | mbedtls | 17860 |
-| other | 16648 |
-| TOTAL | 54460 |
+| other | 14564 |
+| TOTAL | 50364 |
