@@ -61,9 +61,9 @@ suit_err_t suit_wait_callback(suit_wait_args_t wait_args)
 /*
  *  Public callback function to create SUIT Report. See csuit/suit_manifest_callbacks.h
  */
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
 suit_err_t suit_report_callback(suit_report_args_t report_args)
 {
     return suit_print_report(report_args);
 }
-
-
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
