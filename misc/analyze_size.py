@@ -93,7 +93,7 @@ other_size -= result["psa"][0]
 other_size -= result["mbedtls"][0]
 
 print( f"|-----------------|--------:|\n" \
-       f"| SUIT Manifest 0 | {result['manifest'][0]} |\n" \
+       f"| Example 0 | {result['manifest'][0]} |\n" \
        f"| app | {result['app'][0]} |\n" \
        f"| libcsuit | {result['libcsuit'][0]} |\n" \
        f"| t_cose | {result['t_cose'][0]} |\n" \

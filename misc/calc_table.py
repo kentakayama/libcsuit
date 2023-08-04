@@ -25,7 +25,7 @@ for line in f.read().splitlines():
             tmp[column].append(int(column_1))
 
 df = pd.DataFrame(dtype="int", index=[
-    "SUIT Manifest 0",
+    "Example 0",
     "app",
     "libcsuit",
     "t_cose",
@@ -47,7 +47,7 @@ tmp = [ndf[column]["TOTAL"] for column in ndf.columns.values]
 max_total = max(tmp)
 
 plt.figure()
-ndf = ndf["SUIT Manifest 0":"other"].transpose()
+ndf = ndf["Example 0":"other"].transpose()
 ndf.plot.bar(stacked=True)
 plt.xlabel(f"Size Optimizations ({arch})", fontsize=12)
 plt.xticks(rotation = 0)
