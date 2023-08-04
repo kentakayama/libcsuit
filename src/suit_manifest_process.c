@@ -346,6 +346,7 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
     return result;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -360,6 +361,7 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
 }
 
@@ -1594,6 +1596,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
     return result;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -1608,6 +1611,7 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
 }
 
@@ -1727,6 +1731,7 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
     return result;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -1741,6 +1746,7 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
 }
 
@@ -1798,6 +1804,7 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
     return result;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -1812,6 +1819,7 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
 }
 
@@ -1968,6 +1976,7 @@ suit_err_t suit_extract_common(QCBORDecodeContext *context,
     return result;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -1981,6 +1990,7 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
 }
 
@@ -2188,6 +2198,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
     return result;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -2201,8 +2212,8 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
-
 }
 
 #if !defined(LIBCSUIT_DISABLE_ENVELOPE_DELEGATION)
@@ -2274,6 +2285,7 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
     return SUIT_SUCCESS;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -2287,6 +2299,7 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
 }
 #endif /* !LIBCSUIT_DISABLE_ENVELOPE_DELEGATION */
@@ -2593,6 +2606,7 @@ out:
     return result;
 
 error:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
         suit_report_callback(
             (suit_report_args_t) {
@@ -2606,6 +2620,7 @@ error:
         );
         return SUIT_ERR_ABORT;
     }
+#endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;
 }
 

@@ -60,12 +60,6 @@ suit_err_t __wrap_suit_wait_callback(suit_wait_args_t wait_args)
     return SUIT_SUCCESS;
 }
 
-suit_err_t __wrap_suit_report_callback(suit_report_args_t report_args)
-{
-    (void)report_args;
-    return SUIT_SUCCESS;
-}
-
 int main(void)
 {
     suit_err_t result = SUIT_SUCCESS;

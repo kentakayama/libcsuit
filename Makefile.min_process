@@ -14,8 +14,7 @@ LDWRAP = \
 	-Xlinker --wrap=suit_store_callback \
 	-Xlinker --wrap=suit_invoke_callback \
 	-Xlinker --wrap=suit_condition_callback \
-	-Xlinker --wrap=suit_wait_callback \
-	-Xlinker --wrap=suit_report_callback
+	-Xlinker --wrap=suit_wait_callback
 
 TARGET = ./bin/suit_manifest_process
 SRCS = \
