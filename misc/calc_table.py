@@ -31,7 +31,7 @@ df = pd.DataFrame(dtype="int", index=[
     "t_cose",
     "QCBOR",
     "psa",
-    "mbedtls",
+    "Mbed TLS",
     "other",
     "TOTAL"])
 
@@ -41,10 +41,10 @@ for key in tmp.keys():
 print(df)
 df.to_csv(f"{script_path}/table_size_{arch}.csv")
 
-df.loc["mbedtls"] += df.loc["psa"]
+df.loc["Mbed TLS"] += df.loc["psa"]
 df = df.drop("psa")
 
-ndf = df.rename(columns = {"+optimize compiler": "+opt compiler", "+minimize t_cose": "+min t_cose", "+minimize mbedtls": "+min mbedtls", "+minimize t_cose&mbedtls": "+min t_cose&mbedtls", "+minimize libcsuit": "+min libcsuit"})
+ndf = df.rename(columns = {"+optimize compiler": "+opt compiler", "+minimize t_cose": "+min t_cose", "+minimize mbedtls": "+min Mbed TLS", "+minimize t_cose&mbedtls": "+min t_cose&Mbed TLS", "+minimize libcsuit": "+min libcsuit"})
 
 tmp = [ndf[column]["TOTAL"] for column in ndf.columns.values]
 max_total = max(tmp)
