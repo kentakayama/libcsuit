@@ -1,0 +1,11 @@
+./obj:
+	@if [ ! -d "$@" ]; then mkdir -p $@; fi
+
+./obj/src:
+	@if [ ! -d "$@" ]; then mkdir -p $@; fi
+
+./obj/examples:
+	@if [ ! -d "$@" ]; then mkdir -p $@; fi
+
+./bin:
+	@if [ ! -d "$@" ]; then mkdir -p $@; fi

@@ -3,6 +3,7 @@ html/
 
 # Build directory
 build/
+bin/
 
 # parser output directory
 tmp/

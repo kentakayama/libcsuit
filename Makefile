@@ -42,15 +42,17 @@ PUBLIC_INTERFACE = \
 	inc/csuit/suit_manifest_callbacks.h \
 	inc/csuit/suit_manifest_print.h
 
-OBJDIR = ./obj
-OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
-.PHONY: all so doc install uninstall test clean
-
+.PHONY: all
 all: ./bin/$(NAME).a
 
+include Makefile.common
+
+.PHONY: so
 so: ./bin/$(NAME).so
 
+.PHONY: doc
 doc:
 	doxygen Doxyfile
 
@@ -60,10 +62,7 @@ doc:
 ./bin/$(NAME).so: $(OBJS)
 	$(CC) -shared $^ $(LOCAL_CFLAGS) $(CFLAGS) -o $@
 
-./obj/src:
-	@if [ ! -d "./obj/src" ]; then mkdir -p ./obj/src; fi
-
-$(OBJDIR)/%.o: %.c | ./obj/src
+./obj/%.o: %.c | ./obj/src
 	$(CC) $(LOCAL_CFLAGS) $(CFLAGS) -o $@ -c $<
 
 ifeq ($(PREFIX),)
@@ -75,29 +74,35 @@ define install-header
 
 endef
 
+.PHONY: instal
 install: all $(PUBLIC_INTERFACE)
 	install -d $(DESTDIR)$(PREFIX)/lib/
 	install -m 644 ./bin/$(NAME).a $(DESTDIR)$(PREFIX)/lib/
 	install -d $(DESTDIR)$(PREFIX)/include/csuit
 	$(foreach header,$(PUBLIC_INTERFACE),$(call install-header,$(header),$(DESTDIR)$(PREFIX)/include/csuit))
 
+.PHONY: install_so
 install_so: ./bin/$(NAME).so
 	install -m 755 ./bin/$(NAME).so $(DESTDIR)$(PREFIX)/lib/$(NAME).so.1.0.0
 	ln -sf ./bin/$(NAME).so.1 $(DESTDIR)$(PREFIX)/lib/$(NAME).so
 	ln -sf ./bin/$(NAME).so.1.0.0 $(DESTDIR)$(PREFIX)/lib$(NAME).so.1
 
+.PHONY: uninstall
 uninstall:
 	$(RM) -d $(DESTDIR)$(PREFIX)/include/csuit/*
 	$(RM) -d $(DESTDIR)$(PREFIX)/include/csuit/
 	$(RM) $(addprefix $(DESTDIR)$(PREFIX)/lib/, \
 		$(NAME).a $(NAME).so $(NAME).so.1 $(NAME).so.1.0.0)
 
+.PHONY: build_test
 build_test: ./bin/$(NAME).a
 	$(MAKE) -C test MBEDTLS=$(MBEDTLS) CMD_INC="$(CMD_INC)" CMD_LD="$(CMD_LD)"
 
+.PHONY: test
 test: build_test
 	$(MAKE) -C test MBEDTLS=$(MBEDTLS) run
 
+.PHONY: clean
 clean:
-	$(RM) $(OBJS) ./bin/$(NAME).a ./bin/$(NAME).so
 	$(MAKE) -C test clean
+	$(RM) $(OBJS) ./bin/$(NAME).a ./bin/$(NAME).so

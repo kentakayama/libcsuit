@@ -18,34 +18,33 @@ SRCS = \
 	src/suit_manifest_encode.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_print.c
-OBJDIR = ./obj
-OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
     CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    #LDFLAGS += -lmbedtls -lmbedx509
     LDFLAGS += -lmbedcrypto
 else
     # use OpenSSL
     LDFLAGS += -lcrypto
 endif
 
-$(TARGET): $(OBJS)
-	mkdir -p ./bin
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-$(OBJDIR)/%.o: %.c
-	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
-
-.PHONY: all test clean
-
+.PHONY: all
 all: $(TARGET)
 
+$(TARGET): $(OBJS) | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+./obj/%.o: %.c | ./obj/src ./obj/examples
+	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+
+include Makefile.common
+
 OUTPUT := ./testfiles/suit_manifest_expX.cbor
+.PHONY: test
 test: all
 	$(TARGET) $(OUTPUT)
 
+.PHONY: clean
 clean:
 	$(RM) $(OBJS) $(TARGET)

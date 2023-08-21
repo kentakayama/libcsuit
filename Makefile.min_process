@@ -19,9 +19,7 @@ LDWRAP = \
 TARGET = ./bin/suit_manifest_process
 SRCS = \
 	examples/suit_manifest_process_main_min.c
-
-OBJDIR = ./obj
-OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
@@ -32,17 +30,18 @@ else
     LOCAL_LDFLAGS += -lcrypto
 endif
 
-.PHONY: all test clean
-
+.PHONY: all
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
+include Makefile.common
+
+$(TARGET): $(OBJS) | ./bin
 	$(CC) $(LDWRAP) -o $@ $^ $(LOCAL_LDFLAGS) $(LDFLAGS)
 
-$(OBJDIR)/%.o:	%.c
-	mkdir -p $(dir $@)
+./obj/%.o: %.c | ./obj/src ./obj/examples
 	$(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(CMD_LINE) -o $@ -c $<
 
+.PHONY: clean
 clean:
-	rm -f $(OBJS) $(TARGET)
+	$(RM) $(OBJS) $(TARGET)
 
