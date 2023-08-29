@@ -91,7 +91,7 @@ typedef union {
 #endif
 
 #ifndef SUIT_MAX_KEY_NUM
-#define SUIT_MAX_KEY_NUM                4 /* must be <=64 */
+#define SUIT_MAX_KEY_NUM                6 /* must be <=64 */
 #endif
 
 #ifndef SUIT_MAX_NAME_LENGTH
@@ -155,6 +155,8 @@ typedef struct suit_mechanism {
     cbor_tag_key_t cose_tag; // COSE_Sign1, COSE_Sign, COSE_Encrypt0, COSE_Encrypt, etc.
     suit_key_t key;
     UsefulBufC kid;
+    suit_key_t rkey; // receiver's key, e.g. ECDH
+    UsefulBufC rkid;
     bool use;
 } suit_mechanism_t;
 
@@ -1062,15 +1064,20 @@ typedef union {
 } suit_process_flag_t;
 
 typedef struct suit_inputs {
+    /* sections requested to process */
+    suit_process_flag_t process_flags;
+
     UsefulBufC manifest;
     suit_digest_t expected_manifest_digest;
-    size_t left_len;
+    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
+
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
-    suit_process_flag_t process_flags;
+
     UsefulBufC suit_nonce;
     uint8_t dependency_depth;
 
+    size_t left_len;
     uint8_t *ptr;
     uint8_t buf[];
 } suit_inputs_t;

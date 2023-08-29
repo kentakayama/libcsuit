@@ -1590,7 +1590,7 @@ suit_err_t suit_decode_delegation_from_item(QCBORDecodeContext *context,
             if (k == SUIT_MAX_KEY_NUM) {
                 return SUIT_ERR_NO_MEMORY;
             }
-            result = suit_set_mechanism_from_cwt_payload(cwt_payload, &mechanisms[k]);
+            result = suit_set_suit_key_from_cwt_payload(cwt_payload, &mechanisms[k].key);
             if (result != SUIT_SUCCESS) {
                 return result;
             }

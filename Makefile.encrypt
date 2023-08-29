@@ -7,9 +7,14 @@
 CFLAGS = -Wall -g
 LDFLAGS = -lt_cose -lqcbor -lm
 INC = -I ./inc -I ./examples/inc
-TARGET = ./bin/suit_manifest_encrypt
+TARGET_AES = ./bin/suit_manifest_encrypt_aes
+SRC_AES = examples/suit_manifest_encrypt_aes_main.c
+TARGET_ESDH = ./bin/suit_manifest_encrypt_esdh
+SRC_ESDH = examples/suit_manifest_encrypt_esdh_main.c
+TARGET_DECRYPT = ./bin/suit_manifest_decrypt
+SRC_DECRYPT = examples/suit_manifest_decrypt_main.c
+
 SRCS = \
-	examples/suit_manifest_encrypt_main.c \
 	examples/suit_examples_common.c \
 	src/suit_common.c \
 	src/suit_digest.c \
@@ -29,22 +34,37 @@ else
 endif
 
 .PHONY: all
-all: $(TARGET)
+all: $(TARGET_AES) $(TARGET_ESDH) $(TARGET_DECRYPT)
 
 include Makefile.common
-
-$(TARGET): $(OBJS) | ./bin
-	$(CC) -o $@ $^ $(LDFLAGS)
 
 ./obj/%.o: %.c | ./obj/src ./obj/examples
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
+$(TARGET_AES): $(OBJS) ./obj/examples/suit_manifest_encrypt_aes_main.o | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(TARGET_ESDH): $(OBJS) ./obj/examples/suit_manifest_encrypt_esdh_main.o | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(TARGET_DECRYPT): $(OBJS) ./obj/examples/suit_manifest_decrypt_main.o | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
+
 .PHONY: run
-run: all
-	$(TARGET) ./testfiles/raw_image.bin ./testfiles/encrypted_image.bin ./testfiles/encryption_info.cose
-	$(TARGET) ./testfiles/config.json ./testfiles/encrypted_config.bin ./testfiles/encryption_info_config.cose
+run: $(TARGET_AES) $(TARGET_ESDH)
+	$(TARGET_AES) ./testfiles/raw_image.bin ./testfiles/encrypted_image_aes.bin ./testfiles/encryption_info_aes.cose
+	$(TARGET_AES) ./testfiles/config.json ./testfiles/encrypted_config_aes.bin ./testfiles/encryption_info_config_aes.cose
+	$(TARGET_ESDH) ./testfiles/raw_image.bin ./testfiles/encrypted_image_esdh.bin ./testfiles/encryption_info_esdh.cose
+	$(TARGET_ESDH) ./testfiles/config.json ./testfiles/encrypted_config_esdh.bin ./testfiles/encryption_info_config_esdh.cose
+
+.PHONY: test
+test: $(TARGET_DECRYPT)
+	$(TARGET_DECRYPT) ./testfiles/raw_image.bin ./testfiles/encrypted_image_aes.bin ./testfiles/encryption_info_aes.cose
+	$(TARGET_DECRYPT) ./testfiles/config.json ./testfiles/encrypted_config_aes.bin ./testfiles/encryption_info_config_aes.cose
+	$(TARGET_DECRYPT) ./testfiles/raw_image.bin ./testfiles/encrypted_image_esdh.bin ./testfiles/encryption_info_esdh.cose
+	$(TARGET_DECRYPT) ./testfiles/config.json ./testfiles/encrypted_config_esdh.bin ./testfiles/encryption_info_config_esdh.cose
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJS) $(TARGET)
+	$(RM) $(OBJS) $(TARGET_AES) $(TARGET_ESDH)
 

@@ -366,7 +366,8 @@ void test_csuit_cose_key(void)
         .ptr = cose_key_buf,
         .len = sizeof(cose_key_buf)
     };
-    result = suit_set_mechanism_from_cose_key(cose_key, &mechanism);
+    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+    result = suit_set_suit_key_from_cose_key(cose_key, &mechanism.key);
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
     CU_ASSERT_EQUAL(mechanism.key.private_key_len, 32);
     CU_ASSERT_EQUAL(mechanism.key.public_key_len, 65);
@@ -399,7 +400,8 @@ void test_csuit_cose_key(void)
         .len = sizeof(cwt_payload_buf)
     };
 
-    result = suit_set_mechanism_from_cwt_payload(cwt_payload, &mechanism);
+    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+    result = suit_set_suit_key_from_cwt_payload(cwt_payload, &mechanism.key);
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
     CU_ASSERT_EQUAL(mechanism.key.private_key_len, 0);
     CU_ASSERT_EQUAL(mechanism.key.public_key_len, 65);

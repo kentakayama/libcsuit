@@ -4,7 +4,7 @@
  SPDX-License-Identifier: BSD-2-Clause
 -->
 
-## Example 0: Write and Decrypt Encrypted Payload
+## Example 2: Write and Decrypt ES-ECDH + AES-KW + Encrypted Payload
 {: numbered='no'}
 
 ### CBOR Diagnostic Notation of SUIT Manifest
@@ -15,7 +15,7 @@
   / authentication-wrapper / 2: << [
     << [
       / digest-algorithm-id: / -16 / SHA256 /,
-      / digest-bytes: / h'21F91D0007458DED08ED6C3D6B9A6824FE58100529DF05F5947BDD1FFF5DFBE9'
+      / digest-bytes: / h'4C56CA660A5D1414BC04C835025D52CCA9AE6101202E127329AD2465B38A1C89'
     ] >>,
     << / COSE_Sign1_Tagged / 18([
       / protected: / << {
@@ -23,7 +23,7 @@
       } >>,
       / unprotected: / {},
       / payload: / null,
-      / signature: / h'B1614992A357783A6D35D7D77807D7DA0F67E0CB5D0BDBFD592D9C45C5BDD3B6828E3A7A1101B33D558EB7C5114D057122D69455972D9937A1000E8F10DD5A2E'
+      / signature: / h'ACC8962628B78BF30DD74BDEEA9305D73BFA302D82B280A7E2FCE8331C363F279ECCABE920DA97F9074DF5B3B2AAD1709D844B8DE1D33F80FA99AC806B9778D0'
     ]) >>
   ] >>,
   / manifest / 3: << {
@@ -31,47 +31,42 @@
     / manifest-sequence-number / 2: 1,
     / common / 3: << {
       / components / 2: [
-        [h'00'] / to be decrypted firmware /,
+        ['decrypted-firmware']
       ]
     } >>,
     / install / 17: << [
-      / fetch encrypted firmware /
+      / directive-set-component-index / 12, 0 / ['plaintext-firmware'] /,
       / directive-override-parameters / 20, {
-        / parameter-content / 18: h'2B3765FF457DD98A4BA7130A40462B663C08198146D23F3A32094392CA5040C3121C8E5F4C04D5A3D1D6171BCF362B',
+        / parameter-content / 18: h'B94272BD7C7E9A144D12CF46D9CEE6318753574A6F780829B87911BE1CF2B24477BA4E7D1337541F308010088920',
         / parameter-encryption-info / 19: << 96([
           / protected: / << {
             / alg / 1: 1 / AES-GCM-128 /
           } >>,
           / unprotected: / {
-            / IV / 5: h'1DE460E8B5B68D7222C0D6F20484D8AB'
+            / IV / 5: h'3517CE3E78AC2BF3D1CDFDAF955E8600'
           },
           / payload: / null / detached ciphertext /,
           / recipients: / [
             [
               / protected: / << {
+                / alg / 1: -29 / ECDH-ES + A128KW /
               } >>,
               / unprotected: / {
-                / alg / 1: -3 / A128KW /,
-                / kid / 4: 'kid-1'
+                / ephemeral key / -1: {
+                  / kty / 1: 2 / EC2 /,
+                  / crv / -1: 1 / P-256 /,
+                  / x / -2: h'AAE9A733DEF11E9160A66BD81CC8215F045ACAC3F8490C7749D58A627323624A',
+                  / y / -3: h'08A7B88B7F00762BA0919CA065ABF45C2A303B483E86D674E50B015122F8E515'
+                },
+                / kid / 4: 'kid-2'
               },
-              / payload: / h'A86200E4754733E4C00FC08C6A72CC1996E129922EAB504F' / CEK encrypted with KEK /
+              / payload: / h'0A44E77C3DBBB0780F2DB42C64FD325D18FBE13A25A9369D'
+                / CEK encrypted with KEK /
             ]
           ]
         ]) >>
       },
-
-      / decrypt encrypted firmware /
-      / directive-write / 18, 15 / consumes the SUIT_Encryption_Info above /,
-
-      / verify decrypted firmware /
-      / directive-override-parameters / 20, {
-        / parameter-image-digest / 3: << [
-          / digest-algorithm-id: / -16 / SHA-256 /,
-          / digest-bytes: / h'efe16b6a486ff25e9fb5fabf515e2bfc3f38b405de377477b23275b53049b46b'
-        ] >>,
-        / parameter-image-size / 14: 31
-      },
-      / condition-image-match / 3, 15
+      / directive-write / 18, 15 / consumes the SUIT_Encryption_Info above /
     ] >>
   } >>
 })
@@ -82,15 +77,16 @@
 {: numbered='no'}
 
 ~~~~
-D86BA2025873825824822F582021F91D0007458DED08ED6C3D6B9A6824FE
-58100529DF05F5947BDD1FFF5DFBE9584AD28443A10126A0F65840B16149
-92A357783A6D35D7D77807D7DA0F67E0CB5D0BDBFD592D9C45C5BDD3B682
-8E3A7A1101B33D558EB7C5114D057122D69455972D9937A1000E8F10DD5A
-2E0358BBA4010102010346A102818141001158AB8814A212582F2B3765FF
-457DD98A4BA7130A40462B663C08198146D23F3A32094392CA5040C3121C
-8E5F4C04D5A3D1D6171BCF362B135843D8608443A10101A105501DE460E8
-B5B68D7222C0D6F20484D8ABF6818341A0A2012204456B69642D315818A8
-6200E4754733E4C00FC08C6A72CC1996E129922EAB504F120F14A2035824
-822F5820EFE16B6A486FF25E9FB5FABF515E2BFC3F38B405DE377477B232
-75B53049B46B0E181F030F
+D86BA2025873825824822F58204C56CA660A5D1414BC04C835025D52CCA9
+AE6101202E127329AD2465B38A1C89584AD28443A10126A0F65840ACC896
+2628B78BF30DD74BDEEA9305D73BFA302D82B280A7E2FCE8331C363F279E
+CCABE920DA97F9074DF5B3B2AAD1709D844B8DE1D33F80FA99AC806B9778
+D00358ECA4010102010357A1028181526465637279707465642D6669726D
+776172651158CB860C0014A212582EB94272BD7C7E9A144D12CF46D9CEE6
+318753574A6F780829B87911BE1CF2B24477BA4E7D1337541F3080100889
+20135890D8608443A10101A105503517CE3E78AC2BF3D1CDFDAF955E8600
+F6818344A101381CA220A401022001215820AAE9A733DEF11E9160A66BD8
+1CC8215F045ACAC3F8490C7749D58A627323624A22582008A7B88B7F0076
+2BA0919CA065ABF45C2A303B483E86D674E50B015122F8E51504456B6964
+2D3258180A44E77C3DBBB0780F2DB42C64FD325D18FBE13A25A9369D120F
 ~~~~
