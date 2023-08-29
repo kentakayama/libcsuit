@@ -7,31 +7,39 @@
 #include <stdio.h>
 #include "csuit/suit_manifest_print.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_a128_cose_key_secret.h"
+#include "trust_anchor_prime256v1_cose_key_private.h"
+#include "device_es256_cose_key_private.h"
 
 #define MAX_FILE_BUFFER_SIZE            2048
 
 int main(int argc, char *argv[]) {
     // check arguments.
-    if (argc < 3) {
-        printf("%s <raw image> <encrypted image> <encryption info>]", argv[0]);
+    if (argc < 4) {
+        printf("%s <raw image> <encrypted image> <encryption info>\n", argv[0]);
         return EXIT_FAILURE;
     }
     char *src_file = argv[1];
     char *enc_file = argv[2];
     char *encryption_info_file = argv[3];
     suit_err_t result = SUIT_SUCCESS;
-    printf("%s %s %s %s\n", argv[0], src_file, enc_file, encryption_info_file);
 
-    // Load secret key
+    // Load sender's private key
     suit_mechanism_t mechanism = {0};
-    result = suit_set_mechanism_from_cose_key(trust_anchor_a128_cose_key_secret, &mechanism);
+    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    result = suit_set_suit_key_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanism.key);
     if (result != SUIT_SUCCESS) {
-        printf("main : Failed to create A128KW secret key. %s(%d)\n", suit_err_to_str(result), result);
+        printf("main : Failed to create sender key. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+    // Load receiver's public key
+    mechanism.rkey.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    mechanism.rkid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-2");
+    result = suit_set_suit_key_from_cose_key(device_es256_cose_key_private, &mechanism.rkey);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to create receiver key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
     mechanism.cose_tag = CBOR_TAG_COSE_ENCRYPT;
-    mechanism.kid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-1");
     mechanism.use = true;
 
     // Load raw image
@@ -55,7 +63,21 @@ int main(int argc, char *argv[]) {
     write_to_file(enc_file, encrypted_payload.ptr, encrypted_payload.len);
     write_to_file(encryption_info_file, encryption_info.ptr, encryption_info.len);
 
+    suit_free_key(&mechanism.key);
+    suit_free_key(&mechanism.rkey);
+
     // Decrypt
+    // Load receiver's private key
+    mechanism = (suit_mechanism_t){0};
+    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    result = suit_set_suit_key_from_cose_key(device_es256_cose_key_private, &mechanism.key);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to create receiver key. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+    mechanism.cose_tag = CBOR_TAG_COSE_ENCRYPT;
+    mechanism.use = true;
+
     UsefulBufC plaintext_payload;
     UsefulBuf_MAKE_STACK_UB(plaintext_payload_buf, MAX_FILE_BUFFER_SIZE);
     result = suit_decrypt_cose_encrypt(encrypted_payload, encryption_info, plaintext_payload_buf, &mechanism, &plaintext_payload);
@@ -75,6 +97,8 @@ int main(int argc, char *argv[]) {
         printf("\n");
         return EXIT_FAILURE;
     }
-    printf("\n main : Succeed to decrypt.\n");
+    printf("\nmain : Succeed to decrypt.\n");
+
+    suit_free_key(&mechanism.key);
     return EXIT_SUCCESS;
 }

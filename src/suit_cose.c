@@ -106,6 +106,47 @@ suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
 }
 
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
+enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payload,
+                                                 const UsefulBufC encryption_info,
+                                                 UsefulBuf working_buf,
+                                                 const suit_mechanism_t *mechanism,
+                                                 UsefulBufC *returned_payload)
+{
+    struct t_cose_encrypt_dec_ctx    decrypt_context;
+    struct t_cose_recipient_dec_esdh dec_recipient;
+    struct t_cose_parameter         *params;
+
+    t_cose_encrypt_dec_init(&decrypt_context, 0); 
+    t_cose_recipient_dec_esdh_init(&dec_recipient);
+    t_cose_recipient_dec_esdh_set_key(&dec_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
+    t_cose_encrypt_dec_add_recipient(&decrypt_context,
+                                     (struct t_cose_recipient_dec *)&dec_recipient);
+
+    return t_cose_encrypt_dec_detached(&decrypt_context,
+                                        encryption_info,
+                                        NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
+					encrypted_payload,
+                                        working_buf,
+                                        returned_payload,
+                                        &params);
+}
+
+enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_payload,
+                                                const UsefulBufC encryption_info,
+                                                UsefulBuf working_buf,
+                                                const suit_mechanism_t *mechanism,
+                                                UsefulBufC *returned_payload)
+{
+    struct t_cose_recipient_dec_keywrap kw_unwrap_recipient;
+    struct t_cose_encrypt_dec_ctx decrypt_context;
+
+    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT);
+    t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
+    t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
+    t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
+    return t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, encrypted_payload, working_buf, returned_payload, NULL);
+}
+
 suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
                                      const UsefulBufC encryption_info,
                                      UsefulBuf working_buf,
@@ -118,30 +159,64 @@ suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
         return SUIT_ERR_FAILED_TO_DECRYPT;
     }
 
-    struct t_cose_recipient_dec_keywrap kw_unwrap_recipient;
-    struct t_cose_encrypt_dec_ctx decrypt_context;
+    enum t_cose_err_t t_cose_err;
+    if (mechanism->key.cose_algorithm_id == T_COSE_ALGORITHM_A128KW) {
+         /* AES-KW */
+         t_cose_err = suit_decrypt_cose_encrypt_aes(encrypted_payload, encryption_info, working_buf, mechanism, returned_payload);
+    }
+    else if (mechanism->key.cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+         /* ES-DH */
+         t_cose_err = suit_decrypt_cose_encrypt_esdh(encrypted_payload, encryption_info, working_buf, mechanism, returned_payload);
+    }
+    else {
+        return SUIT_ERR_NOT_IMPLEMENTED;
+    }
 
-    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT);
-    t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
-    t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
-    t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
-    UsefulBufC tmp;
-    enum t_cose_err_t err = t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, encrypted_payload, working_buf, &tmp, NULL);
-    if (err != T_COSE_SUCCESS) {
+    if (t_cose_err != T_COSE_SUCCESS) {
         return SUIT_ERR_FAILED_TO_DECRYPT;
     }
-    *returned_payload = tmp;
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
-                                     const suit_mechanism_t *mechanism,
-                                     UsefulBuf encrypted_payload_buf,
-                                     UsefulBuf encryption_info_buf,
-                                     UsefulBufC *encrypted_payload,
-                                     UsefulBufC *encryption_info)
+enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payload,
+                                                 const suit_mechanism_t *mechanism,
+                                                 UsefulBuf encrypted_payload_buf,
+                                                 UsefulBuf encryption_info_buf,
+                                                 UsefulBufC *encrypted_payload,
+                                                 UsefulBufC *encryption_info)
 {
-    enum t_cose_err_t t_cose_err;
+    struct t_cose_encrypt_enc        encrypt_context;
+    struct t_cose_recipient_enc_esdh recipient;
+
+    t_cose_encrypt_enc_init(&encrypt_context,
+                             T_COSE_OPT_MESSAGE_TYPE_ENCRYPT,
+                             T_COSE_ALGORITHM_A128GCM);
+    t_cose_recipient_enc_esdh_init(&recipient,
+                                    T_COSE_ALGORITHM_ECDH_ES_A128KW, /* content key distribution id */
+                                    T_COSE_ELLIPTIC_CURVE_P_256);    /* curve id */
+    t_cose_recipient_enc_esdh_set_key(&recipient,
+                                       mechanism->rkey.cose_key,
+                                       mechanism->rkid);
+    t_cose_encrypt_add_recipient(&encrypt_context,
+                                 (struct t_cose_recipient_enc *)&recipient);
+
+    /* Now do the actual encryption */
+    return t_cose_encrypt_enc_detached(&encrypt_context, /* in: encryption context */
+                               plaintext_payload, /* in: payload to encrypt */
+                               NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
+			       encrypted_payload_buf, /* in: buffer for encrypted binary */
+                               encryption_info_buf, /* in: buffer for COSE_Encrypt */
+			       encrypted_payload, /* out: encrypted binary */
+                               encryption_info); /* out: COSE_Encrypt */
+}
+
+enum t_cose_err_t suit_encrypt_cose_encrypt_aeskw(const UsefulBufC plaintext_payload,
+                                                  const suit_mechanism_t *mechanism,
+                                                  UsefulBuf encrypted_payload_buf,
+                                                  UsefulBuf encryption_info_buf,
+                                                  UsefulBufC *encrypted_payload,
+                                                  UsefulBufC *encryption_info)
+{
     struct t_cose_recipient_enc_keywrap kw_recipient;
     struct t_cose_encrypt_enc encrypt_context;
 
@@ -151,13 +226,40 @@ suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
     t_cose_encrypt_enc_init(&encrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT, T_COSE_ALGORITHM_A128GCM);
     t_cose_encrypt_add_recipient(&encrypt_context, (struct t_cose_recipient_enc *)&kw_recipient);
 
-    t_cose_err = t_cose_encrypt_enc_detached(&encrypt_context,
-                                             plaintext_payload,
-                                             NULL_Q_USEFUL_BUF_C,
-                                             encrypted_payload_buf,
-                                             encryption_info_buf,
-                                             encrypted_payload,
-                                             encryption_info);
+    return t_cose_encrypt_enc_detached(&encrypt_context,
+                                        plaintext_payload,
+                                        NULL_Q_USEFUL_BUF_C,
+                                        encrypted_payload_buf,
+                                        encryption_info_buf,
+                                        encrypted_payload,
+                                        encryption_info);
+}
+
+suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
+                                     const suit_mechanism_t *mechanism,
+                                     UsefulBuf encrypted_payload_buf,
+                                     UsefulBuf encryption_info_buf,
+                                     UsefulBufC *encrypted_payload,
+                                     UsefulBufC *encryption_info)
+{
+    if (!mechanism->use ||
+        (mechanism->cose_tag != CBOR_TAG_COSE_ENCRYPT0 &&
+         mechanism->cose_tag != CBOR_TAG_COSE_ENCRYPT)) {
+        return SUIT_ERR_FAILED_TO_ENCRYPT;
+    }
+
+    enum t_cose_err_t t_cose_err;
+    if (mechanism->key.cose_algorithm_id == T_COSE_ALGORITHM_A128KW) {
+        /* AES-KW */
+        t_cose_err = suit_encrypt_cose_encrypt_aeskw(plaintext_payload, mechanism, encrypted_payload_buf, encryption_info_buf, encrypted_payload, encryption_info);
+    }
+    else if (mechanism->key.cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+        /* ES-DH */
+	t_cose_err = suit_encrypt_cose_encrypt_esdh(plaintext_payload, mechanism, encrypted_payload_buf, encryption_info_buf, encrypted_payload, encryption_info);
+    }
+    else {
+	return SUIT_ERR_NOT_IMPLEMENTED;
+    }
     if (t_cose_err != T_COSE_SUCCESS) {
         return SUIT_ERR_FAILED_TO_ENCRYPT;
     }
@@ -176,6 +278,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     int hash;
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ECDH_ES_A128KW:
         nid = PSA_ECC_FAMILY_SECP_R1;
         hash = PSA_ALG_SHA_256;
         break;
@@ -197,18 +300,28 @@ suit_err_t suit_create_es_key(suit_key_t *key)
         return SUIT_ERR_FAILED_TO_VERIFY;
     }
 
-    psa_key_usage_t usage = PSA_KEY_USAGE_VERIFY_HASH | PSA_KEY_USAGE_EXPORT;
-    if (key->private_key != NULL) {
-        usage |= PSA_KEY_USAGE_SIGN_HASH;
+    psa_key_usage_t usage = 0;
+    if (key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+        /* for COSE_Encrypt0 or COSE_Encrypt */
+	usage = PSA_KEY_USAGE_DERIVE | PSA_KEY_USAGE_COPY;
+        psa_set_key_usage_flags(&key_attributes, usage);
+	psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDH);
+    }
+    else {
+        /* for COSE_Sign1 or COSE_Sign */
+        usage = PSA_KEY_USAGE_VERIFY_HASH | PSA_KEY_USAGE_EXPORT;
+        if (key->private_key != NULL) {
+            usage |= PSA_KEY_USAGE_SIGN_HASH;
+        }
+        psa_set_key_usage_flags(&key_attributes, usage);
+#if defined(LIBCSUIT_USE_DETERMINISTIC_ECDSA)
+        psa_set_key_algorithm(&key_attributes, PSA_ALG_DETERMINISTIC_ECDSA(hash));
+#else
+        psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDSA(hash));
+#endif
+
     }
 
-    psa_set_key_usage_flags(&key_attributes, usage);
-
-#if defined(LIBCSUIT_USE_DETERMINISTIC_ECDSA)
-    psa_set_key_algorithm(&key_attributes, PSA_ALG_DETERMINISTIC_ECDSA(hash));
-#else
-    psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDSA(hash));
-#endif
     if (key->private_key == NULL) {
         psa_set_key_type(&key_attributes, PSA_KEY_TYPE_ECC_PUBLIC_KEY(nid));
         result = psa_import_key(&key_attributes,
@@ -259,6 +372,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     const char *group_name;
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ECDH_ES_A128KW:
         group_name = "prime256v1";
         break;
     case T_COSE_ALGORITHM_ES384:
@@ -328,6 +442,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     const char *group_name;
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ECDH_ES_A128KW:
         group_name = "prime256v1";
         break;
     case T_COSE_ALGORITHM_ES384:
@@ -386,6 +501,18 @@ err:
 #endif /* OPENSSL_VERSION_NUMBER */
 #endif /* LIBCSUIT_PSA_CRYPTO_C */
 
+suit_err_t suit_key_init_ecdh_p256_key_pair(const unsigned char *private_key,
+                                            const unsigned char *public_key,
+                                            suit_key_t *cose_key_pair)
+{
+    cose_key_pair->private_key = private_key;
+    cose_key_pair->private_key_len = PRIME256V1_PRIVATE_KEY_LENGTH;
+    cose_key_pair->public_key = public_key;
+    cose_key_pair->public_key_len = PRIME256V1_PUBLIC_KEY_LENGTH;
+    cose_key_pair->cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    return suit_create_es_key(cose_key_pair);
+}
+
 suit_err_t suit_key_init_es256_key_pair(const unsigned char *private_key,
                                         const unsigned char *public_key,
                                         suit_key_t *cose_key_pair)
@@ -421,6 +548,18 @@ suit_err_t suit_key_init_es521_key_pair(const unsigned char *private_key,
     cose_key_pair->cose_algorithm_id = T_COSE_ALGORITHM_ES512;
     return suit_create_es_key(cose_key_pair);
 }
+
+suit_err_t suit_key_init_ecdh_p256_public_key(const unsigned char *public_key,
+                                              suit_key_t *cose_public_key)
+{
+    cose_public_key->private_key = NULL;
+    cose_public_key->private_key_len = 0;
+    cose_public_key->public_key = public_key;
+    cose_public_key->public_key_len = PRIME256V1_PUBLIC_KEY_LENGTH;
+    cose_public_key->cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+    return suit_create_es_key(cose_public_key);
+}
+
 
 suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key,
                                           suit_key_t *cose_public_key)
@@ -492,9 +631,9 @@ suit_err_t suit_free_key(const suit_key_t *key)
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *context,
-                                                      QCBORItem *item,
-                                                      suit_mechanism_t *mechanism)
+suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context,
+                                                     QCBORItem *item,
+                                                     suit_key_t *suit_key)
 {
     suit_err_t result;
     QCBORError error;
@@ -617,11 +756,27 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
             }
             if (key_params.d.len == PRIME256V1_PRIVATE_KEY_LENGTH) {
                 // TODO: can we limit EC P-256 for ES256?
-                result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, &mechanism->key);
+		if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+		    result = suit_key_init_ecdh_p256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+		}
+		else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                    result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+		}
+		else {
+	            result = SUIT_ERR_NOT_IMPLEMENTED;
+		}
             }
             else if (key_params.d.len == 0) {
                 // TODO: can we limit EC P-256 for ES256?
-                result = suit_key_init_es256_public_key(public_key.ptr, &mechanism->key);
+	        if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+		    result = suit_key_init_ecdh_p256_public_key(public_key.ptr, suit_key);
+		}
+		else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                    result = suit_key_init_es256_public_key(public_key.ptr, suit_key);
+		}
+		else {
+		    result = SUIT_ERR_NOT_IMPLEMENTED;
+		}
             }
             else {
                 return SUIT_ERR_INVALID_VALUE;
@@ -639,7 +794,7 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
 #if !defined(LIBCSUIT_DISABLE_ENCRYPTION)
     case SUIT_COSE_KTY_SYMMETRIC:
         if (key_params.k.len == 16) {
-            result = suit_key_init_a128kw_secret_key(key_params.k.ptr, &mechanism->key);
+            result = suit_key_init_a128kw_secret_key(key_params.k.ptr, suit_key);
         }
         break; /* SUIT_COSE_KTY_SYMMETRIC */
 #endif /* LIBCSUIT_DISABLE_ENCRYPTION */
@@ -654,14 +809,14 @@ suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *contex
     return result;
 }
 
-suit_err_t suit_set_mechanism_from_cose_key(UsefulBufC buf,
-                                            suit_mechanism_t *mechanism)
+suit_err_t suit_set_suit_key_from_cose_key(UsefulBufC cose_key,
+                                           suit_key_t *suit_key)
 {
     QCBORDecodeContext decode_context;
     QCBORItem item;
-    QCBORDecode_Init(&decode_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    QCBORDecode_Init(&decode_context, cose_key, QCBOR_DECODE_MODE_NORMAL);
     QCBORDecode_PeekNext(&decode_context, &item);
-    suit_err_t result = suit_set_mechanism_from_cose_key_from_item(&decode_context, &item, mechanism);
+    suit_err_t result = suit_set_suit_key_from_cose_key_from_item(&decode_context, &item, suit_key);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -672,8 +827,8 @@ suit_err_t suit_set_mechanism_from_cose_key(UsefulBufC buf,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_set_mechanism_from_cwt_payload(UsefulBufC cwt_payload,
-                                               suit_mechanism_t *mechanism)
+suit_err_t suit_set_suit_key_from_cwt_payload(UsefulBufC cwt_payload,
+                                              suit_key_t *suit_key)
 {
     suit_err_t result;
     QCBORDecodeContext context;
@@ -709,7 +864,8 @@ suit_err_t suit_set_mechanism_from_cwt_payload(UsefulBufC cwt_payload,
 
                 switch (item.label.int64) {
                 case SUIT_COSE_COSE_KEY:
-                    result = suit_set_mechanism_from_cose_key_from_item(&context, &item, mechanism);
+                    suit_key->cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+                    result = suit_set_suit_key_from_cose_key_from_item(&context, &item, suit_key);
                     if (result != SUIT_SUCCESS) {
                         return result;
                     }

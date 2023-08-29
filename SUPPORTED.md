@@ -26,7 +26,7 @@ Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
 decode |  |  |  | :green_square::green_square::green_square::red_square: | 
 encode |  |  |  | :green_square::green_square::green_square::red_square: | 
-process |  |  |  | :green_square::red_square::red_square::red_square: | 
+process |  |  |  | :green_square::green_square::red_square::red_square: | 
 ### SUIT MUD
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -159,7 +159,7 @@ Soft Failure | 13 | suit-parameter-soft-failure | SUIT Manifest | N/M | RWX
 Image Size | 14 | suit-parameter-image-size | SUIT Manifest | N/M | RWX
 Content | 18 | suit-parameter-content | SUIT Manifest | N/M | RWX
 Encryption Info (AES-KW) | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
-Encryption Info (ECDH)   | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RW-
+Encryption Info (ECDH)   | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
 Encryption Info (HPKE)   | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RW-
 CEK Verification | 20 | suit-parameter-cek-verification | SUIT Encrypted Payload | N/M | ---
 URI | 21 | suit-parameter-uri | SUIT Manifest | N/M | RWX

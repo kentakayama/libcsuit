@@ -24,7 +24,8 @@ int main(int argc, char *argv[]) {
 
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
     UsefulBufC private_key = trust_anchor_prime256v1_cose_key_private;
-    suit_err_t result = suit_set_mechanism_from_cose_key(private_key, &mechanisms[0]);
+    mechanisms[0].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+    suit_err_t result = suit_set_suit_key_from_cose_key(private_key, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create ES256 key pair. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;

@@ -79,7 +79,8 @@ int main(void)
     suit_inputs->key_len = NUM_PUBLIC_KEYS;
 
     for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
-        result = suit_set_mechanism_from_cose_key(public_keys[i], &suit_inputs->mechanisms[i]);
+        suit_inputs->mechanisms[i].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+        result = suit_set_suit_key_from_cose_key(public_keys[i], &suit_inputs->mechanisms[i].key);
         if (result != SUIT_SUCCESS) {
             return EXIT_FAILURE;
         }

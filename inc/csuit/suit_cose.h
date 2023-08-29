@@ -27,6 +27,8 @@
 #include "t_cose/t_cose_encrypt_dec.h"
 #include "t_cose/t_cose_recipient_enc_keywrap.h"
 #include "t_cose/t_cose_recipient_dec_keywrap.h"
+#include "t_cose/t_cose_recipient_enc_esdh.h"
+#include "t_cose/t_cose_recipient_dec_esdh.h"
 #endif /* !LIBCSUIT_DISABLE_ENCRYPTION */
 
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
@@ -222,13 +224,13 @@ suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key, suit
 
 suit_err_t suit_free_key(const suit_key_t *key);
 
-suit_err_t suit_set_mechanism_from_cose_key_from_item(QCBORDecodeContext *context,
-                                                      QCBORItem *item,
-                                                      suit_mechanism_t *mechanism);
-suit_err_t suit_set_mechanism_from_cose_key(UsefulBufC buf,
-                                            suit_mechanism_t *mechanism);
-suit_err_t suit_set_mechanism_from_cwt_payload(UsefulBufC payload,
-                                               suit_mechanism_t *mechanism);
+suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context,
+                                                     QCBORItem *item,
+                                                     suit_key_t *suit_key);
+suit_err_t suit_set_suit_key_from_cose_key(UsefulBufC cose_key,
+                                           suit_key_t *suit_key);
+suit_err_t suit_set_suit_key_from_cwt_payload(UsefulBufC payload,
+                                              suit_key_t *suit_key);
 
 #ifdef __cplusplus
 }

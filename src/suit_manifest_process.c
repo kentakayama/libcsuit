@@ -941,7 +941,7 @@ suit_err_t suit_process_write(const suit_extracted_t *extracted,
             if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
                 store.encryption_info = parameters[tmp_index].encryption_info;
                 memcpy(store.mechanisms, suit_inputs->mechanisms, sizeof(store.mechanisms));
-                if (sizeof(store.mechanisms) != sizeof(suit_mechanism_t) * 4) {
+                if (sizeof(store.mechanisms) != sizeof(suit_mechanism_t) * SUIT_MAX_KEY_NUM) {
                     return SUIT_ERR_FATAL;
                 }
             }
@@ -1755,9 +1755,8 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
                                                     suit_inputs_t *suit_inputs)
 {
     suit_err_t result = SUIT_SUCCESS;
-    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM] = {0};
     for (size_t i = 0; i < SUIT_MAX_INDEX_NUM; i++) {
-        parameters[i].soft_failure = true;
+        suit_inputs->parameters[i].soft_failure = true;
     }
 
     UsefulBufC command_buf;
@@ -1791,13 +1790,13 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
         return SUIT_SUCCESS;
     }
 
-    result = suit_process_shared_sequence(extracted, parameters, suit_inputs);
+    result = suit_process_shared_sequence(extracted, suit_inputs->parameters, suit_inputs);
     if (result != SUIT_SUCCESS) {
         goto error;
     }
 
     suit_index_t suit_index = {.len = 1, .index[0] = 0};
-    result = suit_process_command_sequence_buf(extracted, command_key, parameters, command_buf, &suit_index, suit_inputs, false);
+    result = suit_process_command_sequence_buf(extracted, command_key, suit_inputs->parameters, command_buf, &suit_index, suit_inputs, false);
     if (result != SUIT_SUCCESS) {
         goto error;
     }
@@ -2256,6 +2255,7 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
                 result = SUIT_ERR_FAILED_TO_VERIFY_DELEGATION;
                 goto error;
             }
+
             // search empty slot
             for (k = 0; k < SUIT_MAX_KEY_NUM; k++) {
                 if (!suit_inputs->mechanisms[k].use) {
@@ -2266,11 +2266,30 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
                 result = SUIT_ERR_NO_MEMORY;
                 goto error;
             }
-            result = suit_set_mechanism_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k]);
+            suit_inputs->mechanisms[k].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+            result = suit_set_suit_key_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k].key);
             if (result != SUIT_SUCCESS) {
                 goto error;
             }
             suit_inputs->mechanisms[k].cose_tag = CBOR_TAG_COSE_SIGN1;
+            suit_inputs->mechanisms[k].use = true;
+
+            // search empty slot
+            for (k; k < SUIT_MAX_KEY_NUM; k++) {
+                if (!suit_inputs->mechanisms[k].use) {
+                    break;
+                }
+            }
+            if (k == SUIT_MAX_KEY_NUM) {
+                result = SUIT_ERR_NO_MEMORY;
+                goto error;
+            }
+            suit_inputs->mechanisms[k].key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
+            result = suit_set_suit_key_from_cwt_payload(cwt_payload, &suit_inputs->mechanisms[k].key);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+            suit_inputs->mechanisms[k].cose_tag = CBOR_TAG_COSE_ENCRYPT;
             suit_inputs->mechanisms[k].use = true;
         }
         QCBORDecode_ExitArray(context);
