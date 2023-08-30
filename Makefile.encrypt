@@ -22,8 +22,7 @@ SRCS = \
 	src/suit_manifest_encode.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_print.c
-OBJDIR = ./obj
-OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
@@ -37,23 +36,19 @@ endif
 .PHONY: all
 all: $(TARGET_AES) $(TARGET_ESDH) $(TARGET_DECRYPT)
 
-$(TARGET_AES): $(OBJS) ./obj/examples/suit_manifest_encrypt_aes_main.o
-	mkdir -p ./bin
-	$(CC) -o $@ $^ $(LDFLAGS)
+include Makefile.common
 
-$(TARGET_ESDH): $(OBJS) ./obj/examples/suit_manifest_encrypt_esdh_main.o
-	mkdir -p ./bin
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-$(TARGET_DECRYPT): $(OBJS) ./obj/examples/suit_manifest_decrypt_main.o
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-$(OBJDIR)/%.o: %.c
-	mkdir -p $(dir $@)
+./obj/%.o: %.c | ./obj/src ./obj/examples
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
-.PHONY: all
-all: $(TARGET)
+$(TARGET_AES): $(OBJS) ./obj/examples/suit_manifest_encrypt_aes_main.o | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(TARGET_ESDH): $(OBJS) ./obj/examples/suit_manifest_encrypt_esdh_main.o | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(TARGET_DECRYPT): $(OBJS) ./obj/examples/suit_manifest_decrypt_main.o | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 .PHONY: run
 run: $(TARGET_AES) $(TARGET_ESDH)

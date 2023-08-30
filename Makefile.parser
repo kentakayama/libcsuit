@@ -18,9 +18,7 @@ SRCS = \
 	src/suit_manifest_encode.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_print.c
-
-OBJDIR = ./obj
-OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
@@ -36,17 +34,16 @@ ifeq ($(DEBUG),1)
     CFLAGS += -DSKIP_ERROR=1
 endif
 
-$(TARGET): $(OBJS)
-	mkdir -p ./bin
+.PHONY: all
+all: $(TARGET)
+
+include Makefile.common
+
+$(TARGET): $(OBJS) | ./bin
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(OBJDIR)/%.o: %.c
-	mkdir -p $(dir $@)
+./obj/%.o: %.c | ./obj/src ./obj/examples
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
-
-.PHONY: all test clean
-
-all: $(TARGET)
 
 TEST_NUM := 0 1 2A 2B 3 4 5 U I D R S0 S1 S2 S3 S4 U0 U1
 EXPS := $(foreach num,$(TEST_NUM),./testfiles/suit_manifest_exp$(num).cbor)
@@ -55,9 +52,10 @@ define test-one
 
 endef
 
+.PHONY: test
 test: all
 	$(foreach exp,$(EXPS),$(call test-one,$(exp)))
 
-
+.PHONY: clean
 clean:
-	rm -f $(OBJS) $(TARGET)
+	$(RM) $(OBJS) $(TARGET)

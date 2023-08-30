@@ -18,8 +18,7 @@ SRCS = \
 	src/suit_manifest_encode.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_print.c
-OBJDIR = ./obj
-OBJS = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRCS)))
+OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
@@ -38,16 +37,14 @@ else
     CFLAGS += "-DSUIT_MANIFEST_SIGNER_TRUST_ANCHOR=1"
 endif
 
-$(TARGET): $(OBJS)
-	mkdir -p ./bin
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-$(OBJDIR)/%.o: %.c
-	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
-
 .PHONY: all
 all: $(TARGET)
+
+$(TARGET): $(OBJS) | ./bin
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+./obj/%.o: %.c | ./obj/src ./obj/examples
+	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
 .PHONY: clean
 clean:
