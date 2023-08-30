@@ -56,10 +56,10 @@ so: ./bin/$(NAME).so
 doc:
 	doxygen Doxyfile
 
-./bin/$(NAME).a: $(OBJS)
+./bin/$(NAME).a: $(OBJS) | ./bin
 	$(AR) -r $@ $^
 
-./bin/$(NAME).so: $(OBJS)
+./bin/$(NAME).so: $(OBJS) | ./bin
 	$(CC) -shared $^ $(LOCAL_CFLAGS) $(CFLAGS) -o $@
 
 ./obj/%.o: %.c | ./obj/src
