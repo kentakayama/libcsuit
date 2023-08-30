@@ -2274,8 +2274,8 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
             suit_inputs->mechanisms[k].cose_tag = CBOR_TAG_COSE_SIGN1;
             suit_inputs->mechanisms[k].use = true;
 
-            // search empty slot
-            for (k; k < SUIT_MAX_KEY_NUM; k++) {
+            // search another empty slot
+            for (; k < SUIT_MAX_KEY_NUM; k++) {
                 if (!suit_inputs->mechanisms[k].use) {
                     break;
                 }
