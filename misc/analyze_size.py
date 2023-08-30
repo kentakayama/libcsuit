@@ -75,7 +75,7 @@ for line in f.read().splitlines():
             result["mbedtls"][1].append(name)
         else:
             result["other"][0] += size
-            result["other"][1].append(name)
+            result["other"][1].append([size, name])
 
 import os
 script_path = os.path.dirname(__file__)
@@ -92,16 +92,19 @@ other_size -= result["QCBOR"][0]
 other_size -= result["psa"][0]
 other_size -= result["mbedtls"][0]
 
-print( f"|-----------------|--------:|\n" \
-       f"| Example 0 | {result['manifest'][0]} |\n" \
-       f"| app | {result['app'][0]} |\n" \
-       f"| libcsuit | {result['libcsuit'][0]} |\n" \
-       f"| t_cose | {result['t_cose'][0]} |\n" \
-       f"| QCBOR | {result['QCBOR'][0]} |\n" \
-       f"| psa | {result['psa'][0]} |\n" \
-       f"| mbedtls | {result['mbedtls'][0]} |\n" \
-       f"| other | {other_size} |\n" \
-       f"| TOTAL | {process_binary_size} |")
+#print(f"other_size = {other_size}, other = {result['other'][0]}")
+#print(sorted(result['other'][1]))
+
+print( f"|-----------|-------:|\n" \
+       f"| Example 0 | {result['manifest'][0]:6} |\n" \
+       f"| app       | {result['app'][0]:6} |\n" \
+       f"| libcsuit  | {result['libcsuit'][0]:6} |\n" \
+       f"| t_cose    | {result['t_cose'][0]:6} |\n" \
+       f"| QCBOR     | {result['QCBOR'][0]:6} |\n" \
+       f"| psa       | {result['psa'][0]:6} |\n" \
+       f"| mbedtls   | {result['mbedtls'][0]:6} |\n" \
+       f"| other     | {other_size:6} |\n" \
+       f"| TOTAL     | {process_binary_size:6} |")
 
 #print(result["manifest"])
 #print(result["app"])
