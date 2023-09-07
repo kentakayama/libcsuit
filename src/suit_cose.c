@@ -161,7 +161,7 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
     struct t_cose_recipient_dec_esdh dec_recipient;
     struct t_cose_parameter         *params;
 
-    t_cose_encrypt_dec_init(&decrypt_context, 0); 
+    t_cose_encrypt_dec_init(&decrypt_context, 0);
     t_cose_recipient_dec_esdh_init(&dec_recipient);
     t_cose_recipient_dec_esdh_set_key(&dec_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
     t_cose_encrypt_dec_add_recipient(&decrypt_context,
@@ -639,8 +639,7 @@ suit_err_t suit_key_init_es521_public_key(const unsigned char *public_key,
     return suit_create_es_key(cose_public_key);
 }
 
-#ifndef LIBCSUIT_DISABLE_ENCRYPTION
-suit_err_t suit_create_aes_key(suit_key_t *cose_secret_key)
+suit_err_t suit_create_symmetric_key(suit_key_t *cose_secret_key)
 {
     UsefulBufC symmetric_key = (UsefulBufC) {.ptr = cose_secret_key->private_key, .len = cose_secret_key->private_key_len};
     enum t_cose_err_t err = t_cose_key_init_symmetric(cose_secret_key->cose_algorithm_id, symmetric_key, &cose_secret_key->cose_key);
@@ -650,29 +649,103 @@ suit_err_t suit_create_aes_key(suit_key_t *cose_secret_key)
     return SUIT_SUCCESS;
 }
 
+#ifndef LIBCSUIT_DISABLE_ENCRYPTION
 suit_err_t suit_key_init_a128kw_secret_key(const unsigned char *secret_key,
                                            suit_key_t *cose_secret_key)
 {
     cose_secret_key->private_key = secret_key;
-    cose_secret_key->private_key_len = A128GCM_KEY_CHAR_LENGTH;
+    cose_secret_key->private_key_len = A128_KEY_CHAR_LENGTH;
     cose_secret_key->public_key = NULL;
     cose_secret_key->public_key_len = 0;
     cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
-    return suit_create_aes_key(cose_secret_key);
+    return suit_create_symmetric_key(cose_secret_key);
+}
+
+suit_err_t suit_key_init_a192kw_secret_key(const unsigned char *secret_key,
+                                           suit_key_t *cose_secret_key)
+{
+    cose_secret_key->private_key = secret_key;
+    cose_secret_key->private_key_len = A192_KEY_CHAR_LENGTH;
+    cose_secret_key->public_key = NULL;
+    cose_secret_key->public_key_len = 0;
+    cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_A192KW;
+    return suit_create_symmetric_key(cose_secret_key);
+}
+
+suit_err_t suit_key_init_a256kw_secret_key(const unsigned char *secret_key,
+                                           suit_key_t *cose_secret_key)
+{
+    cose_secret_key->private_key = secret_key;
+    cose_secret_key->private_key_len = A256_KEY_CHAR_LENGTH;
+    cose_secret_key->public_key = NULL;
+    cose_secret_key->public_key_len = 0;
+    cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_A256KW;
+    return suit_create_symmetric_key(cose_secret_key);
 }
 #endif /* LIBCSUIT_DISABLE_ENCRYPTION */
 
+#ifndef LIBCSUIT_DISABLE_MAC
+suit_err_t suit_key_init_hmac256_secret_key(const unsigned char *secret_key,
+                                            suit_key_t *cose_secret_key)
+{
+    cose_secret_key->private_key = secret_key;
+    cose_secret_key->private_key_len = HMAC256_KEY_CHAR_LENGTH;
+    cose_secret_key->public_key = NULL;
+    cose_secret_key->public_key_len = 0;
+    cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_HMAC256;
+    return suit_create_symmetric_key(cose_secret_key);
+}
+
+suit_err_t suit_key_init_hmac384_secret_key(const unsigned char *secret_key,
+                                            suit_key_t *cose_secret_key)
+{
+    cose_secret_key->private_key = secret_key;
+    cose_secret_key->private_key_len = HMAC384_KEY_CHAR_LENGTH;
+    cose_secret_key->public_key = NULL;
+    cose_secret_key->public_key_len = 0;
+    cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_HMAC384;
+    return suit_create_symmetric_key(cose_secret_key);
+}
+
+suit_err_t suit_key_init_hmac512_secret_key(const unsigned char *secret_key,
+                                            suit_key_t *cose_secret_key)
+{
+    cose_secret_key->private_key = secret_key;
+    cose_secret_key->private_key_len = HMAC512_KEY_CHAR_LENGTH;
+    cose_secret_key->public_key = NULL;
+    cose_secret_key->public_key_len = 0;
+    cose_secret_key->cose_algorithm_id = T_COSE_ALGORITHM_HMAC512;
+    return suit_create_symmetric_key(cose_secret_key);
+}
+#endif /* LIBCSUIT_DISABLE_MAC */
+
 suit_err_t suit_free_key(const suit_key_t *key)
 {
+    switch (key->cose_algorithm_id) {
+    case T_COSE_ALGORITHM_A128KW:
+    case T_COSE_ALGORITHM_A192KW:
+    case T_COSE_ALGORITHM_A256KW:
+    case T_COSE_ALGORITHM_HMAC256:
+    case T_COSE_ALGORITHM_HMAC384:
+    case T_COSE_ALGORITHM_HMAC512:
+        t_cose_key_free_symmetric(key->cose_key);
+        break;
+    case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ES384:
+    case T_COSE_ALGORITHM_ES512:
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
 #if defined(LIBCSUIT_USE_T_COSE_1)
-    psa_destroy_key((psa_key_handle_t)key->cose_key.k.key_handle);
+        psa_destroy_key((psa_key_handle_t)key->cose_key.k.key_handle);
 #else
-    psa_destroy_key((psa_key_handle_t)key->cose_key.key.handle);
+        psa_destroy_key((psa_key_handle_t)key->cose_key.key.handle);
 #endif /* LIBCSUIT_USE_T_COSE_1 */
 #else /* LIBCSUIT_PSA_CRYPTO_C */
-    EVP_PKEY_free(key->cose_key.key.ptr);
+        EVP_PKEY_free(key->cose_key.key.ptr);
 #endif
+        break;
+    default:
+        return SUIT_ERR_NOT_IMPLEMENTED;
+    }
     return SUIT_SUCCESS;
 }
 
@@ -801,27 +874,27 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
             }
             if (key_params.d.len == PRIME256V1_PRIVATE_KEY_LENGTH) {
                 // TODO: can we limit EC P-256 for ES256?
-		if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
-		    result = suit_key_init_ecdh_p256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
-		}
-		else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+                    result = suit_key_init_ecdh_p256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+                }
+                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
                     result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
-		}
-		else {
-	            result = SUIT_ERR_NOT_IMPLEMENTED;
-		}
+                }
+                else {
+                    result = SUIT_ERR_NOT_IMPLEMENTED;
+                }
             }
             else if (key_params.d.len == 0) {
                 // TODO: can we limit EC P-256 for ES256?
-	        if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
-		    result = suit_key_init_ecdh_p256_public_key(public_key.ptr, suit_key);
-		}
-		else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+                    result = suit_key_init_ecdh_p256_public_key(public_key.ptr, suit_key);
+                }
+                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
                     result = suit_key_init_es256_public_key(public_key.ptr, suit_key);
-		}
-		else {
-		    result = SUIT_ERR_NOT_IMPLEMENTED;
-		}
+                }
+                else {
+                    result = SUIT_ERR_NOT_IMPLEMENTED;
+                }
             }
             else {
                 return SUIT_ERR_INVALID_VALUE;
@@ -838,8 +911,31 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
 
 #if !defined(LIBCSUIT_DISABLE_ENCRYPTION)
     case SUIT_COSE_KTY_SYMMETRIC:
-        if (key_params.k.len == 16) {
-            result = suit_key_init_a128kw_secret_key(key_params.k.ptr, suit_key);
+        switch (key_params.k.len) {
+        case 16:
+            switch (suit_key->cose_algorithm_id) {
+            case T_COSE_ALGORITHM_A128KW:
+            default:
+                result = suit_key_init_a128kw_secret_key(key_params.k.ptr, suit_key);
+            }
+            break;
+        case 24:
+            switch (suit_key->cose_algorithm_id) {
+            case T_COSE_ALGORITHM_A192KW:
+            default:
+                result = suit_key_init_a192kw_secret_key(key_params.k.ptr, suit_key);
+            }
+            break;
+        case 32:
+            switch (suit_key->cose_algorithm_id) {
+            case T_COSE_ALGORITHM_HMAC256:
+                result = suit_key_init_hmac256_secret_key(key_params.k.ptr, suit_key);
+                break;
+            case T_COSE_ALGORITHM_A256KW:
+            default:
+                result = suit_key_init_a256kw_secret_key(key_params.k.ptr, suit_key);
+            }
+            break;
         }
         break; /* SUIT_COSE_KTY_SYMMETRIC */
 #endif /* LIBCSUIT_DISABLE_ENCRYPTION */

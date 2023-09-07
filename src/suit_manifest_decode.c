@@ -983,6 +983,9 @@ suit_err_t suit_decode_authentication_block(suit_buf_t *buf,
     case COSE_SIGN1_TAG:
         result = suit_verify_cose_sign1(signed_cose, public_key, &returned_payload);
         break;
+    case COSE_MAC0_TAG:
+        result = suit_validate_cose_mac0(signed_cose, public_key, &returned_payload);
+        break;
     default:
         result = SUIT_ERR_NOT_IMPLEMENTED;
     }

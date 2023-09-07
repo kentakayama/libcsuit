@@ -79,7 +79,12 @@ extern "C" {
 #define SECP384R1_PUBLIC_KEY_LENGTH         97
 #define SECP521R1_PRIVATE_KEY_LENGTH        66
 #define SECP521R1_PUBLIC_KEY_LENGTH         133
-#define A128GCM_KEY_CHAR_LENGTH             16
+#define A128_KEY_CHAR_LENGTH                16
+#define A192_KEY_CHAR_LENGTH                24
+#define A256_KEY_CHAR_LENGTH                32
+#define HMAC256_KEY_CHAR_LENGTH             32
+#define HMAC384_KEY_CHAR_LENGTH             48
+#define HMAC512_KEY_CHAR_LENGTH             64
 
 #define SUIT_MAX_PRIVATE_KEY_LEN            SECP521R1_PRIVATE_KEY_LENGTH
 #define SUIT_MAX_PUBLIC_KEY_LEN             SECP521R1_PUBLIC_KEY_LENGTH
