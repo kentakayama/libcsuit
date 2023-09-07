@@ -22,6 +22,11 @@
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/t_cose_sign1_sign.h"
 
+#if !defined(LIBCSUIT_DISABLE_MAC)
+#include "t_cose/t_cose_mac_compute.h"
+#include "t_cose/t_cose_mac_validate.h"
+#endif /* !LIBCSUIT_DISABLE_MAC */
+
 #if !defined(LIBCSUIT_DISABLE_ENCRYPTION)
 #include "t_cose/t_cose_encrypt_enc.h"
 #include "t_cose/t_cose_encrypt_dec.h"
@@ -93,22 +98,6 @@ suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
                                 UsefulBuf *returned_payload);
 
 /*!
-    \brief  Verify COSE_Sign signed payload.
-
-    \param[in]  signed_cose             Pointer and length of the target signed payload.
-    \param[in]  public_key              Pointer of public key.
-    \param[in]  returned_payload        Pointer and length for verified payload.
-                                        You can pass detached payload here.
-
-    \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
-
-    NOTE: Currently not implemented.
- */
-suit_err_t suit_verify_cose_sign(const UsefulBufC signed_cose,
-                                 const suit_key_t *public_key,
-                                 UsefulBufC *returned_payload);
-
-/*!
     \brief  Verify COSE_Sign1 signed payload.
 
     \param[in]  signed_cose         Pointer and length of the target signed payload.
@@ -134,31 +123,30 @@ suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
                                   UsefulBufC *returned_payload);
 
 /*!
-    \brief  Verify COSE_Mac signed payload.
+    \brief  Generate COSE_Mac0 computed payload.
 
-    \param[in]  signed_cose         Pointer and length of the target signed payload.
-    \param[in]  public_key          Pointer of public key.
-    \param[in]  returned_payload    Pointer and length for verified payload.
-                                    You can pass detached payload here.
+    \param[in]  raw_cbor            Pointer and length of the target payload.
+    \param[in]  secret_key          Pointer of secret key.
+    \param[in]  returned_payload    Pointer and length of the resulting COSE_Mac0.
 
     \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
  */
-suit_err_t suit_verify_cose_mac(const UsefulBufC signed_cose,
-                                const suit_key_t *public_key,
-                                UsefulBufC *returned_payload);
+suit_err_t suit_compute_cose_mac0(const UsefulBufC raw_cbor,
+                                  const suit_key_t *secret_key,
+                                  UsefulBuf *returned_payload);
 
 /*!
-    \brief  Verify COSE_Mac0 signed payload.
+    \brief  Verify COSE_Mac0 computed payload.
 
-    \param[in]  signed_cose         Pointer and length of the target signed payload.
-    \param[in]  public_key          Pointer of public key.
-    \param[out]  returned_payload    Pointer and length of the COSE_Mac0 signed target payload.
+    \param[in]  maced_cose          Pointer and length of the target maced payload.
+    \param[in]  secret_key          Pointer of secret key.
+    \param[out] returned_payload    Pointer and length of the COSE_Mac0 computed target payload.
 
     \return     This returns SUIT_SUCCESS or SUIT_ERR_FAILED_TO_VERIFY.
  */
-suit_err_t suit_verify_cose_mac0(const UsefulBufC signed_cose,
-                                 const suit_key_t *public_key,
-                                 UsefulBufC *returned_payload);
+suit_err_t suit_validate_cose_mac0(const UsefulBufC maced_cose,
+                                   const suit_key_t *secret_key,
+                                   UsefulBufC *returned_payload);
 
 /*!
     \brief  Decrypt COSE_Encrypt or COSE_Encrypt0 encrypted payload.

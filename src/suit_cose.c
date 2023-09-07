@@ -60,10 +60,6 @@ suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
     struct t_cose_sign1_verify_ctx verify_ctx;
     enum t_cose_err_t cose_result;
 
-    if (public_key == NULL) {
-        return SUIT_ERR_FAILED_TO_VERIFY;
-    }
-
     t_cose_sign1_verify_init(&verify_ctx, 0);
     t_cose_sign1_set_verification_key(&verify_ctx, public_key->cose_key);
     if (UsefulBuf_IsNULLOrEmptyC(*returned_payload)) {
@@ -105,6 +101,55 @@ suit_err_t suit_sign_cose_sign1(const UsefulBufC raw_cbor,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_validate_cose_mac0(const UsefulBufC maced_cose,
+                                   const suit_key_t *secret_key,
+                                   UsefulBufC *returned_payload)
+{
+    struct t_cose_mac_validate_ctx mac_ctx;
+    enum t_cose_err_t cose_result;
+
+    t_cose_mac_validate_init(&mac_ctx, 0);
+    t_cose_mac_set_validate_key(&mac_ctx, secret_key->cose_key);
+    if (UsefulBuf_IsNULLOrEmptyC(*returned_payload)) {
+        cose_result = t_cose_mac_validate(&mac_ctx,
+                                           maced_cose,
+                                           NULL_Q_USEFUL_BUF_C,
+                                           returned_payload,
+                                           NULL);
+    }
+    else {
+        cose_result = t_cose_mac_validate_detached(&mac_ctx,
+                                                    maced_cose,
+                                                    NULL_Q_USEFUL_BUF_C,
+                                                   *returned_payload,
+                                                    NULL);
+    }
+    if (cose_result != T_COSE_SUCCESS) {
+        return SUIT_ERR_FAILED_TO_VERIFY;
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_compute_cose_mac0(const UsefulBufC raw_cbor,
+                                  const suit_key_t *secret_key,
+                                  UsefulBuf *returned_payload)
+{
+    // Create cose maced buffer.
+    struct t_cose_mac_calculate_ctx mac_ctx;
+    enum t_cose_err_t cose_result;
+    UsefulBufC tmp_maced_cose;
+
+    t_cose_mac_compute_init(&mac_ctx, 0, secret_key->cose_algorithm_id);
+    t_cose_mac_set_computing_key(&mac_ctx, secret_key->cose_key, NULL_Q_USEFUL_BUF_C);
+    cose_result = t_cose_mac_compute_detached(&mac_ctx, NULL_Q_USEFUL_BUF_C, raw_cbor, *returned_payload, &tmp_maced_cose);
+    if (cose_result != T_COSE_SUCCESS) {
+        returned_payload->len = 0;
+        return SUIT_ERR_FAILED_TO_SIGN;
+    }
+    returned_payload->len = tmp_maced_cose.len;
+    return SUIT_SUCCESS;
+}
+
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
 enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payload,
                                                  const UsefulBufC encryption_info,
@@ -125,7 +170,7 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
     return t_cose_encrypt_dec_detached(&decrypt_context,
                                         encryption_info,
                                         NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
-					encrypted_payload,
+                                        encrypted_payload,
                                         working_buf,
                                         returned_payload,
                                         &params);
@@ -204,9 +249,9 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
     return t_cose_encrypt_enc_detached(&encrypt_context, /* in: encryption context */
                                plaintext_payload, /* in: payload to encrypt */
                                NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
-			       encrypted_payload_buf, /* in: buffer for encrypted binary */
+                               encrypted_payload_buf, /* in: buffer for encrypted binary */
                                encryption_info_buf, /* in: buffer for COSE_Encrypt */
-			       encrypted_payload, /* out: encrypted binary */
+                               encrypted_payload, /* out: encrypted binary */
                                encryption_info); /* out: COSE_Encrypt */
 }
 
@@ -255,10 +300,10 @@ suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
     }
     else if (mechanism->key.cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
         /* ES-DH */
-	t_cose_err = suit_encrypt_cose_encrypt_esdh(plaintext_payload, mechanism, encrypted_payload_buf, encryption_info_buf, encrypted_payload, encryption_info);
+        t_cose_err = suit_encrypt_cose_encrypt_esdh(plaintext_payload, mechanism, encrypted_payload_buf, encryption_info_buf, encrypted_payload, encryption_info);
     }
     else {
-	return SUIT_ERR_NOT_IMPLEMENTED;
+        return SUIT_ERR_NOT_IMPLEMENTED;
     }
     if (t_cose_err != T_COSE_SUCCESS) {
         return SUIT_ERR_FAILED_TO_ENCRYPT;
@@ -303,9 +348,9 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     psa_key_usage_t usage = 0;
     if (key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
         /* for COSE_Encrypt0 or COSE_Encrypt */
-	usage = PSA_KEY_USAGE_DERIVE | PSA_KEY_USAGE_COPY;
+        usage = PSA_KEY_USAGE_DERIVE | PSA_KEY_USAGE_COPY;
         psa_set_key_usage_flags(&key_attributes, usage);
-	psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDH);
+        psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDH);
     }
     else {
         /* for COSE_Sign1 or COSE_Sign */
