@@ -1173,18 +1173,11 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         }
         switch (mechanisms[i].key.cose_algorithm_id) {
         case T_COSE_ALGORITHM_ES256:
+        case T_COSE_ALGORITHM_HMAC256:
             result = SUIT_SUCCESS;
             break;
         default:
-            result = SUIT_ERR_ABORT;
-        }
-        if (result == SUIT_SUCCESS) {
-        }
-        else if (result == SUIT_ERR_ABORT) {
-            break;
-        }
-        else {
-            return result;
+            continue;
         }
 
         result = suit_use_suit_encode_buf(&suit_encode, 0, &signatures[num_signatures]);
@@ -1196,9 +1189,11 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         case COSE_SIGN1_TAG:
             result = suit_sign_cose_sign1(UsefulBuf_Const(digest), &mechanisms[i].key, &signatures[num_signatures]);
             break;
+        case COSE_MAC0_TAG:
+            result = suit_compute_cose_mac0(UsefulBuf_Const(digest), &mechanisms[i].key, &signatures[num_signatures]);
+            break;
         case COSE_SIGN_TAG:
         case COSE_MAC_TAG:
-        case COSE_MAC0_TAG:
         case COSE_ENCRYPT_TAG:
         case COSE_ENCRYPT0_TAG:
         default:
