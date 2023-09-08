@@ -116,16 +116,21 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
     struct t_cose_recipient_dec_esdh dec_recipient;
     struct t_cose_parameter         *params;
 
-    t_cose_encrypt_dec_init(&decrypt_context, 0); 
+    t_cose_encrypt_dec_init(&decrypt_context, 0);
     t_cose_recipient_dec_esdh_init(&dec_recipient);
     t_cose_recipient_dec_esdh_set_key(&dec_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
+
+    /* set KDF context */
+    t_cose_recipient_dec_esdh_party_info(&dec_recipient, NULL_Q_USEFUL_BUF_C, NULL_Q_USEFUL_BUF_C);
+    t_cose_recipient_dec_esdh_supp_info(&dec_recipient, Q_USEFUL_BUF_FROM_SZ_LITERAL("SUIT Payload Encryption"), NULL_Q_USEFUL_BUF_C);
+
     t_cose_encrypt_dec_add_recipient(&decrypt_context,
                                      (struct t_cose_recipient_dec *)&dec_recipient);
 
     return t_cose_encrypt_dec_detached(&decrypt_context,
                                         encryption_info,
                                         NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
-					encrypted_payload,
+                                        encrypted_payload,
                                         working_buf,
                                         returned_payload,
                                         &params);
@@ -144,6 +149,7 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_paylo
     t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
     t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
     t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
+
     return t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, encrypted_payload, working_buf, returned_payload, NULL);
 }
 
@@ -197,6 +203,11 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
     t_cose_recipient_enc_esdh_set_key(&recipient,
                                        mechanism->rkey.cose_key,
                                        mechanism->rkid);
+
+    /* set KDF context */
+    t_cose_recipient_enc_esdh_party_info(&recipient, NULL_Q_USEFUL_BUF_C, NULL_Q_USEFUL_BUF_C, false);
+    t_cose_recipient_enc_esdh_supp_info(&recipient, Q_USEFUL_BUF_FROM_SZ_LITERAL("SUIT Payload Encryption"), NULL_Q_USEFUL_BUF_C);
+
     t_cose_encrypt_add_recipient(&encrypt_context,
                                  (struct t_cose_recipient_enc *)&recipient);
 
@@ -204,9 +215,9 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
     return t_cose_encrypt_enc_detached(&encrypt_context, /* in: encryption context */
                                plaintext_payload, /* in: payload to encrypt */
                                NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
-			       encrypted_payload_buf, /* in: buffer for encrypted binary */
+                               encrypted_payload_buf, /* in: buffer for encrypted binary */
                                encryption_info_buf, /* in: buffer for COSE_Encrypt */
-			       encrypted_payload, /* out: encrypted binary */
+                               encrypted_payload, /* out: encrypted binary */
                                encryption_info); /* out: COSE_Encrypt */
 }
 
@@ -255,10 +266,10 @@ suit_err_t suit_encrypt_cose_encrypt(const UsefulBufC plaintext_payload,
     }
     else if (mechanism->key.cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
         /* ES-DH */
-	t_cose_err = suit_encrypt_cose_encrypt_esdh(plaintext_payload, mechanism, encrypted_payload_buf, encryption_info_buf, encrypted_payload, encryption_info);
+        t_cose_err = suit_encrypt_cose_encrypt_esdh(plaintext_payload, mechanism, encrypted_payload_buf, encryption_info_buf, encrypted_payload, encryption_info);
     }
     else {
-	return SUIT_ERR_NOT_IMPLEMENTED;
+        return SUIT_ERR_NOT_IMPLEMENTED;
     }
     if (t_cose_err != T_COSE_SUCCESS) {
         return SUIT_ERR_FAILED_TO_ENCRYPT;
@@ -303,9 +314,9 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     psa_key_usage_t usage = 0;
     if (key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
         /* for COSE_Encrypt0 or COSE_Encrypt */
-	usage = PSA_KEY_USAGE_DERIVE | PSA_KEY_USAGE_COPY;
+        usage = PSA_KEY_USAGE_DERIVE | PSA_KEY_USAGE_COPY;
         psa_set_key_usage_flags(&key_attributes, usage);
-	psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDH);
+        psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDH);
     }
     else {
         /* for COSE_Sign1 or COSE_Sign */
@@ -756,27 +767,27 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
             }
             if (key_params.d.len == PRIME256V1_PRIVATE_KEY_LENGTH) {
                 // TODO: can we limit EC P-256 for ES256?
-		if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
-		    result = suit_key_init_ecdh_p256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
-		}
-		else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+                    result = suit_key_init_ecdh_p256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+                }
+                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
                     result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
-		}
-		else {
-	            result = SUIT_ERR_NOT_IMPLEMENTED;
-		}
+                }
+                else {
+                    result = SUIT_ERR_NOT_IMPLEMENTED;
+                }
             }
             else if (key_params.d.len == 0) {
                 // TODO: can we limit EC P-256 for ES256?
-	        if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
-		    result = suit_key_init_ecdh_p256_public_key(public_key.ptr, suit_key);
-		}
-		else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+                    result = suit_key_init_ecdh_p256_public_key(public_key.ptr, suit_key);
+                }
+                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
                     result = suit_key_init_es256_public_key(public_key.ptr, suit_key);
-		}
-		else {
-		    result = SUIT_ERR_NOT_IMPLEMENTED;
-		}
+                }
+                else {
+                    result = SUIT_ERR_NOT_IMPLEMENTED;
+                }
             }
             else {
                 return SUIT_ERR_INVALID_VALUE;
