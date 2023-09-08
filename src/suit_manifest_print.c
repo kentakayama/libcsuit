@@ -74,6 +74,33 @@ char* suit_err_to_str(suit_err_t error)
     return NULL;
 }
 
+char* suit_cbor_tag_to_str(cbor_tag_key_t tag)
+{
+    switch (tag) {
+    case COSE_SIGN_TAG:
+        return "COSE_Sign_Tag";
+    case COSE_SIGN1_TAG:
+        return "COSE_Sign1_Tag";
+    case COSE_ENCRYPT_TAG:
+        return "COSE_Encrypt_Tag";
+    case COSE_ENCRYPT0_TAG:
+        return "COSE_Encrypt0_Tag";
+    case COSE_MAC_TAG:
+        return "COSE_Mac_Tag";
+    case COSE_MAC0_TAG:
+        return "COSE_Mac0_Tag";
+    case COSE_KEY_TAG:
+        return "COSE_Key_Tag";
+    case COSE_KEY_SET_TAG:
+        return "COSE_Key_Set_Tag";
+    case SUIT_ENVELOPE_TAG:
+        return "SUIT_Envelope_Tag";
+    default:
+        return "UNKNOWN_Tag";
+    }
+}
+
+
 char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key)
 {
     switch (envelope_key) {
@@ -987,7 +1014,10 @@ suit_err_t suit_print_signature(const suit_buf_t *signature,
         if (item.uDataType != QCBOR_TYPE_ARRAY) {
             return SUIT_ERR_INVALID_TYPE_OF_VALUE;
         }
-        printf("%ld([\n", puTags[0]);
+        if (Out.uNumUsed > 0) {
+            printf("/ %sged = / %ld(", suit_cbor_tag_to_str(puTags[0]), puTags[0]);
+        }
+        printf("[\n");
 
         printf("%*s/ protected: / << ", indent_space + indent_delta, "");
         QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
@@ -1026,7 +1056,10 @@ suit_err_t suit_print_signature(const suit_buf_t *signature,
         if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
             result = suit_error_from_qcbor_error(error);
         }
-        printf("\n%*s])", indent_space, "");
+        printf("\n%*s]", indent_space, "");
+        if (Out.uNumUsed > 0) {
+            printf(")");
+        }
     }
     return result;
 }
