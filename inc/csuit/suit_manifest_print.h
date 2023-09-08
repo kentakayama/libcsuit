@@ -25,13 +25,14 @@ extern "C" {
 #define SUIT_MAX_PRINT_TEXT_COUNT        64
 #define SUIT_MAX_PRINT_URI_COUNT         64
 
+char* suit_err_to_str(suit_err_t error);
+char* suit_cbor_tag_to_str(cbor_tag_key_t tag);
 char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
 char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
 char* suit_common_key_to_str(suit_common_key_t common_key);
 char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive);
 char* suit_parameter_key_to_str(suit_parameter_key_t parameter);
 char* suit_store_key_to_str(suit_store_key_t operation);
-char* suit_err_to_str(suit_err_t error);
 
 suit_err_t suit_component_identifier_to_filename(const suit_component_identifier_t *comp_id,
                                                  const size_t max_filename_len,
