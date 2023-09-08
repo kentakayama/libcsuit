@@ -1053,6 +1053,7 @@ suit_err_t suit_process_run_sequence(QCBORDecodeContext *context,
                                      const suit_manifest_key_t command_key,
                                      suit_parameter_args_t parameters[],
                                      suit_index_t *suit_index,
+                                     const suit_rep_policy_t report,
                                      suit_inputs_t *suit_inputs)
 {
     UsefulBufC buf;
@@ -1086,6 +1087,7 @@ suit_err_t suit_process_try_each(QCBORDecodeContext *context,
                                  const suit_manifest_key_t command_key,
                                  suit_parameter_args_t parameters[],
                                  suit_index_t *suit_index,
+                                 const suit_rep_policy_t report,
                                  suit_inputs_t *suit_inputs)
 {
     suit_err_t result;
