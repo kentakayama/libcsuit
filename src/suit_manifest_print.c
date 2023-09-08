@@ -675,7 +675,7 @@ suit_err_t suit_print_hex(const uint8_t *array, const size_t size)
     else {
         printf("h'");
         for (size_t i = 0; i < size; i++) {
-            printf("%02x", (unsigned char)array[i]);
+            printf("%02X", (unsigned char)array[i]);
         }
         printf("'");
     }
