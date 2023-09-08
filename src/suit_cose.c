@@ -164,6 +164,11 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
     t_cose_encrypt_dec_init(&decrypt_context, 0);
     t_cose_recipient_dec_esdh_init(&dec_recipient);
     t_cose_recipient_dec_esdh_set_key(&dec_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
+
+    /* set KDF context */
+    t_cose_recipient_dec_esdh_party_info(&dec_recipient, NULL_Q_USEFUL_BUF_C, NULL_Q_USEFUL_BUF_C);
+    t_cose_recipient_dec_esdh_supp_info(&dec_recipient, Q_USEFUL_BUF_FROM_SZ_LITERAL("SUIT Payload Encryption"), NULL_Q_USEFUL_BUF_C);
+
     t_cose_encrypt_dec_add_recipient(&decrypt_context,
                                      (struct t_cose_recipient_dec *)&dec_recipient);
 
@@ -189,6 +194,7 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_paylo
     t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
     t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
     t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
+
     return t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, encrypted_payload, working_buf, returned_payload, NULL);
 }
 
@@ -242,6 +248,11 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_esdh(const UsefulBufC plaintext_payl
     t_cose_recipient_enc_esdh_set_key(&recipient,
                                        mechanism->rkey.cose_key,
                                        mechanism->rkid);
+
+    /* set KDF context */
+    t_cose_recipient_enc_esdh_party_info(&recipient, NULL_Q_USEFUL_BUF_C, NULL_Q_USEFUL_BUF_C, false);
+    t_cose_recipient_enc_esdh_supp_info(&recipient, Q_USEFUL_BUF_FROM_SZ_LITERAL("SUIT Payload Encryption"), NULL_Q_USEFUL_BUF_C);
+
     t_cose_encrypt_add_recipient(&encrypt_context,
                                  (struct t_cose_recipient_enc *)&recipient);
 
