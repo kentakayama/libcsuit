@@ -995,6 +995,21 @@ suit_err_t suit_print_wait_event_buf(const suit_buf_t *wait_event_buf,
     return result;
 }
 
+char* suit_authentication_value_to_str(cbor_tag_key_t tag)
+{
+    switch (tag) {
+    case COSE_SIGN_TAG:
+        return "signatures";
+    case COSE_SIGN1_TAG:
+        return "signatre";
+    case COSE_MAC_TAG:
+    case COSE_MAC0_TAG:
+        return "tag";
+    default:
+        return NULL;
+    }
+}
+
 suit_err_t suit_print_signature(const suit_buf_t *signature,
                                 const uint32_t indent_space,
                                 const uint32_t indent_delta)
@@ -1004,6 +1019,7 @@ suit_err_t suit_print_signature(const suit_buf_t *signature,
     }
     suit_err_t result = SUIT_SUCCESS;
     if (signature->ptr != NULL && signature->len > 0) {
+        char *signature_or_tag = NULL;
         QCBORDecodeContext context;
         QCBORItem item;
         QCBORDecode_Init(&context, (UsefulBufC){signature->ptr, signature->len}, QCBOR_DECODE_MODE_NORMAL);
@@ -1016,6 +1032,7 @@ suit_err_t suit_print_signature(const suit_buf_t *signature,
         }
         if (Out.uNumUsed > 0) {
             printf("/ %sged = / %ld(", suit_cbor_tag_to_str(puTags[0]), puTags[0]);
+            signature_or_tag = suit_authentication_value_to_str(puTags[0]);
         }
         printf("[\n");
 
@@ -1049,7 +1066,11 @@ suit_err_t suit_print_signature(const suit_buf_t *signature,
         if (result != SUIT_SUCCESS) {
             return result;
         }
-        printf("%*s/ signature: / ", indent_space + indent_delta, "");
+
+        printf("%*s", indent_space + indent_delta, "");
+        if (signature_or_tag != NULL) {
+            printf("/ %s: / ", signature_or_tag);
+        }
         suit_print_hex(item.val.string.ptr, item.val.string.len);
 
         QCBORError error = QCBORDecode_Finish(&context);
