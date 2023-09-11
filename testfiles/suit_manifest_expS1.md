@@ -25,7 +25,7 @@
           / cnf / 8: {
             / NOTE: public key of delegated authority /
             / COSE_Key / 1: {
-              / cty / 1: 2 / EC2 /,
+              / kty / 1: 2 / EC2 /,
               / crv / -1: 1 / P-256 /,
               / x / -2: h'0E908AA8F066DB1F084E0C3652C63952BD99F2A5BDB22F9E01367AAD03ABA68B',
               / y / -3: h'77DA1BD8AC4F0CB490BA210648BF79AB164D49AD3551D71D314B2749EE42D29A'
@@ -36,11 +36,12 @@
       ]) >>
     ]
   ] >>,
+
   / NOTE: signed by delegated authority /
   / authentication-wrapper / 2: << [
     << [
       / digest-algorithm-id: / -16 / SHA256 /,
-      / digest-bytes: / h'6EA128D7BB19B86F77C4227F2A29F22026A41958ACC45CC0A35BA388B13E2F51'
+      / digest-bytes: / h'A10126A0584FA108A101A4010220012158200E908AA8F066DB1F084E0C3652C6'
     ] >>,
     << / COSE_Sign1_Tagged / 18([
       / protected: / << {
@@ -48,7 +49,7 @@
       } >>,
       / unprotected: / {},
       / payload: / null,
-      / signature: / h'99F949043701D7BDBA38904A0B49F004DED6B64A4900DECA5C66AE8A9EBA913576DEF136B74EA89C14FA64624DBD33B4C0BB41C153CA51548C73FF71A2BAF274'
+      / signature: / h'7AAD03ABA68B22582077DA1BD8AC4F0CB490BA210648BF79AB164D49AD3551D71D314B2749EE42D29A5840FB2D5ACF66B9C8573CE92E13BFB8D113F798715CC1'
     ]) >>
   ] >>,
   / manifest / 3: << {
@@ -56,9 +57,7 @@
     / manifest-sequence-number / 2: 0,
     / common / 3: << {
       / components / 2: [
-        [
-          '00'
-        ]
+        ['00']
       ]
     } >>,
     / manifest-component-id / 5: [
