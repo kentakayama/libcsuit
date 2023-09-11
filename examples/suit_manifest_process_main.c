@@ -23,6 +23,7 @@
 #include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
 #include "trust_anchor_prime256v1_cose_key_public.h"
+#include "trust_anchor_hmac256_cose_key_secret.h"
 #include "trust_anchor_a128_cose_key_secret.h"
 #include "device_es256_cose_key_private.h"
 
@@ -514,6 +515,10 @@ int main(int argc, char *argv[])
     UsefulBufC public_keys_for_ecdh[NUM_PUBLIC_KEYS_FOR_ECDH] = {
         trust_anchor_prime256v1_cose_key_public
     };
+    #define NUM_SECRET_KEYS_FOR_MAC         1
+    UsefulBufC secret_keys_for_mac[NUM_SECRET_KEYS_FOR_MAC] = {
+        trust_anchor_hmac256_cose_key_secret
+    };
     #define NUM_SECRET_KEYS_FOR_AESKW       1
     UsefulBufC secret_keys_for_aeskw[NUM_SECRET_KEYS_FOR_AESKW] = {
         trust_anchor_a128_cose_key_secret,
@@ -543,6 +548,21 @@ int main(int argc, char *argv[])
         suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_SIGN1;
         num_key++;
     }
+
+#ifndef LIBCSUIT_DISABLE_MAC
+    printf("\nmain : Read secret keys.\n");
+    for (int i = 0; i < NUM_SECRET_KEYS_FOR_MAC; i++) {
+        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_HMAC256;
+        result = suit_set_suit_key_from_cose_key(secret_keys_for_mac[i], &suit_inputs->mechanisms[num_key].key);
+        if (result != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(result), result);
+            return EXIT_FAILURE;
+        }
+        suit_inputs->mechanisms[num_key].use = true;
+        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_MAC0;
+        num_key++;
+    }
+#endif /* LIBCSUIT_DISABLE_MAC */
 
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys for AES-KW.\n");
@@ -597,3 +617,4 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
