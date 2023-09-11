@@ -13,10 +13,8 @@ extern "C" {
 
 //#define LIBCSUIT_USE_T_COSE_1
 //#define LIBCSUIT_DISABLE_ENCRYPTION
-#ifdef LIBCSUIT_PSA_CRYPTO_C
-/* currently openssl package does not support this */
+//#define LIBCSUIT_DISABLE_MAC
 #define LIBCSUIT_USE_DETERMINISTIC_ECDSA
-#endif
 
 //#define LIBCSUIT_DISABLE_ES384
 //#define LIBCSUIT_DISABLE_ES521
