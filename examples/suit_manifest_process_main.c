@@ -23,6 +23,7 @@
 #include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
 #include "trust_anchor_prime256v1_cose_key_public.h"
+#include "trust_anchor_hmac256_cose_key_secret.h"
 #include "trust_anchor_a128_cose_key_secret.h"
 #include "device_es256_cose_key_private.h"
 
@@ -86,7 +87,7 @@ const uint8_t depend_suit[] = {
     0x2D, 0x34, 0x37, 0x35, 0x34, 0x2D, 0x39, 0x33, 0x35, 0x33,
     0x2D, 0x33, 0x32, 0x64, 0x63, 0x32, 0x39, 0x39, 0x39, 0x37,
     0x66, 0x37, 0x34, 0x2E, 0x74, 0x61, 0x15, 0x0F, 0x03, 0x0F,
-    0x18, 0x18, 0x44, 0x82, 0x18, 0x21, 0x0F
+    0x18, 0x18, 0x44, 0x82, 0x18, 0x21, 0x0F,
 }; // suit_manifest_expU.md
 const uint8_t config_uri[] = {
     0x68, 0x74, 0x74, 0x70, 0x73, 0x3A, 0x2F, 0x2F, 0x65, 0x78,
@@ -154,11 +155,11 @@ const uint8_t encrypted_firmware_uri[] = {
     0x66, 0x69, 0x72, 0x6D, 0x77, 0x61, 0x72, 0x65
 }; // "https://example.com/encrypted-firmware"
 const uint8_t encrypted_firmware_data[] = {
-    0xCE, 0x9A, 0xB6, 0x5E, 0x75, 0x91, 0xEE, 0x38, 0x66, 0x9C,
-    0x4C, 0xCA, 0x7A, 0x58, 0xFA, 0x32, 0x4C, 0x1A, 0x0D, 0xBF,
-    0xDB, 0xC2, 0xC7, 0xC0, 0x57, 0x37, 0x6A, 0xFB, 0x80, 0x5D,
-    0x66, 0x00, 0x48, 0x31, 0x0E, 0x8D, 0xAB, 0x04, 0x5A, 0x2B,
-    0xE0, 0xA9, 0x3F, 0x01, 0x4F, 0xC9,
+    0x98, 0x90, 0xD8, 0xDC, 0x74, 0x0A, 0x2E, 0x82, 0xC2, 0xBE,
+    0xA9, 0xBA, 0xB1, 0x3E, 0x0B, 0xFA, 0x0F, 0xB4, 0xEB, 0x2B,
+    0xA3, 0xC0, 0xBC, 0xA4, 0xB2, 0x3A, 0x0D, 0x66, 0x0C, 0x5B,
+    0x30, 0x38, 0xF8, 0x63, 0x49, 0x33, 0x92, 0x1B, 0x3C, 0x2D,
+    0x1A, 0x84, 0xEE, 0x6C, 0x27, 0x79,
 };
 
 struct name_data {
@@ -512,7 +513,11 @@ int main(int argc, char *argv[])
     int num_key = 0;
     #define NUM_PUBLIC_KEYS_FOR_ECDH        1
     UsefulBufC public_keys_for_ecdh[NUM_PUBLIC_KEYS_FOR_ECDH] = {
-        trust_anchor_prime256v1_cose_key_public
+        trust_anchor_prime256v1_cose_key_public,
+    };
+    #define NUM_SECRET_KEYS_FOR_MAC         1
+    UsefulBufC secret_keys_for_mac[NUM_SECRET_KEYS_FOR_MAC] = {
+        trust_anchor_hmac256_cose_key_secret,
     };
     #define NUM_SECRET_KEYS_FOR_AESKW       1
     UsefulBufC secret_keys_for_aeskw[NUM_SECRET_KEYS_FOR_AESKW] = {
@@ -520,7 +525,7 @@ int main(int argc, char *argv[])
     };
     #define NUM_PRIVATE_KEYS_FOR_ESDH       1
     UsefulBufC private_keys_for_esdh[NUM_PRIVATE_KEYS_FOR_ESDH] = {
-        device_es256_cose_key_private
+        device_es256_cose_key_private,
     };
 
     suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
@@ -543,6 +548,21 @@ int main(int argc, char *argv[])
         suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_SIGN1;
         num_key++;
     }
+
+#ifndef LIBCSUIT_DISABLE_MAC
+    printf("\nmain : Read secret keys.\n");
+    for (int i = 0; i < NUM_SECRET_KEYS_FOR_MAC; i++) {
+        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_HMAC256;
+        result = suit_set_suit_key_from_cose_key(secret_keys_for_mac[i], &suit_inputs->mechanisms[num_key].key);
+        if (result != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(result), result);
+            return EXIT_FAILURE;
+        }
+        suit_inputs->mechanisms[num_key].use = true;
+        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_MAC0;
+        num_key++;
+    }
+#endif /* LIBCSUIT_DISABLE_MAC */
 
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys for AES-KW.\n");

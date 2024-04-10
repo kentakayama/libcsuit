@@ -38,9 +38,7 @@
         }
       },
       / components / 2: [
-        [
-          '10'
-        ]
+        ['10']
       ]
     } >>,
     / manifest-component-id / 5: [
@@ -58,7 +56,7 @@
       / directive-override-parameters / 20, {
         / parameter-image-digest / 3: << [
           / digest-algorithm-id: / -16 / SHA256 /,
-          / digest-bytes: / h'6c86246b90d644f021671f6d42523b2cb5e156f764be618aa46bfcd0db23e768'
+          / digest-bytes: / h'6C86246B90D644F021671F6D42523B2CB5E156F764BE618AA46BFCD0DB23E768'
         ] >>,
         / parameter-image-size / 14: 352,
         / parameter-uri / 21: "http://example.com/dependent.suit"

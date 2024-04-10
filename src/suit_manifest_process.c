@@ -1884,11 +1884,19 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
         }
         size_t j = 0;
         for (; j < SUIT_MAX_KEY_NUM; j++) {
-            if (suit_inputs->mechanisms[j].cose_tag == CBOR_TAG_COSE_SIGN1) {
+            switch (suit_inputs->mechanisms[j].cose_tag) {
+            case COSE_SIGN1_TAG:
                 result = suit_verify_cose_sign1(signature, &suit_inputs->mechanisms[j].key, &digest_buf);
-                if (result == SUIT_SUCCESS) {
-                    verified = true;
-                }
+                break;
+            case COSE_MAC0_TAG:
+                result = suit_validate_cose_mac0(signature, &suit_inputs->mechanisms[j].key, &digest_buf);
+                break;
+            default:
+                continue;
+            }
+            if (result == SUIT_SUCCESS) {
+                verified = true;
+                break;
             }
         }
     }
@@ -2246,7 +2254,16 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
                     continue;
                 }
                 cwt_payload = NULLUsefulBufC;
-                result = suit_verify_cose_sign1(cwt, &suit_inputs->mechanisms[k].key, &cwt_payload);
+                switch (suit_inputs->mechanisms[k].cose_tag) {
+                case COSE_SIGN1_TAG:
+                    result = suit_verify_cose_sign1(cwt, &suit_inputs->mechanisms[k].key, &cwt_payload);
+                    break;
+                case COSE_MAC0_TAG:
+                    result = suit_validate_cose_mac0(cwt, &suit_inputs->mechanisms[k].key, &cwt_payload);
+                    break;
+                default:
+                    continue;
+                }
                 if (result == SUIT_SUCCESS) {
                     break;
                 }
