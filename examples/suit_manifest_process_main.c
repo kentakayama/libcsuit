@@ -408,8 +408,15 @@ suit_err_t store_component(const char *dst,
 #endif /* LIBCSUIT_ENCRYPTION_INFO */
     }
 
-    size_t len = write_to_file(dst, src.ptr, src.len);
-    if (len != src.len) {
+    int fd = open(dst, O_WRONLY | O_CREAT, 0777);
+    if (fd < 0) {
+        // failed to open a file
+        result = SUIT_ERR_FATAL;
+        goto out;
+    }
+    size_t len = write(fd, src.ptr, src.len);
+    int err = close(fd);
+    if (len != src.len || err < 0) {
         result = SUIT_ERR_FATAL;
     }
 
