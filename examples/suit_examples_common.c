@@ -6,19 +6,24 @@
 
 #include <sys/stat.h>
 #include <sys/types.h> // mkdir
+#include <unistd.h>
+#include <fcntl.h>
 #include "suit_examples_common.h"
 
-size_t read_from_file(const char *file_path,
+ssize_t read_from_file(const char *file_path,
                       uint8_t *buf,
                       const size_t buf_len)
 {
-    size_t read_len = 0;
-    FILE* fp = fopen(file_path, "rb");
-    if (fp == NULL) {
+    ssize_t read_len = 0;
+    int fd = open(file_path, O_RDONLY);
+    if (fd < 0) {
         return 0;
     }
-    read_len = fread(buf, 1, buf_len, fp);
-    fclose(fp);
+    read_len = read(fd, buf, buf_len);
+    int res = close(fd);
+    if (read_len < 0 || res < 0) {
+        return 0;
+    }
     return read_len;
 }
 
@@ -27,11 +32,11 @@ const char sep = '\\';
 #else
 const char sep = '/';
 #endif
-size_t write_to_file(const char *file_path,
-                     const void *buf,
-                     const size_t buf_len)
+ssize_t write_to_file(const char *file_path,
+                      const void *buf,
+                      const size_t buf_len)
 {
-    size_t write_len = 0;
+    ssize_t write_len = 0;
     char dir_name[SUIT_MAX_NAME_LENGTH];
     char *next_sep;
     next_sep = (char *)file_path - 1;
@@ -43,11 +48,8 @@ size_t write_to_file(const char *file_path,
         mkdir(dir_name, 0775);
     }
 
-    FILE* fp = fopen(file_path, "wb");
-    if (fp == NULL) {
-        return 0;
-    }
-    write_len = fwrite(buf, 1, buf_len, fp);
-    fclose(fp);
+    int fd = creat(file_path, 0777);
+    write_len = write(fd, buf, buf_len);
+    close(fd);
     return write_len;
 }

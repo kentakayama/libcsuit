@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h> // chmod
 #include <sys/types.h> // pid_t
 #include <sys/wait.h> // waitpid
 #include <unistd.h> // fork
@@ -405,24 +404,15 @@ suit_err_t store_component(const char *dst,
         src = tmp;
 #else
         return SUIT_ERR_NOT_IMPLEMENTED;
-#endif /* LIBCSUIT_ENCRYPTION_INFO */
+#endif /* LIBCSUIT_DISABLE_ENCRYPTION */
     }
 
-    int fd = creat(dst, 0777);
-    if (fd < 0) {
-        // failed to open a file
+    size_t len = write_to_file(dst, src.ptr, src.len);
+    if (len != src.len) {
         result = SUIT_ERR_FATAL;
         goto out;
     }
-    size_t len = write(fd, src.ptr, src.len);
-    int err = close(fd);
-    if (len != src.len || err < 0) {
-        result = SUIT_ERR_FATAL;
-    }
-
-#ifndef LIBCSUIT_DISABLE_ENCRYPTION
 out:
-#endif /* LIBCSUIT_DISABLE_ENCRYPTION */
     if (decrypted_payload_buf.ptr != NULL) {
         free(decrypted_payload_buf.ptr);
     }
