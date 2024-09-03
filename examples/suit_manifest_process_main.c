@@ -408,7 +408,7 @@ suit_err_t store_component(const char *dst,
 #endif /* LIBCSUIT_ENCRYPTION_INFO */
     }
 
-    int fd = open(dst, O_WRONLY | O_CREAT, 0777);
+    int fd = creat(dst, 0777);
     if (fd < 0) {
         // failed to open a file
         result = SUIT_ERR_FATAL;
