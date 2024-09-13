@@ -195,19 +195,16 @@ typedef enum suit_manifest_key {
     SUIT_VALIDATE                       = 7,
     SUIT_LOAD                           = 8,
     SUIT_INVOKE                         = 9,
+    SUIT_PAYLOAD_FETCH                  = 16,
+    SUIT_INSTALL                        = 20,
+    SUIT_TEXT                           = 23,
 
     /* draft-ietf-suit-update-management */
     SUIT_COSWID                         = 14,
 
     /* draft-ietf-suit-trust-domains */
     SUIT_DEPENDENCY_RESOLUTION          = 15,
-
-    /* draft-ietf-suit-manifest */
-    SUIT_PAYLOAD_FETCH                  = 16,
-    SUIT_INSTALL                        = 17,
-    SUIT_TEXT                           = 23,
-
-    /* draft-ietf-suit-trust-domains */
+    SUIT_CANDIDATE_VERIFICATION         = 18,
     SUIT_UNINSTALL                      = 24,
 } suit_manifest_key_t;
 
