@@ -10,7 +10,7 @@
 #include "qcbor/UsefulBuf.h"
 
 const unsigned char delegated_authority_es256_cose_key_public_buf[] = {
-    0xA4,                                 //# map(5)
+    0xA4,                                 //# map(4)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
        0x20,                              //# negative(0) / -1 = crv /
