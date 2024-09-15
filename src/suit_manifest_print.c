@@ -1547,7 +1547,7 @@ char *suit_str_member_is_verified(uint8_t status)
     return suit_str_verified(suit_is_severable_manifest_member_verified(status));
 }
 
-bool suit_text_have_something_to_print(const suit_text_t *text)
+bool suit_text_have_something_to_print(const suit_text_lmap_t *text)
 {
     return (text->manifest_description.ptr != NULL ||
             text->update_description.ptr != NULL ||
@@ -1556,9 +1556,9 @@ bool suit_text_have_something_to_print(const suit_text_t *text)
             text->component_len > 0);
 }
 
-suit_err_t suit_print_text(const suit_text_t *text,
-                           const uint32_t indent_space,
-                           const uint32_t indent_delta)
+suit_err_t suit_print_text_lmap(const suit_text_lmap_t *text,
+                                const uint32_t indent_space,
+                                const uint32_t indent_delta)
 {
     if (text == NULL) {
         return SUIT_ERR_FATAL;
@@ -1625,6 +1625,28 @@ suit_err_t suit_print_text(const suit_text_t *text,
         }
         printf("\n%*s}\n", indent_space + indent_delta, "");
     }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_text(const suit_text_map_t *text,
+                           const uint32_t indent_space,
+                           const uint32_t indent_delta)
+{
+    bool comma = false;
+    for (size_t i = 0; i < text->text_lmaps_len; i++) {
+        const suit_text_lmap_t *lmap = &text->text_lmaps[i];
+        if (comma) {
+            printf(",\n");
+        }
+
+        printf("%*s\"%.*s\": {\n", indent_space + indent_delta, "", (int)lmap->tag38_ltag.len, lmap->tag38_ltag.ptr);
+        suit_err_t result = suit_print_text_lmap(lmap, indent_space + indent_delta, indent_delta);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        printf("%*s}", indent_space + indent_delta, "");
+    }
+    printf("\n");
     return SUIT_SUCCESS;
 }
 

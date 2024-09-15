@@ -168,7 +168,7 @@ typedef enum suit_envelope_key {
     SUIT_MANIFEST                       = 3,
     SUIT_SEVERED_DEPENDENCY_RESOLUTION  = 15,
     SUIT_SEVERED_PAYLOAD_FETCH          = 16,
-    SUIT_SEVERED_INSTALL                = 17,
+    SUIT_SEVERED_INSTALL                = 20,
     SUIT_SEVERED_TEXT                   = 23,
     SUIT_SEVERED_COSWID                 = 24,
     SUIT_INTEGRATED_PAYLOAD             = 25,
@@ -589,9 +589,10 @@ typedef struct suit_text_component_pair {
 } suit_text_component_pair_t;
 
 /*
- * SUIT_Text
+ * SUIT_Text_LMap
  */
-typedef struct suit_text {
+typedef struct suit_text_lmap {
+    suit_buf_t                  tag38_ltag;
     size_t                      component_len;
     suit_text_component_pair_t  component[SUIT_MAX_ARRAY_LENGTH];
     suit_buf_t                  manifest_description;
@@ -599,7 +600,15 @@ typedef struct suit_text {
     suit_buf_t                  manifest_json_source;
     suit_buf_t                  manifest_yaml_source;
     // TODO :                   $$suit-text-key-extensions
-} suit_text_t;
+} suit_text_lmap_t;
+
+/*
+ * SUIT_Text_Map
+ */
+typedef struct suit_text_map {
+    size_t                      text_lmaps_len;
+    suit_text_lmap_t            text_lmaps[SUIT_MAX_ARRAY_LENGTH];
+} suit_text_map_t;
 
 /*
  * SUIT_Authentication_Wrapper
@@ -620,7 +629,7 @@ typedef struct suit_severable_manifest_members {
     uint8_t                         payload_fetch_status;
     suit_command_sequence_t         install;
     uint8_t                         install_status;
-    suit_text_t                     text;
+    suit_text_map_t                 text;
     uint8_t                         text_status;
     suit_buf_t                      coswid;
     uint8_t                         coswid_status;
