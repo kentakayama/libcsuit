@@ -794,11 +794,19 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
         printf("[\n");
         size_t cose_struct_len = item.val.uCount;
 
-        printf("%*s/ protected: / << ", indent_space + indent_delta, "");
-        QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
-        suit_print_cose_header(&context, indent_space + indent_delta, indent_delta);
-        QCBORDecode_ExitBstrWrapped(&context);
-        printf(" >>,\n");
+        QCBORDecode_PeekNext(&context, &item);
+        printf("%*s/ protected: / ", indent_space + indent_delta, "");
+        if (item.val.string.len > 0) {
+            printf("<< ");
+            QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+            suit_print_cose_header(&context, indent_space + indent_delta, indent_delta);
+            QCBORDecode_ExitBstrWrapped(&context);
+            printf(" >>,\n");
+        }
+        else {
+            QCBORDecode_GetNext(&context, &item);
+            printf("h'',\n");
+        }
 
         printf("%*s/ unprotected: / ", indent_space + indent_delta, "");
         suit_print_cose_header(&context, indent_space + indent_delta, indent_delta);
@@ -836,12 +844,18 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
                     return SUIT_ERR_FATAL;
                 }
                 printf("%*s[\n", indent_space + 2 * indent_delta, "");
-                printf("%*s/ protected: / << ", indent_space + 3 * indent_delta, "");
-                QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
-                suit_print_cose_header(&context, indent_space + 3 * indent_delta, indent_delta);
-                QCBORDecode_ExitBstrWrapped(&context);
-                printf(" >>,\n");
-
+                printf("%*s/ protected: / ", indent_space + 3 * indent_delta, "");
+                if (item.val.string.len > 0) {
+                    printf("<< ");
+                    QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+                    suit_print_cose_header(&context, indent_space + 3 * indent_delta, indent_delta);
+                    QCBORDecode_ExitBstrWrapped(&context);
+                    printf(" >>,\n");
+                }
+                else {
+                    QCBORDecode_GetNext(&context, &item);
+                    printf("h'',\n");
+                }
                 printf("%*s/ unprotected: / ", indent_space + 3 * indent_delta, "");
                 suit_print_cose_header(&context, indent_space + 3 * indent_delta, indent_delta);
                 printf(",\n");
