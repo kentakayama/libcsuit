@@ -162,16 +162,21 @@ typedef struct suit_mechanism {
 
 
 typedef enum suit_envelope_key {
+    SUIT_INTEGRATED_PAYLOAD             = -1,
     SUIT_ENVELOPE_KEY_INVALID           = 0,
     SUIT_DELEGATION                     = 1,
     SUIT_AUTHENTICATION                 = 2,
     SUIT_MANIFEST                       = 3,
-    SUIT_SEVERED_DEPENDENCY_RESOLUTION  = 15,
     SUIT_SEVERED_PAYLOAD_FETCH          = 16,
     SUIT_SEVERED_INSTALL                = 20,
     SUIT_SEVERED_TEXT                   = 23,
-    SUIT_SEVERED_COSWID                 = 24,
-    SUIT_INTEGRATED_PAYLOAD             = 25,
+
+    /* draft-ietf-update-management */
+    SUIT_SEVERED_COSWID                 = 14,
+
+    /* draft-ietf-suit-trust-domains */
+    SUIT_SEVERED_DEPENDENCY_RESOLUTION  = 15,
+    SUIT_SEVERED_CANDIDATE_VERIFICATION = 18,
 } suit_envelope_key_t;
 
 typedef enum suit_algorithm_id {
@@ -191,7 +196,6 @@ typedef enum suit_manifest_key {
     SUIT_MANIFEST_SEQUENCE_NUMBER       = 2,
     SUIT_COMMON                         = 3,
     SUIT_REFERENCE_URI                  = 4,
-    SUIT_MANIFEST_COMPONENT_ID          = 5,
     SUIT_VALIDATE                       = 7,
     SUIT_LOAD                           = 8,
     SUIT_INVOKE                         = 9,
@@ -200,9 +204,11 @@ typedef enum suit_manifest_key {
     SUIT_TEXT                           = 23,
 
     /* draft-ietf-suit-update-management */
+    SUIT_SET_VERSION                    = 6,
     SUIT_COSWID                         = 14,
 
     /* draft-ietf-suit-trust-domains */
+    SUIT_MANIFEST_COMPONENT_ID          = 5,
     SUIT_DEPENDENCY_RESOLUTION          = 15,
     SUIT_CANDIDATE_VERIFICATION         = 18,
     SUIT_UNINSTALL                      = 24,
@@ -210,9 +216,11 @@ typedef enum suit_manifest_key {
 
 typedef enum suit_common_key {
     SUIT_COMMON_KEY_INVALID             = 0,
-    SUIT_DEPENDENCIES                   = 1, // $$SUIT_Common-extensions
     SUIT_COMPONENTS                     = 2,
     SUIT_SHARED_SEQUENCE                = 4,
+
+    /* draft-ietf-suit-trust-domains */
+    SUIT_DEPENDENCIES                   = 1, // $$SUIT_Common-extensions
 } suit_common_key_t;
 
 typedef enum suit_dependency_key {
@@ -228,58 +236,36 @@ typedef enum suit_con_dir_key {
     SUIT_CONDITION_VENDOR_IDENTIFIER    = 1,
     SUIT_CONDITION_CLASS_IDENTIFIER     = 2,
     SUIT_CONDITION_IMAGE_MATCH          = 3,
-
-    /* draft-ietf-suit-update-management */
-    SUIT_CONDITION_USE_BEFORE           = 4,
-
-    /* draft-ietf-suit-manifest */
     SUIT_CONDITION_COMPONENT_SLOT       = 5,
     SUIT_CONDITION_CHECK_CONTENT        = 6,
-
-    /* draft-ietf-suit-trust-domains */
-    SUIT_CONDITION_DEPENDENCY_INTEGRITY = 7,
-    SUIT_CONDITION_IS_DEPENDENCY        = 8,
-
     SUIT_CONDITION_ABORT                = 14,
     SUIT_CONDITION_DEVICE_IDENTIFIER    = 24,
-
-    /* draft-ietf-suit-update-management */
-    SUIT_CONDITION_IMAGE_NOT_MATCH      = 25,
-    SUIT_CONDITION_MINIMUM_BATTERY      = 26,
-    SUIT_CONDITION_UPDATE_AUTHORIZED    = 27,
-    SUIT_CONDITION_VERSION              = 28,
-
-
-    /* draft-ietf-suit-trust-domains */
-    SUIT_DIRECTIVE_PROCESS_DEPENDENCY   = 11,
-
-    /* draft-ietf-suit-manifest */
     SUIT_DIRECTIVE_SET_COMPONENT_INDEX  = 12,
     SUIT_DIRECTIVE_TRY_EACH             = 15,
     SUIT_DIRECTIVE_WRITE                = 18,
-
-    /* draft-ietf-suit-trust-domains */
-    SUIT_DIRECTIVE_SET_PARAMETERS       = 19,
-
-    /* draft-ietf-suit-manifest */
     SUIT_DIRECTIVE_OVERRIDE_PARAMETERS  = 20,
     SUIT_DIRECTIVE_FETCH                = 21,
     SUIT_DIRECTIVE_COPY                 = 22,
     SUIT_DIRECTIVE_INVOKE               = 23,
-
-    /* draft-ietf-suit-update-management */
-    SUIT_DIRECTIVE_WAIT                 = 29,
-
-    /* draft-ietf-suit-manifest */
     SUIT_DIRECTIVE_SWAP                 = 31,
     SUIT_DIRECTIVE_RUN_SEQUENCE         = 32,
 
-    /* draft-ietf-suit-trust-domains */
-    SUIT_DIRECTIVE_UNLINK               = 33,
-
     /* draft-ietf-suit-update-management */
-    SUIT_DIRECTIVE_OVERRIDE_MULTIPLE    = 34,   /* XXX */
-    SUIT_DIRECTIVE_COPY_PARAMS          = 35,   /* XXX */
+    SUIT_CONDITION_USE_BEFORE           = 4,
+    SUIT_CONDITION_IMAGE_NOT_MATCH      = 25,
+    SUIT_CONDITION_MINIMUM_BATTERY      = 26,
+    SUIT_CONDITION_UPDATE_AUTHORIZED    = 27,
+    SUIT_CONDITION_VERSION              = 28,
+    SUIT_DIRECTIVE_WAIT                 = 29,
+    SUIT_DIRECTIVE_OVERRIDE_MULTIPLE    = 34,
+    SUIT_DIRECTIVE_COPY_PARAMS          = 35,
+
+    /* draft-ietf-suit-trust-domains */
+    SUIT_CONDITION_DEPENDENCY_INTEGRITY = 7,
+    SUIT_CONDITION_IS_DEPENDENCY        = 8,
+    SUIT_DIRECTIVE_PROCESS_DEPENDENCY   = 11,
+    SUIT_DIRECTIVE_SET_PARAMETERS       = 19,
+    SUIT_DIRECTIVE_UNLINK               = 33,
 } suit_con_dir_key_t;
 
 #define SUIT_SEVERABLE_INVALID               0 // 0b00000000
@@ -317,33 +303,26 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_VENDOR_IDENTIFIER    = 1,
     SUIT_PARAMETER_CLASS_IDENTIFIER     = 2,
     SUIT_PARAMETER_IMAGE_DIGEST         = 3,
-
-    /* draft-ietf-suit-update-management */
-    SUIT_PARAMETER_USE_BEFORE           = 4,
-
-    /* draft-ietf-suit-manifest */
     SUIT_PARAMETER_COMPONENT_SLOT       = 5,
-
     SUIT_PARAMETER_STRICT_ORDER         = 12,
     SUIT_PARAMETER_SOFT_FAILURE         = 13,
     SUIT_PARAMETER_IMAGE_SIZE           = 14,
     SUIT_PARAMETER_CONTENT              = 18,
-
-    /* draft-ietf-suit-firmware-encryption */
-    SUIT_PARAMETER_ENCRYPTION_INFO      = 19,
-
-    /* draft-ietf-suit-manifest */
     SUIT_PARAMETER_URI                  = 21,
     SUIT_PARAMETER_SOURCE_COMPONENT     = 22,
     SUIT_PARAMETER_INVOKE_ARGS          = 23,
     SUIT_PARAMETER_DEVICE_IDENTIFIER    = 24,
+    SUIT_PARAMETER_FETCH_ARGS           = 30, /* XXX */
 
     /* draft-ietf-suit-update-management */
+    SUIT_PARAMETER_USE_BEFORE           = 4,
     SUIT_PARAMETER_MINIMUM_BATTERY      = 26,
     SUIT_PARAMETER_UPDATE_PRIORITY      = 27,
     SUIT_PARAMETER_VERSION              = 28,
     SUIT_PARAMETER_WAIT_INFO            = 29,
-    SUIT_PARAMETER_FETCH_ARGS           = 30, /* XXX */
+
+    /* draft-ietf-suit-firmware-encryption */
+    SUIT_PARAMETER_ENCRYPTION_INFO      = 19,
 } suit_parameter_key_t;
 
 /* draft-suit-manifest */
@@ -412,6 +391,7 @@ typedef enum suit_text_component_key {
 
     /* draft-ietf-suit-update-management */
     SUIT_TEXT_VERSION_REQUIRED      = 7,
+    SUIT_TEXT_CURRENT_VERSION       = 8,
 } suit_text_component_key_t;
 
 /* for suit-parameter-strict-order */
