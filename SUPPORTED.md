@@ -195,6 +195,29 @@ Component Description | 5 | suit-text-component-description | SUIT Manifest | OP
 Component Version | 6 | suit-text-component-version | SUIT Manifest | OPTIONAL | RWX
 Version Required | 7 | suit-text-version-required | SUIT Update Management | N/M | RWX
 
+### SUIT Wait Info
+
+Name | Label | CDDL Structure | IN | IS | Supported?
+---|---|---|---|---|---
+Event Authorization | 1 | suit-wait-event-authorization | SUIT Update Management | N/M | ---
+Event Power | 2 | suit-wait-event-power | SUIT Update Management | N/M | ---
+Event Network | 3 | suit-wait-event-network | SUIT Update Management | N/M | ---
+Event Other Device Version | 4 | suit-wait-event-other-device-version | SUIT Update Management | N/M | ---
+Event Time | 5 | suit-wait-event-time | SUIT Update Management | N/M | ---
+Event Time of Day | 6 | suit-wait-event-time-of-day | SUIT Update Management | N/M | ---
+Event Day of Week | 7 | suit-wait-event-day-of-week | SUIT Update Management | N/M | ---
+
+### SUIT Component Metadata
+Name | Label | CDDL Structure | IN | IS | Supported?
+---|---|---|---|---|---
+Default Permissions | 1 | suit-meta-default-permissions | SUIT Update Management | N/M | ---
+User Permissions | 2 | suit-meta-user-permissions | SUIT Update Management | N/M | ---
+Group Permissions | 3 | suit-meta-group-permissions | SUIT Update Management | N/M | ---
+Role Permissions | 4 | suit-meta-role-permissions | SUIT Update Management | N/M | ---
+File Type | 5 | suit-meta-file-type | SUIT Update Management | N/M | ---
+Modification Time | 6 | suit-meta-modification-time | SUIT Update Management | N/M | ---
+Creation Time | 7 | suit-meta-creation-time | SUIT Update Management | N/M | ---
+Creator | 8 | suit-meta-creator | SUIT Update Management | N/M | ---
 ## SUIT Report
 ### SUIT_Report
 
