@@ -300,7 +300,8 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
         /* SUIT_Parameter_Version_Match */
 #if !defined(LIBCSUIT_DISABLE_CONDITION_VERSION)
         case SUIT_PARAMETER_VERSION:
-            QCBOREncode_OpenArrayInMapN(context, param->label);
+            QCBOREncode_BstrWrapInMapN(context, param->label);
+            QCBOREncode_OpenArray(context);
             QCBOREncode_AddInt64(context, param->value.version_match.type);
             QCBOREncode_OpenArray(context);
             for (size_t j = 0; j < param->value.version_match.value.len; j++) {
@@ -308,6 +309,7 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             }
             QCBOREncode_CloseArray(context);
             QCBOREncode_CloseArray(context);
+            QCBOREncode_CloseBstrWrap(context, NULL);
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_VERSION */
 

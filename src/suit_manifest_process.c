@@ -289,6 +289,7 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
         /* SUIT_Parameter_Version_Match */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
         case SUIT_PARAMETER_VERSION:
+            QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
             QCBORDecode_EnterArray(context, &item);
             for (size_t j = 0; j < suit_index->len; j++) {
                 uint8_t tmp_index = suit_index->index[j];
@@ -305,6 +306,7 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
                 }
             }
             QCBORDecode_ExitArray(context);
+            QCBORDecode_ExitBstrWrapped(context);
             break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_VERSION */
 

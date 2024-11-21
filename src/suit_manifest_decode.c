@@ -87,10 +87,10 @@ suit_err_t suit_decode_digest_from_bstr(const suit_decode_mode_t mode,
 }
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
-suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
-                                     QCBORItem *item,
-                                     bool next,
-                                     suit_version_match_t *version_match)
+suit_err_t suit_decode_version_match_from_item(QCBORDecodeContext *context,
+                                               QCBORItem *item,
+                                               bool next,
+                                               suit_version_match_t *version_match)
 {
     if (next) {
         QCBORDecode_GetNext(context, item);
@@ -125,6 +125,27 @@ suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
         version_match->value.int64[j] = item->val.int64;
     }
     return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_version_match_from_bstr(QCBORDecodeContext *context,
+                                               QCBORItem *item,
+                                               bool next,
+                                               suit_version_match_t *version_match)
+{
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_BYTE_STRING);
+    QCBORDecodeContext version_context;
+    /* NOTE: SUIT_Text_Map may contain component-identifier key,
+             so we parse as QCBOR_DECODE_MODE_MAP_AS_ARRAY
+             to prevent invalid CBOR Map */
+    QCBORDecode_Init(&version_context,
+                     (UsefulBufC){item->val.string.ptr, item->val.string.len},
+                     QCBOR_DECODE_MODE_MAP_AS_ARRAY);
+    result = suit_decode_version_match_from_item(&version_context, item, true, version_match);
+    QCBORError error = QCBORDecode_Finish(&version_context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
 }
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_VERSION */
 
@@ -185,7 +206,7 @@ suit_err_t suit_decode_wait_event_from_item(QCBORDecodeContext *context,
             QCBORDecode_EnterArray(context, item);
             wait_event->other_device_version.len = item->val.uCount;
             for (size_t j = 0; j < wait_event->other_device_version.len; j++) {
-                result = suit_decode_version_match(context, item, false, &wait_event->other_device_version.versions[j]);
+                result = suit_decode_version_match_from_item(context, item, false, &wait_event->other_device_version.versions[j]);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -356,7 +377,7 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         /* SUIT_Parameter_Version_Match */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
         case SUIT_PARAMETER_VERSION:
-            result = suit_decode_version_match(context, item, false, &params_list->params[i].value.version_match);
+            result = suit_decode_version_match_from_bstr(context, item, false, &params_list->params[i].value.version_match);
             break;
 #endif
 
