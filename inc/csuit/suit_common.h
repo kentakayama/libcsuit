@@ -595,7 +595,6 @@ typedef struct suit_parameters {
         bool                        boolean;
         bool                        isNull;
         suit_digest_t               digest;
-        suit_version_match_t        version_match;
     } value;
 } suit_parameters_t;
 
