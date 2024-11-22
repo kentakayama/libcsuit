@@ -20,6 +20,7 @@
 int main(int argc,
          char *argv[])
 {
+    int exit_code = EXIT_SUCCESS;
     // check arguments.
     if (argc < 1) {
         printf("%s <manifest file path> [tabstop 2] [indent 4]\n", argv[0]);
@@ -69,12 +70,14 @@ int main(int argc,
     uint8_t *manifest_buf = malloc(SUIT_MAX_DATA_SIZE);
     if (manifest_buf == NULL) {
         printf("main : Failed to allocate memory.\n");
-        return EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
+        goto end;
     }
     size_t manifest_len = read_from_file(manifest_file, manifest_buf, SUIT_MAX_DATA_SIZE);
     if (manifest_len == 0) {
         printf("main : Failed to read Manifest file.\n");
-        return EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
+        goto end;
     }
     suit_print_hex(manifest_buf, manifest_len);
     printf("\n\n");
@@ -85,39 +88,44 @@ int main(int argc,
 #ifdef SKIP_ERROR
     mode = SUIT_DECODE_MODE_SKIP_ANY_ERROR;
 #endif
-    suit_envelope_t envelope = (suit_envelope_t){ 0 };
+    suit_envelope_t *envelope = calloc(1, sizeof(suit_envelope_t));
     suit_buf_t buf = {.ptr = manifest_buf, .len = manifest_len};
-    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
+    result = suit_decode_envelope(mode, &buf, envelope, mechanisms);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to parse Manifest file. %s(%d)\n", suit_err_to_str(result), result);
-        return EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
+        goto end;
     }
 
     // Print manifest.
     printf("\nmain : Print Manifest.\n");
-    result = suit_print_envelope(mode, &envelope, indent, tabstop);
+    result = suit_print_envelope(mode, envelope, indent, tabstop);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to print Manifest file. %s(%d)\n", suit_err_to_str(result), result);
-        return EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
+        goto end;
     }
 
     // Encode manifest.
     uint8_t *encode_buf = malloc(SUIT_MAX_DATA_SIZE);
     if (encode_buf == NULL) {
         printf("main : Failed to allocate memory.\n");
-        return EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
+        goto end;
     }
     size_t encode_len = SUIT_MAX_DATA_SIZE;
     uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
-    result = suit_encode_envelope(mode, &envelope, mechanisms, &ret_pos, &encode_len);
+    result = suit_encode_envelope(mode, envelope, mechanisms, &ret_pos, &encode_len);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         if (mechanisms[1].use) {
             printf("main : Due to delegated public key. Skip encoding test.\n");
-            return EXIT_SUCCESS;
+            // success
+            goto end;
         }
-        return EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
+        goto end;
     }
     printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
 
@@ -128,10 +136,11 @@ int main(int argc,
         printf("\n#### ENCODED ####\n");
         suit_print_hex_in_max(ret_pos, encode_len, encode_len);
         printf("\n\n");
-        return EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
+        goto end;
     }
     else if (memcmp(manifest_buf, ret_pos, manifest_len) != 0) {
-        size_t signature_pos = (envelope.tagged ? 2 : 0) + 55;
+        size_t signature_pos = (envelope->tagged ? 2 : 0) + 55;
         if (memcmp(&manifest_buf[0], &ret_pos[0], signature_pos) != 0 ||
             memcmp(&manifest_buf[signature_pos + 64], &ret_pos[signature_pos + 64], manifest_len - (signature_pos + 64)) != 0) {
             printf("main : encoded binary is differ from original\n");
@@ -140,7 +149,8 @@ int main(int argc,
             printf("\n#### ENCODED ####\n");
             suit_print_hex_in_max(ret_pos, encode_len, encode_len);
             printf("\n\n");
-            return EXIT_FAILURE;
+            exit_code = EXIT_FAILURE;
+            goto end;
         }
         else {
             printf("main : Whole binaries but COSE_Sign1 signature match.\n\n");
@@ -150,6 +160,15 @@ int main(int argc,
         printf("main : Whole binaries match.\n\n");
     }
 
+end:
+    if (manifest_buf != NULL) {
+        free(manifest_buf);
+        manifest_buf = NULL;
+    }
+    if (envelope != NULL) {
+        free(envelope);
+        envelope = NULL;
+    }
     suit_free_key(&mechanisms[0].key);
-    return EXIT_SUCCESS;
+    return exit_code;
 }
