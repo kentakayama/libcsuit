@@ -366,6 +366,7 @@ typedef enum suit_parameter_key {
 #define SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY BIT(SUIT_PARAMETER_UPDATE_PRIORITY)
 #define SUIT_PARAMETER_CONTAINS_VERSION BIT(SUIT_PARAMETER_VERSION)
 #define SUIT_PARAMETER_CONTAINS_WAIT_INFO BIT(SUIT_PARAMETER_WAIT_INFO)
+#define SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA BIT(SUIT_PARAMETER_COMPONENT_METADATA)
 
 /* draft-suit-trust-domains */
 #define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
@@ -1113,6 +1114,9 @@ typedef struct suit_parameter_args {
 
     /*! used in suit-directive-wait */
     suit_wait_event_t           wait_info;
+
+    /*! used in suit-directive-fetch, suit-directive-write, ... */
+    suit_component_metadata_t   component_metadata;
 
     /* in draft-ietf-suit-trust-domains */
 
