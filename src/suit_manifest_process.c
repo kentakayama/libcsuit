@@ -41,7 +41,9 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
         UsefulBufC str;
         bool b;
         suit_digest_t digest;
+        suit_version_match_t version_match;
         suit_wait_event_t wait_event;
+        suit_component_metadata_t component_metadata;
     } val;
 
     size_t length = item.val.uCount;
@@ -258,8 +260,8 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
             break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
 
-        /* bstr .cbor COSE_Encrypt0 // bstr .cbor COSE_Encrypt */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
+        /* bstr .cbor COSE_Encrypt0 // bstr .cbor COSE_Encrypt */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
@@ -277,52 +279,70 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
             QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
             result = suit_decode_digest_from_item(SUIT_DECODE_MODE_STRICT, context, &item, true, &val.digest);
             QCBORDecode_ExitBstrWrapped(context);
-            for (size_t j = 0; j < suit_index->len; j++) {
-                uint8_t tmp_index = suit_index->index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) || override) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
-                    parameters[tmp_index].image_digest = val.digest;
+            if (result == SUIT_SUCCESS) {
+                for (size_t j = 0; j < suit_index->len; j++) {
+                    uint8_t tmp_index = suit_index->index[j];
+                    if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) || override) {
+                        parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
+                        parameters[tmp_index].image_digest = val.digest;
+                    }
                 }
             }
             break;
 
-        /* SUIT_Parameter_Version_Match */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
+        /* bstr .cbor SUIT_Parameter_Version_Match */
         case SUIT_PARAMETER_VERSION:
-            QCBORDecode_EnterArray(context, &item);
-            for (size_t j = 0; j < suit_index->len; j++) {
-                uint8_t tmp_index = suit_index->index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_VERSION) || override) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_VERSION;
-                    QCBORDecode_GetInt64(context, &val.i64);
-                    parameters[tmp_index].version_match.type = val.i64;
-                    QCBORDecode_EnterArray(context, &item);
-                    parameters[tmp_index].version_match.value.len = item.val.uCount;
-                    for (size_t k = 0; k < parameters[tmp_index].version_match.value.len; k++) {
-                        QCBORDecode_GetInt64(context, &parameters[tmp_index].version_match.value.int64[k]);
+            QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+            result = suit_decode_version_match_from_item(context, &item, true, &val.version_match);
+            QCBORDecode_ExitBstrWrapped(context);
+            if (result == SUIT_SUCCESS) {
+                for (size_t j = 0; j < suit_index->len; j++) {
+                    uint8_t tmp_index = suit_index->index[j];
+                    if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_VERSION) || override) {
+                        parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_VERSION;
+                        parameters[tmp_index].version_match = val.version_match;
                     }
-                    QCBORDecode_ExitArray(context);
                 }
             }
-            QCBORDecode_ExitArray(context);
             break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_VERSION */
 
-        /* bstr .cbor SUIT_Wait_Event */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
+        /* bstr .cbor SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
             QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
             result = suit_decode_wait_event_from_item(context, &item, true, &val.wait_event);
             QCBORDecode_ExitBstrWrapped(context);
-            for (size_t j = 0; j < suit_index->len; j++) {
-                uint8_t tmp_index = suit_index->index[j];
-                if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO) || override) {
-                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_WAIT_INFO;
-                    parameters[tmp_index].wait_info = val.wait_event;
+            if (result == SUIT_SUCCESS) {
+                for (size_t j = 0; j < suit_index->len; j++) {
+                    uint8_t tmp_index = suit_index->index[j];
+                    if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO) || override) {
+                        parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_WAIT_INFO;
+                        parameters[tmp_index].wait_info = val.wait_event;
+                    }
                 }
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO */
+
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+        /* bstr .cbor SUIT_Component_Metadata */
+        case SUIT_PARAMETER_COMPONENT_METADATA:
+            QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+            result = suit_decode_component_metadata_from_item(context, &item, true, &val.component_metadata);
+            QCBORDecode_ExitBstrWrapped(context);
+            if (result == SUIT_SUCCESS) {
+                for (size_t j = 0; j < suit_index->len; j++) {
+                    uint8_t tmp_index = suit_index->index[j];
+                    if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) || override) {
+                        parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
+                        parameters[tmp_index].component_metadata = val.component_metadata;
+                    }
+                }
+            }
+            break;
+#endif
 
         case SUIT_PARAMETER_INVALID:
         default:
@@ -1338,8 +1358,8 @@ suit_err_t suit_process_copy_params(QCBORDecodeContext *context,
                     parameters[tmp_index].image_digest = parameters[src_index].image_digest;
                     break;
 
-                /* SUIT_Parameter_Version_Match */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
+                /* SUIT_Parameter_Version_Match */
                 case SUIT_PARAMETER_VERSION:
                     if (!(parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_VERSION)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -1349,8 +1369,8 @@ suit_err_t suit_process_copy_params(QCBORDecodeContext *context,
                     break;
 #endif
 
-                /* bstr .cbor SUIT_Wait_Event */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
+                /* SUIT_Wait_Event */
                 case SUIT_PARAMETER_WAIT_INFO:
                     if (!(parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -1359,6 +1379,17 @@ suit_err_t suit_process_copy_params(QCBORDecodeContext *context,
                     parameters[tmp_index].wait_info = parameters[src_index].wait_info;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO */
+
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+                /* SUIT_Component_Metadata */
+                case SUIT_PARAMETER_COMPONENT_METADATA:
+                    if (!(parameters[src_index].exists & SUIT_PARAMETER_COMPONENT_METADATA)) {
+                        return SUIT_ERR_PARAMETER_NOT_FOUND;
+                    }
+                    parameters[tmp_index].exists != SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
+                    parameters[tmp_index].component_metadata = parameters[src_index].component_metadata;
+                    break;
+#endif
 
                 case SUIT_PARAMETER_INVALID:
                 default:

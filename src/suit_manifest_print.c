@@ -269,6 +269,8 @@ char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
         return "soft-failure";
     case SUIT_PARAMETER_IMAGE_SIZE:
         return "image-size";
+    case SUIT_PARAMETER_FETCH_ARGS:
+        return "fetch-args";
     case SUIT_PARAMETER_CONTENT:
         return "content";
     case SUIT_PARAMETER_ENCRYPTION_INFO:
@@ -289,8 +291,8 @@ char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
         return "version";
     case SUIT_PARAMETER_WAIT_INFO:
         return "wait-info";
-    case SUIT_PARAMETER_FETCH_ARGS:
-        return "fetch-args";
+    case SUIT_PARAMETER_COMPONENT_METADATA:
+        return "component-metadata";
     case SUIT_PARAMETER_INVALID:
         break;
     }
@@ -896,9 +898,9 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
     return result;
 }
 
-suit_err_t suit_print_version(const suit_version_match_t *version_match,
-                              const uint32_t indent_space,
-                              const uint32_t indent_delta)
+suit_err_t suit_print_version_match(const suit_version_match_t *version_match,
+                                    const uint32_t indent_space,
+                                    const uint32_t indent_delta)
 {
     printf("[\n");
     printf("%*s/ comparison-type / %d / %s /,\n", indent_space + indent_delta, "", version_match->type, suit_version_comparison_type_to_str(version_match->type));
@@ -910,6 +912,25 @@ suit_err_t suit_print_version(const suit_version_match_t *version_match,
         }
     }
     printf(" ]\n%*s]", indent_space, "");
+
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_version_buf(const suit_buf_t *version_match_buf,
+                                  const uint32_t indent_space,
+                                  const uint32_t indent_delta)
+{
+    printf("<< ");
+    suit_err_t result = SUIT_SUCCESS;
+    if (version_match_buf->ptr != NULL && version_match_buf->len > 0) {
+        suit_version_match_t version_match = {0};
+        result = suit_decode_version_match(version_match_buf, &version_match);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        result = suit_print_version_match(&version_match, indent_space, indent_delta);
+    }
+    printf(" >>");
 
     return SUIT_SUCCESS;
 }
@@ -952,7 +973,7 @@ suit_err_t suit_print_wait_event(const suit_wait_event_t *wait_event,
         printf(",\n%*s/ version: / [\n", indent_space + 2 * indent_delta, "");
         for (size_t i = 0; i < wait_event->other_device_version.len; i++) {
             printf("%*s", indent_space + 3 * indent_delta, "");
-            suit_print_version(&wait_event->other_device_version.versions[i], indent_space + 4 * indent_delta, indent_delta);
+            suit_print_version_match(&wait_event->other_device_version.versions[i], indent_space + 4 * indent_delta, indent_delta);
             if (i + 1 != wait_event->other_device_version.len) {
                 printf(",");
             }
@@ -983,7 +1004,7 @@ suit_err_t suit_print_wait_event(const suit_wait_event_t *wait_event,
         printf("%*s/ day-of-week / 7: %lu", indent_space + indent_delta, "", wait_event->day_of_week);
         comma = true;
     }
-    printf("\n%*s} ", indent_space, "");
+    printf("\n%*s}", indent_space, "");
 
     return SUIT_SUCCESS;
 }
@@ -998,14 +1019,267 @@ suit_err_t suit_print_wait_event_buf(const suit_buf_t *wait_event_buf,
     printf("<< ");
     suit_err_t result = SUIT_SUCCESS;
     if (wait_event_buf->ptr != NULL && wait_event_buf->len > 0) {
-        suit_wait_event_t wait_event;
+        suit_wait_event_t wait_event = {0};
         result = suit_decode_wait_event(wait_event_buf, &wait_event);
         if (result != SUIT_SUCCESS) {
             return result;
         }
         result = suit_print_wait_event(&wait_event, indent_space, indent_delta);
     }
-    printf(">>");
+    printf(" >>");
+    return result;
+}
+
+suit_err_t suit_print_permissions(const suit_permissions_t permissions)
+{
+    bool pipe = false;
+    printf("%lu / (", permissions.val);
+
+    if (permissions.write_attr_ex) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("write_attr_ex");
+        pipe = true;
+    }
+    if (permissions.read_attr_ex) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("read_attr_ex");
+        pipe = true;
+    }
+    if (permissions.sync) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("sync");
+        pipe = true;
+    }
+    if (permissions.delete) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("delete");
+        pipe = true;
+    }
+    if (permissions.recurse_delete) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("recurse_delete");
+        pipe = true;
+    }
+    if (permissions.write_attr) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("write_attr");
+        pipe = true;
+    }
+    if (permissions.change_owner) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("change_owner");
+        pipe = true;
+    }
+    if (permissions.change_perm) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("change_perm");
+        pipe = true;
+    }
+    if (permissions.read_perm) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("read_perm");
+        pipe = true;
+    }
+    if (permissions.read_attr) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("read_attr");
+        pipe = true;
+    }
+    if (permissions.creatdir_append) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("creatdir_append");
+        pipe = true;
+    }
+    if (permissions.list_read) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("list_read");
+        pipe = true;
+    }
+    if (permissions.create_write) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("create_write");
+        pipe = true;
+    }
+    if (permissions.traverse_exec) {
+        if (pipe) {
+            printf("|");
+        }
+        printf("traverse_exec");
+        pipe = true;
+    }
+    printf(") /");
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_actor_id(const suit_actor_id_t *actor)
+{
+    switch (actor->type) {
+    case SUIT_ACTOR_TYPE_UUID_TAGGED:
+        printf("/ UUID_Tagged / 37(");
+        suit_print_uuid(&actor->actor_id_str);
+        printf(")");
+        break;
+    case SUIT_ACTOR_TYPE_BSTR:
+        suit_print_hex(actor->actor_id_str.ptr, actor->actor_id_str.len);
+        break;
+    case SUIT_ACTOR_TYPE_TSTR:
+        suit_print_tstr((char *)actor->actor_id_str.ptr, actor->actor_id_str.len);
+        break;
+    case SUIT_ACTOR_TYPE_INT:
+        printf("%ld", actor->actor_id_i64);
+        break;
+    default:
+        return SUIT_ERR_NOT_IMPLEMENTED;
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_permission_map(const suit_permission_map_t *permission_map,
+                                     const uint32_t indent_space,
+                                     const uint32_t indent_delta)
+{
+    for (size_t i = 0; i < permission_map->len; i++) {
+        printf("%*s", indent_space, "");
+        suit_print_actor_id(&permission_map->permission_map[i].actor);
+        printf(": ");
+        suit_print_permissions(permission_map->permission_map[i].permissions);
+        if (i + 1 != permission_map->len) {
+            printf(",");
+        }
+        printf("\n");
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_component_metadata(const suit_component_metadata_t *component_metadata,
+                                         const uint32_t indent_space,
+                                         const uint32_t indent_delta)
+{
+    bool comma = false;
+    printf("{\n");
+
+    if (component_metadata->exists & SUIT_META_CONTAINS_DEFAULT_PERMISSIONS) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ default-permissions / 1: ", indent_space + indent_delta, "");
+        suit_print_permissions(component_metadata->default_permissions);
+        comma = true;
+    }
+    if (component_metadata->exists & SUIT_META_CONTAINS_USER_PERMISSIONS) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ user-permissions / 2: {\n", indent_space + indent_delta, "");
+        suit_print_permission_map(&component_metadata->user_permissions, indent_space + 2 * indent_delta, indent_delta);
+        printf("%*s}", indent_space + indent_delta, "");
+        comma = true;
+    }
+    if (component_metadata->exists & SUIT_META_CONTAINS_GROUP_PERMISSIONS) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ group-permissions / 3: {\n", indent_space + indent_delta, "");
+        suit_print_permission_map(&component_metadata->group_permissions, indent_space + 2 * indent_delta, indent_delta);
+        printf("%*s}", indent_space + indent_delta, "");
+        comma = true;
+    }
+    if (component_metadata->exists & SUIT_META_CONTAINS_ROLE_PERMISSIONS) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ role-permissions / 4: {\n", indent_space + indent_delta, "");
+        suit_print_permission_map(&component_metadata->role_permissions, indent_space + 2 * indent_delta, indent_delta);
+        printf("%*s}", indent_space + indent_delta, "");
+        comma = true;
+    }
+    if (component_metadata->exists & SUIT_META_CONTAINS_FILE_TYPE) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ file-type / 5: ", indent_space + indent_delta, "");
+        switch (component_metadata->filetype) {
+        case SUIT_FILETYPE_REGULAR:
+            printf("1 / regular /");
+            break;
+        case SUIT_FILETYPE_DIRECTORY:
+            printf("2 / directory /");
+            break;
+        case SUIT_FILETYPE_SYMBOLIC:
+            printf("3 / symbolic /");
+            break;
+        }
+        comma = true;
+    }
+    if (component_metadata->exists & SUIT_META_CONTAINS_MODIFICATION_TIME) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ modification-time / 6: %ld", indent_space + indent_delta, "", component_metadata->modification_time);
+    }
+    if (component_metadata->exists & SUIT_META_CONTAINS_CREATION_TIME) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ creation-time / 7: %ld", indent_space + indent_delta, "", component_metadata->creation_time);
+    }
+    if (component_metadata->exists & SUIT_META_CONTAINS_CREATOR) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ creator / 8: ", indent_space + indent_delta, "");
+        suit_print_actor_id(&component_metadata->creator);
+    }
+
+    printf("\n%*s}", indent_space, "");
+
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_print_component_metadata_buf(const suit_buf_t *component_metadata_buf,
+                                             const uint32_t indent_space,
+                                             const uint32_t indent_delta)
+{
+    if (component_metadata_buf == NULL) {
+        return SUIT_ERR_FATAL;
+    }
+    printf("<< ");
+    suit_err_t result = SUIT_SUCCESS;
+    if (component_metadata_buf->ptr != NULL && component_metadata_buf->len > 0) {
+        suit_component_metadata_t component_metadata = {0};
+        result = suit_decode_component_metadata(component_metadata_buf, &component_metadata);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        result = suit_print_component_metadata(&component_metadata, indent_space, indent_delta);
+    }
+    printf(" >>");
     return result;
 }
 
@@ -1187,6 +1461,20 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
             }
             break;
 
+        /* bstr .cbor SUIT_Parameter_Version_Match */
+        case SUIT_PARAMETER_VERSION:
+            if (params_list->params[i].value.string.len > 0) {
+                result = suit_print_version_buf(&params_list->params[i].value.string, indent_space, indent_delta);
+            }
+            break;
+
+        /* SUIT_Component_Metadata */
+        case SUIT_PARAMETER_COMPONENT_METADATA:
+            if (params_list->params[i].value.string.len > 0) {
+                result = suit_print_component_metadata_buf(&params_list->params[i].value.string, indent_space, indent_delta);
+            }
+            break;
+
         /* bool */
         case SUIT_PARAMETER_STRICT_ORDER:
         case SUIT_PARAMETER_SOFT_FAILURE:
@@ -1198,11 +1486,6 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
             printf("<< ");
             result = suit_print_digest(&params_list->params[i].value.digest, indent_space, indent_delta);
             printf(" >>");
-            break;
-
-        /* SUIT_Parameter_Version_Match */
-        case SUIT_PARAMETER_VERSION:
-            result = suit_print_version(&params_list->params[i].value.version_match, indent_space, indent_delta);
             break;
 
         default:
@@ -2224,7 +2507,7 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
 
     /* SUIT_Parameter_Version_Match */
     case SUIT_CONDITION_VERSION:
-        suit_print_version(&condition_args.expected.version_match, 2, 2);
+        suit_print_version_match(&condition_args.expected.version_match, 2, 2);
         printf("\n");
         break;
 

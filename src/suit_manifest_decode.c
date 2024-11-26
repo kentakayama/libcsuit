@@ -87,10 +87,10 @@ suit_err_t suit_decode_digest_from_bstr(const suit_decode_mode_t mode,
 }
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
-suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
-                                     QCBORItem *item,
-                                     bool next,
-                                     suit_version_match_t *version_match)
+suit_err_t suit_decode_version_match_from_item(QCBORDecodeContext *context,
+                                               QCBORItem *item,
+                                               bool next,
+                                               suit_version_match_t *version_match)
 {
     if (next) {
         QCBORDecode_GetNext(context, item);
@@ -125,6 +125,20 @@ suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
         version_match->value.int64[j] = item->val.int64;
     }
     return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_version_match(const suit_buf_t *buf,
+                                     suit_version_match_t *version_match)
+{
+    QCBORDecodeContext version_match_context;
+    QCBORItem item;
+    QCBORDecode_Init(&version_match_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_version_match_from_item(&version_match_context, &item, true, version_match);
+    QCBORError error = QCBORDecode_Finish(&version_match_context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
 }
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_VERSION */
 
@@ -185,7 +199,7 @@ suit_err_t suit_decode_wait_event_from_item(QCBORDecodeContext *context,
             QCBORDecode_EnterArray(context, item);
             wait_event->other_device_version.len = item->val.uCount;
             for (size_t j = 0; j < wait_event->other_device_version.len; j++) {
-                result = suit_decode_version_match(context, item, false, &wait_event->other_device_version.versions[j]);
+                result = suit_decode_version_match_from_item(context, item, false, &wait_event->other_device_version.versions[j]);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -215,6 +229,211 @@ suit_err_t suit_decode_wait_event(const suit_buf_t *buf,
     return result;
 }
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO */
+
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+suit_err_t suit_decode_actor_id_from_item(QCBORDecodeContext *context,
+                                          QCBORItem *item,
+                                          bool next,
+                                          bool from_label,
+                                          suit_actor_id_t *actor_id)
+{
+    // UUID_Tagged, bstr, tstr, int
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_ANY);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    if (from_label) {
+        switch (item->uLabelType) {
+        case QCBOR_TYPE_BYTE_STRING:
+            if (item->uTags[0] == 37) {
+                // UUID_Tagged
+                actor_id->type = SUIT_ACTOR_TYPE_UUID_TAGGED;
+            }
+            else if (item->uTags[0] != 0) {
+                // invalid
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            else {
+                actor_id->type = SUIT_ACTOR_TYPE_BSTR;
+            }
+            actor_id->actor_id_str.ptr = (uint8_t *)item->label.string.ptr;
+            actor_id->actor_id_str.len = item->label.string.len;
+            break;
+        case QCBOR_TYPE_TEXT_STRING:
+            actor_id->type = SUIT_ACTOR_TYPE_TSTR;
+            actor_id->actor_id_str.ptr = (uint8_t *)item->label.string.ptr;
+            actor_id->actor_id_str.len = item->label.string.len;
+            break;
+        case QCBOR_TYPE_INT64:
+            actor_id->type = SUIT_ACTOR_TYPE_INT;
+            actor_id->actor_id_i64 = item->label.int64;
+            break;
+        default:
+            return SUIT_ERR_INVALID_TYPE_OF_KEY;
+        }
+    }
+    else {
+        switch (item->uDataType) {
+        case QCBOR_TYPE_BYTE_STRING:
+            if (item->uTags[0] == 37) {
+                // UUID_Tagged
+                actor_id->type = SUIT_ACTOR_TYPE_UUID_TAGGED;
+            }
+            else if (item->uTags[0] != 0) {
+                // invalid
+                return SUIT_ERR_INVALID_VALUE;
+            }
+            else {
+                actor_id->type = SUIT_ACTOR_TYPE_BSTR;
+            }
+            actor_id->actor_id_str.ptr = (uint8_t *)item->val.string.ptr;
+            actor_id->actor_id_str.len = item->val.string.len;
+            break;
+        case QCBOR_TYPE_TEXT_STRING:
+            actor_id->type = SUIT_ACTOR_TYPE_TSTR;
+            actor_id->actor_id_str.ptr = (uint8_t *)item->val.string.ptr;
+            actor_id->actor_id_str.len = item->val.string.len;
+            break;
+        case QCBOR_TYPE_INT64:
+            actor_id->type = SUIT_ACTOR_TYPE_INT;
+            actor_id->actor_id_i64 = item->val.int64;
+            break;
+        default:
+            return SUIT_ERR_INVALID_TYPE_OF_KEY;
+        }
+    }
+    return result;
+}
+
+suit_err_t suit_decode_actor_id_from_item_label(QCBORDecodeContext *context,
+                                                QCBORItem *item,
+                                                bool next,
+                                                suit_actor_id_t *actor_id)
+{
+    return suit_decode_actor_id_from_item(context, item, next, true, actor_id);
+}
+
+suit_err_t suit_decode_actor_id_from_item_value(QCBORDecodeContext *context,
+                                                QCBORItem *item,
+                                                bool next,
+                                                suit_actor_id_t *actor_id)
+{
+    return suit_decode_actor_id_from_item(context, item, next, false, actor_id);
+}
+
+suit_err_t suit_decode_permissions(QCBORDecodeContext *context,
+                                   QCBORItem *item,
+                                   suit_permissions_t *permissions)
+{
+    suit_err_t result = suit_qcbor_get_next_uint(context, item);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    permissions->val = item->val.uint64;
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_permission_map(QCBORDecodeContext *context,
+                                      QCBORItem *item,
+                                      bool next,
+                                      suit_permission_map_t *permissions)
+{
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_MAP);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    permissions->len = item->val.uCount;
+    if (permissions->len > SUIT_MAX_ARGS_LENGTH) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+
+    for (size_t i = 0; i < permissions->len; i++) {
+        result = suit_decode_permissions(context, item, &permissions->permission_map[i].permissions);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        result = suit_decode_actor_id_from_item_label(context, item, false, &permissions->permission_map[i].actor);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_component_metadata_from_item(QCBORDecodeContext *context,
+                                                    QCBORItem *item,
+                                                    bool next,
+                                                    suit_component_metadata_t *component_metadata)
+{
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_MAP);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    size_t map_count = item->val.uCount;
+
+    for (size_t i = 0; i < map_count; i++) {
+        QCBORDecode_PeekNext(context, item);
+        if (item->uLabelType != QCBOR_TYPE_INT64) {
+            return SUIT_ERR_INVALID_TYPE_OF_KEY;
+        }
+        switch (item->label.int64) {
+        /* int */
+        case SUIT_META_DEFAULT_PERMISSIONS:
+            component_metadata->exists |= SUIT_META_CONTAINS_DEFAULT_PERMISSIONS;
+            result = suit_decode_permissions(context, item, &component_metadata->default_permissions);
+            break;
+        case SUIT_META_USER_PERMISSIONS:
+            component_metadata->exists |= SUIT_META_CONTAINS_USER_PERMISSIONS;
+            result = suit_decode_permission_map(context, item, true, &component_metadata->user_permissions);
+            break;
+        case SUIT_META_GROUP_PERMISSIONS:
+            component_metadata->exists |= SUIT_META_CONTAINS_GROUP_PERMISSIONS;
+            result = suit_decode_permission_map(context, item, true, &component_metadata->group_permissions);
+            break;
+        case SUIT_META_ROLE_PERMISSIONS:
+            component_metadata->exists |= SUIT_META_CONTAINS_ROLE_PERMISSIONS;
+            result = suit_decode_permission_map(context, item, true, &component_metadata->role_permissions);
+            break;
+        case SUIT_META_FILE_TYPE:
+            component_metadata->exists |= SUIT_META_CONTAINS_FILE_TYPE;
+            QCBORDecode_GetInt64(context, &component_metadata->filetype);
+            break;
+        case SUIT_META_MODIFICATION_TIME:
+            component_metadata->exists |= SUIT_META_CONTAINS_MODIFICATION_TIME;
+            QCBORDecode_GetInt64(context, &component_metadata->modification_time);
+            break;
+        case SUIT_META_CREATION_TIME:
+            component_metadata->exists |= SUIT_META_CONTAINS_CREATION_TIME;
+            QCBORDecode_GetInt64(context, &component_metadata->creation_time);
+            break;
+        case SUIT_META_CREATOR:
+            component_metadata->exists |= SUIT_META_CONTAINS_CREATOR;
+            result = suit_decode_actor_id_from_item_value(context, item, true, &component_metadata->creator);
+            break;
+        default:
+            return SUIT_ERR_NOT_IMPLEMENTED;
+        }
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_decode_component_metadata(const suit_buf_t *buf,
+                                          suit_component_metadata_t *component_metadata)
+{
+    QCBORDecodeContext component_metadata_context;
+    QCBORItem item;
+    QCBORDecode_Init(&component_metadata_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_component_metadata_from_item(&component_metadata_context, &item, true, component_metadata);
+    QCBORError error = QCBORDecode_Finish(&component_metadata_context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
+}
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
 
 suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
                                                  QCBORDecodeContext *context,
@@ -314,10 +533,19 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         case SUIT_PARAMETER_ENCRYPTION_INFO:
 #endif
 
-        /* bstr .cbor SUIT_Wait_Event */
         /* draft-ietf-suit-update-management */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
+        /* bstr .cbor SUIT_Parameter_Version_Match */
+        case SUIT_PARAMETER_VERSION:
+#endif
+
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
+        /* bstr .cbor SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+        /* bstr .cbor SUIT_Component_Metadata */
+        case SUIT_PARAMETER_COMPONENT_METADATA:
 #endif
             if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
@@ -353,12 +581,6 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
             result = suit_decode_digest_from_bstr(mode, context, item, false, &params_list->params[i].value.digest);
             break;
 
-        /* SUIT_Parameter_Version_Match */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
-        case SUIT_PARAMETER_VERSION:
-            result = suit_decode_version_match(context, item, false, &params_list->params[i].value.version_match);
-            break;
-#endif
 
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;

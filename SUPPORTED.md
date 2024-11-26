@@ -6,9 +6,9 @@
 ### SUIT Manifest
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
-process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square:
+decode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square:
+encode | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square:
+process | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square::green_square:
 ### SUIT Multiple Trust Domains
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -18,15 +18,15 @@ process | :green_square::green_square::green_square: | :green_square::green_squa
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square:
-encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square:
-process | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square:
+decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
+encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
+process | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode |  |  |  | :green_square::green_square::green_square::red_square: | 
-encode |  |  |  | :green_square::green_square::green_square::red_square: | 
-process |  |  |  | :green_square::green_square::red_square::red_square: | 
+decode |  |  |  | :green_square::green_square::green_square: | 
+encode |  |  |  | :green_square::green_square::green_square: | 
+process |  |  |  | :green_square::green_square::red_square: | 
 ### SUIT MUD
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -76,7 +76,7 @@ Authentication Wrapper | 2 | suit-authentication-wrapper | SUIT Manifest | N/M |
 Manifest | 3 | suit-manifest | SUIT Manifest | N/M | RWX
 CoSWID (s) | 14 | suit-coswid | SUIT Update Management | RECOMMENDED | RWX
 Payload Fetch (s) | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
-Payload Installation (s) | 17 | suit-install | SUIT Manifest | OPTIONAL | RWX
+Payload Installation (s) | 20 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description (s) | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
 SUIT MUD (s) | ? | suit-mud | SUIT MUD | OPTIONAL | ---
 
@@ -93,7 +93,7 @@ Image Invocation | 9 | suit-invoke | SUIT Manifest | OPTIONAL | RWX
 CoSWID | 14 | suit-coswid | SUIT Update Management | RECOMMENDED | RWX
 Dependency Resolution | 15 | suit-dependency-resolution | SUIT Multiple Trust Domains | N/M | RWX
 Payload Fetch | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
-Payload Installation | 17 | suit-install | SUIT Manifest | OPTIONAL | RWX
+Payload Installation | 20 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
 Uninstall | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RWX
 SUIT MUD | ? | suit-mud | SUIT MUD | OPTIONAL | ---
@@ -142,8 +142,8 @@ Wait | 29 | suit-directive-wait | SUIT Update Management | N/M | RWX
 Swap | 31 | suit-directive-swap | SUIT Manifest | N/M | RWX
 Run Sequence | 32 | suit-directive-run-sequence | SUIT Manifest | OPTIONAL | RWX
 Unlink | 33 | suit-directive-unlink | SUIT Multiple Trust Domains | N/M | RWX
-Override Multiple | 34? | suit-directive-override-multiple | SUIT Update Management | N/M | RWX
-Copy Params | 35? | suit-directive-copy-params | SUIT Update Management | N/M | RWX
+Override Multiple | 34 | suit-directive-override-multiple | SUIT Update Management | N/M | RWX
+Copy Params | 35 | suit-directive-copy-params | SUIT Update Management | N/M | RWX
 
 ### SUIT Parameters
 
@@ -157,24 +157,33 @@ Component Slot | 5 | suit-parameter-component-slot | SUIT Manifest | N/M | RWX
 Strict Order | 12 | suit-parameter-strict-order | SUIT Manifest | N/M | RWX
 Soft Failure | 13 | suit-parameter-soft-failure | SUIT Manifest | N/M | RWX
 Image Size | 14 | suit-parameter-image-size | SUIT Manifest | N/M | RWX
+Fetch Arguments | 16? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | RWX
 Content | 18 | suit-parameter-content | SUIT Manifest | N/M | RWX
 Encryption Info (AES-KW) | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
 Encryption Info (ECDH)   | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
 Encryption Info (HPKE)   | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RW-
-CEK Verification | 20 | suit-parameter-cek-verification | SUIT Encrypted Payload | N/M | ---
 URI | 21 | suit-parameter-uri | SUIT Manifest | N/M | RWX
 Source Component | 22 | suit-parameter-source-component | SUIT Manifest | N/M | RWX
 Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RWX
 Device ID | 24 | suit-parameter-device-identifier | SUIT Manifest | N/M | RWX
 Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management | N/M | RWX
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RWX
-Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX
+Version | 28 | suit-parameter-version | SUIT Update Management | N/M | ---
 Wait Info | 29 | suit-parameter-wait-info | SUIT Update Management | N/M | RWX
-Fetch Arguments | 30? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | RWX
+Component Metadata | 30 | suit-parameter-component-metadata | SUIT Update Management | N/M | ---
 
 ### SUIT Text
 
 NOTE: libcsuit ignores this while processing a SUIT Manifest
+
+Name | Label | CDDL Structure | IN | IS | Supported?
+---|---|---|---|---|---
+Manifest Description | 1 | suit-text-manifest-description | SUIT Manifest | OPTIONAL | RWX
+Update Description | 2 | suit-text-update-description | SUIT Manifest | OPTIONAL | RWX
+Manifest JSON Source | 3 | suit-text-manifest-json-source | SUIT Manifest | OPTIONAL | RWX
+Manifest YAML Source | 4 | suit-text-manifest-yaml-source | SUIT Manifest | OPTIONAL | RWX
+
+### SUIT Text Component
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
@@ -186,6 +195,29 @@ Component Description | 5 | suit-text-component-description | SUIT Manifest | OP
 Component Version | 6 | suit-text-component-version | SUIT Manifest | OPTIONAL | RWX
 Version Required | 7 | suit-text-version-required | SUIT Update Management | N/M | RWX
 
+### SUIT Wait Info
+
+Name | Label | CDDL Structure | IN | IS | Supported?
+---|---|---|---|---|---
+Event Authorization | 1 | suit-wait-event-authorization | SUIT Update Management | N/M | ---
+Event Power | 2 | suit-wait-event-power | SUIT Update Management | N/M | ---
+Event Network | 3 | suit-wait-event-network | SUIT Update Management | N/M | ---
+Event Other Device Version | 4 | suit-wait-event-other-device-version | SUIT Update Management | N/M | ---
+Event Time | 5 | suit-wait-event-time | SUIT Update Management | N/M | ---
+Event Time of Day | 6 | suit-wait-event-time-of-day | SUIT Update Management | N/M | ---
+Event Day of Week | 7 | suit-wait-event-day-of-week | SUIT Update Management | N/M | ---
+
+### SUIT Component Metadata
+Name | Label | CDDL Structure | IN | IS | Supported?
+---|---|---|---|---|---
+Default Permissions | 1 | suit-meta-default-permissions | SUIT Update Management | N/M | ---
+User Permissions | 2 | suit-meta-user-permissions | SUIT Update Management | N/M | ---
+Group Permissions | 3 | suit-meta-group-permissions | SUIT Update Management | N/M | ---
+Role Permissions | 4 | suit-meta-role-permissions | SUIT Update Management | N/M | ---
+File Type | 5 | suit-meta-file-type | SUIT Update Management | N/M | ---
+Modification Time | 6 | suit-meta-modification-time | SUIT Update Management | N/M | ---
+Creation Time | 7 | suit-meta-creation-time | SUIT Update Management | N/M | ---
+Creator | 8 | suit-meta-creator | SUIT Update Management | N/M | ---
 ## SUIT Report
 ### SUIT_Report
 

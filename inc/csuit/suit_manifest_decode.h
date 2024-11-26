@@ -67,9 +67,11 @@ suit_err_t suit_decode_dependencies_from_item(suit_decode_mode_t mode,
                                               bool next,
                                               suit_dependencies_t *dependencies);
 
-suit_err_t suit_decode_version_match(QCBORDecodeContext *context,
-                                     QCBORItem *item,
-                                     bool next,
+suit_err_t suit_decode_version_match_from_item(QCBORDecodeContext *context,
+                                               QCBORItem *item,
+                                               bool next,
+                                               suit_version_match_t *version_match);
+suit_err_t suit_decode_version_match(const suit_buf_t *buf,
                                      suit_version_match_t *version_match);
 
 suit_err_t suit_decode_wait_event_from_item(QCBORDecodeContext *context,
@@ -78,6 +80,13 @@ suit_err_t suit_decode_wait_event_from_item(QCBORDecodeContext *context,
                                             suit_wait_event_t *wait_event);
 suit_err_t suit_decode_wait_event(const suit_buf_t *buf,
                                   suit_wait_event_t *wait_event);
+
+suit_err_t suit_decode_component_metadata(const suit_buf_t *buf,
+                                          suit_component_metadata_t *component_metadata);
+suit_err_t suit_decode_component_metadata_from_item(QCBORDecodeContext *context,
+                                                    QCBORItem *item,
+                                                    bool next,
+                                                    suit_component_metadata_t *component_metadata);
 
 #ifdef __cplusplus
 }

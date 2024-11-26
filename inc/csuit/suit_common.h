@@ -274,10 +274,9 @@ typedef enum suit_con_dir_key {
 #define SUIT_SEVERABLE_EXISTS              127 // 0b01111111
 #define SUIT_SEVERABLE_IS_VERIFIED         128 // 0b10000000
 
+/* draft-suit-update-management */
 typedef enum suit_wait_event_key {
     SUIT_WAIT_EVENT_INVALID                 = 0,
-
-    /* draft-ietf-suit-update-management */
     SUIT_WAIT_EVENT_AUTHORIZATION           = 1,
     SUIT_WAIT_EVENT_POWER                   = 2,
     SUIT_WAIT_EVENT_NETWORK                 = 3,
@@ -287,7 +286,6 @@ typedef enum suit_wait_event_key {
     SUIT_WAIT_EVENT_DAY_OF_WEEK             = 7,
 } suit_wait_event_key_t;
 
-/* draft-suit-update-management */
 #define SUIT_WAIT_EVENT_CONTAINS_AUTHORIZATION BIT(SUIT_WAIT_EVENT_AUTHORIZATION)
 #define SUIT_WAIT_EVENT_CONTAINS_POWER BIT(SUIT_WAIT_EVENT_POWER)
 #define SUIT_WAIT_EVENT_CONTAINS_NETWORK BIT(SUIT_WAIT_EVENT_NETWORK)
@@ -295,6 +293,27 @@ typedef enum suit_wait_event_key {
 #define SUIT_WAIT_EVENT_CONTAINS_TIME BIT(SUIT_WAIT_EVENT_TIME)
 #define SUIT_WAIT_EVENT_CONTAINS_TIME_OF_DAY BIT(SUIT_WAIT_EVENT_TIME_OF_DAY)
 #define SUIT_WAIT_EVENT_CONTAINS_DAY_OF_WEEK BIT(SUIT_WAIT_EVENT_DAY_OF_WEEK)
+
+typedef enum suit_meta_key {
+    SUIT_META_INVALID               = 0,
+    SUIT_META_DEFAULT_PERMISSIONS   = 1,
+    SUIT_META_USER_PERMISSIONS      = 2,
+    SUIT_META_GROUP_PERMISSIONS     = 3,
+    SUIT_META_ROLE_PERMISSIONS      = 4,
+    SUIT_META_FILE_TYPE             = 5,
+    SUIT_META_MODIFICATION_TIME     = 6,
+    SUIT_META_CREATION_TIME         = 7,
+    SUIT_META_CREATOR               = 8,
+} suit_meta_key_t;
+
+#define SUIT_META_CONTAINS_DEFAULT_PERMISSIONS BIT(SUIT_META_DEFAULT_PERMISSIONS)
+#define SUIT_META_CONTAINS_USER_PERMISSIONS BIT(SUIT_META_USER_PERMISSIONS)
+#define SUIT_META_CONTAINS_GROUP_PERMISSIONS BIT(SUIT_META_GROUP_PERMISSIONS)
+#define SUIT_META_CONTAINS_ROLE_PERMISSIONS BIT(SUIT_META_ROLE_PERMISSIONS)
+#define SUIT_META_CONTAINS_FILE_TYPE BIT(SUIT_META_FILE_TYPE)
+#define SUIT_META_CONTAINS_MODIFICATION_TIME BIT(SUIT_META_MODIFICATION_TIME)
+#define SUIT_META_CONTAINS_CREATION_TIME BIT(SUIT_META_CREATION_TIME)
+#define SUIT_META_CONTAINS_CREATOR BIT(SUIT_META_CREATOR)
 
 typedef enum suit_parameter_key {
     SUIT_PARAMETER_INVALID              = 0,
@@ -307,12 +326,12 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_STRICT_ORDER         = 12,
     SUIT_PARAMETER_SOFT_FAILURE         = 13,
     SUIT_PARAMETER_IMAGE_SIZE           = 14,
+    SUIT_PARAMETER_FETCH_ARGS           = 16, /* XXX */
     SUIT_PARAMETER_CONTENT              = 18,
     SUIT_PARAMETER_URI                  = 21,
     SUIT_PARAMETER_SOURCE_COMPONENT     = 22,
     SUIT_PARAMETER_INVOKE_ARGS          = 23,
     SUIT_PARAMETER_DEVICE_IDENTIFIER    = 24,
-    SUIT_PARAMETER_FETCH_ARGS           = 30, /* XXX */
 
     /* draft-ietf-suit-update-management */
     SUIT_PARAMETER_USE_BEFORE           = 4,
@@ -320,6 +339,7 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_UPDATE_PRIORITY      = 27,
     SUIT_PARAMETER_VERSION              = 28,
     SUIT_PARAMETER_WAIT_INFO            = 29,
+    SUIT_PARAMETER_COMPONENT_METADATA   = 30, /* XXX */
 
     /* draft-ietf-suit-firmware-encryption */
     SUIT_PARAMETER_ENCRYPTION_INFO      = 19,
@@ -346,6 +366,7 @@ typedef enum suit_parameter_key {
 #define SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY BIT(SUIT_PARAMETER_UPDATE_PRIORITY)
 #define SUIT_PARAMETER_CONTAINS_VERSION BIT(SUIT_PARAMETER_VERSION)
 #define SUIT_PARAMETER_CONTAINS_WAIT_INFO BIT(SUIT_PARAMETER_WAIT_INFO)
+#define SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA BIT(SUIT_PARAMETER_COMPONENT_METADATA)
 
 /* draft-suit-trust-domains */
 #define SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO BIT(SUIT_PARAMETER_ENCRYPTION_INFO)
@@ -478,18 +499,103 @@ typedef struct suit_version_match {
 } suit_version_match_t;
 
 /*
+ * SUIT_Filetype
+ */
+typedef enum suit_filetype {
+    SUIT_FILETYPE_INVALID = 0,
+    SUIT_FILETYPE_REGULAR = 1,
+    SUIT_FILETYPE_DIRECTORY = 2,
+    SUIT_FILETYPE_SYMBOLIC = 3,
+} suit_filetype_t;
+
+/*
+ * SUIT_meta_permissions
+ */
+typedef union {
+    uint64_t val;
+    struct {
+        uint64_t traverse_exec: 1;
+        uint64_t create_write: 1;
+        uint64_t list_read: 1;
+        uint64_t creatdir_append: 1;
+        uint64_t read_attr: 1;
+        uint64_t read_perm: 1;
+        uint64_t change_perm: 1;
+        uint64_t change_owner: 1;
+        uint64_t write_attr: 1;
+        uint64_t recurse_delete: 1;
+        uint64_t delete: 1;
+        uint64_t sync: 1;
+        uint64_t read_attr_ex: 1;
+        uint64_t write_attr_ex: 1;
+        //TODO:  $$SUIT_meta_permission_bits_extensions
+        uint64_t padding: 50; // non-zero if this value is set
+    };
+} suit_permissions_t;
+
+/*
+ * SUIT_meta_actor_id
+ */
+typedef enum {
+    SUIT_ACTOR_TYPE_INVALID = 0,
+    SUIT_ACTOR_TYPE_UUID_TAGGED = 1,
+    SUIT_ACTOR_TYPE_BSTR = 2,
+    SUIT_ACTOR_TYPE_TSTR = 3,
+    SUIT_ACTOR_TYPE_INT = 4,
+} suit_actor_type_t;
+
+typedef struct suit_actor_id {
+    suit_actor_type_t type;
+    union {
+        suit_buf_t actor_id_str;
+        int64_t actor_id_i64;
+    };
+} suit_actor_id_t;
+
+typedef struct suit_permission_pair {
+    suit_actor_id_t actor;
+    suit_permissions_t permissions;
+} suit_permission_pair_t;
+/*
+ * SUIT_meta_permission_map
+ */
+typedef struct suit_permission_map {
+    size_t                 len;
+    suit_permission_pair_t permission_map[SUIT_MAX_ARRAY_LENGTH];
+} suit_permission_map_t;
+
+/*
+ * SUIT_Component_Metadata
+ */
+typedef struct suit_component_metadata {
+    uint64_t                    exists;
+
+    suit_permissions_t default_permissions;
+    suit_permission_map_t user_permissions;
+    suit_permission_map_t group_permissions;
+    suit_permission_map_t role_permissions;
+    int64_t filetype; // suit_filetype_t
+    int64_t modification_time;
+    int64_t creation_time;
+    suit_actor_id_t creator;
+    //TODO: $$SUIT_Component_Metadata_Extensions
+} suit_component_metadata_t;
+
+/*
  * SUIT_Parameters
  */
 typedef struct suit_parameters {
     int64_t                         label;
     union {
+        /* only basic types are extracted here.
+         * bstr .cbor XXX are stored into string.
+         */
         suit_buf_t                  string;
         int64_t                     int64;
         uint64_t                    uint64;
         bool                        boolean;
         bool                        isNull;
         suit_digest_t               digest;
-        suit_version_match_t        version_match;
     } value;
 } suit_parameters_t;
 
@@ -828,7 +934,14 @@ typedef struct suit_store_args {
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 
     /*! Extra arguments derived from fetch-args */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
     UsefulBufC fetch_args;
+#endif
+
+    /*! Metadata for storing data */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+    suit_component_metadata_t component_metadata;
+#endif
 
     /*! SUIT_STORE, SUIT_COPY, SUIT_SWAP, or SUIT_UNLINK */
     suit_store_key_t operation;
@@ -863,7 +976,16 @@ typedef struct suit_fetch_args {
     /*!
      *  Set by suit-parameter-fetch-args.
      */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
     UsefulBufC args;
+#endif
+
+    /*!
+     *  Set by suit-parameter-component-metadata.
+     */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+    suit_component_metadata_t component_metadata;
+#endif
 
     /* in draft-ietf-suit-firmware-encryption */
     /*! Pointer and length to the COSE_Encrypt */
@@ -992,6 +1114,9 @@ typedef struct suit_parameter_args {
 
     /*! used in suit-directive-wait */
     suit_wait_event_t           wait_info;
+
+    /*! used in suit-directive-fetch, suit-directive-write, ... */
+    suit_component_metadata_t   component_metadata;
 
     /* in draft-ietf-suit-trust-domains */
 

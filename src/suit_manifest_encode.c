@@ -265,14 +265,24 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
         case SUIT_PARAMETER_FETCH_ARGS:
 #endif
+
         /* draft-ietf-suit-firmware-encryption */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
         case SUIT_PARAMETER_ENCRYPTION_INFO:
 #endif
+
         /* draft-ietf-suit-update-management */
-        /* bstr .cbor SUIT_Wait_Event */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
+        /* bstr .cbor SUIT_Parameter_Version_Match */
+        case SUIT_PARAMETER_VERSION:
+#endif
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
+        /* bstr .cbor SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
+#endif
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_INDEX)
+        /* bstr .cbor SUIT_Component_Metadata */
+        case SUIT_PARAMETER_COMPONENT_METADATA:
 #endif
             QCBOREncode_AddBytesToMapN(context, param->label, (UsefulBufC){.ptr = param->value.string.ptr, .len = param->value.string.len});
             break;
@@ -296,20 +306,6 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
             result = suit_encode_append_digest(&param->value.digest, 0, context);
             QCBOREncode_CloseBstrWrap(context, NULL);
             break;
-
-        /* SUIT_Parameter_Version_Match */
-#if !defined(LIBCSUIT_DISABLE_CONDITION_VERSION)
-        case SUIT_PARAMETER_VERSION:
-            QCBOREncode_OpenArrayInMapN(context, param->label);
-            QCBOREncode_AddInt64(context, param->value.version_match.type);
-            QCBOREncode_OpenArray(context);
-            for (size_t j = 0; j < param->value.version_match.value.len; j++) {
-                QCBOREncode_AddInt64(context, param->value.version_match.value.int64[j]);
-            }
-            QCBOREncode_CloseArray(context);
-            QCBOREncode_CloseArray(context);
-            break;
-#endif /* !LIBCSUIT_DISABLE_CONDITION_VERSION */
 
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
