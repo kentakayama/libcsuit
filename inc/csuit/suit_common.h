@@ -1197,10 +1197,10 @@ typedef struct suit_inputs {
 } suit_inputs_t;
 
 typedef struct suit_extracted {
-#if !defined(DISABLE_LIBCSUIT_COMMON_DEPENDENCIES)
+#if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
     suit_dependencies_t dependencies;
 #endif
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_COMPONENT_ID)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
     suit_component_identifier_t manifest_component_id;
 #endif
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
@@ -1213,29 +1213,29 @@ typedef struct suit_extracted {
     UsefulBufC manifest;
     suit_digest_t manifest_digest;
     UsefulBufC shared_sequence;
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_REFERENCE_URI)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
     UsefulBufC reference_uri;
 #endif
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_DEPENDENCY_RESOLUTION)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION)
     UsefulBufC dependency_resolution;
     suit_digest_t dependency_resolution_digest;
 #endif
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_PAYLOAD_FETCH)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
     UsefulBufC payload_fetch;
     suit_digest_t payload_fetch_digest;
 #endif
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_INSTALL)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
     UsefulBufC install;
     suit_digest_t install_digest;
 #endif
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_UNINSTALL)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
     UsefulBufC uninstall;
 #endif
     UsefulBufC validate;
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_LOAD)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
     UsefulBufC load;
 #endif
-#if !defined(DISABLE_LIBCSUIT_MANIFEST_INVOKE)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
     UsefulBufC invoke;
 #endif
 } suit_extracted_t;
