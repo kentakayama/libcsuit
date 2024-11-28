@@ -5,7 +5,7 @@ FROM debian:latest
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN apt-get -y install curl git gcc make xxd libcunit1-dev ruby
+RUN apt-get -y install curl git gcc make xxd libcunit1-dev ruby python3
 RUN gem install cbor-diag
 
 RUN git clone -b v3.1.0 --depth 1 https://github.com/Mbed-TLS/mbedtls.git /root/mbedtls
