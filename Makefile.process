@@ -28,6 +28,8 @@ SRCS = \
 	examples/suit_manifest_process_main.c
 OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
+WORKDIR := "./tmp"
+
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
     CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
@@ -50,6 +52,7 @@ $(TARGET): $(OBJS) | ./bin
 
 define test-one
 	$(TARGET) ./testfiles/suit_manifest_exp$(1).cbor \
+		-p "$(WORKDIR)" \
 		-u "https://cdn.example/example3.bin" -f "./testfiles/raw_image.bin" \
 		-u "http://example.com/file.bin" -f "./testfiles/raw_image.bin" \
 		-u "http://example.com/dependent.suit" -f "./testfiles/suit_manifest_expS0.cbor" \

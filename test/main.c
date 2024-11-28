@@ -215,7 +215,7 @@ void test_component_identifier_to_filename(void)
     char filename[SUIT_MAX_NAME_LENGTH];
     suit_err_t result = suit_component_identifier_to_filename(&c, SUIT_MAX_NAME_LENGTH, filename);
 
-    char expected_filename[] = "./tmp/TEEP-Device/SecureFS/8d82573a926d4754935332dc29997f74/ta";
+    char expected_filename[] = "/TEEP-Device/SecureFS/8d82573a926d4754935332dc29997f74/ta";
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
     CU_ASSERT_STRING_EQUAL(filename, expected_filename);
 }

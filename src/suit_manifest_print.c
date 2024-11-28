@@ -575,7 +575,6 @@ suit_err_t suit_component_identifier_to_filename(const suit_component_identifier
 {
     size_t pos = 0;
 
-    pos += sprintf(&filename[pos], "./tmp");
     for (size_t i = 0; i < comp_id->len; i++) {
         if (pos + 1 + 1 > max_filename_len) {
             return SUIT_ERR_NO_MEMORY;
