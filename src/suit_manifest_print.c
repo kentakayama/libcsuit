@@ -457,6 +457,18 @@ char* suit_cose_alg_to_str(int64_t id)
         return "AES-CCM-64-128-128";
     case 33:
         return "AES-CCM-64-128-256";
+    case -65534:
+        return "A128CTR";
+    case -65533:
+        return "A192CTR";
+    case -65532:
+        return "A256CTR";
+    case -65531:
+        return "A128CBC";
+    case -65530:
+        return "A192CBC";
+    case -65529:
+        return "A256CBC";
     }
     return NULL;
 }
@@ -520,15 +532,15 @@ void suit_print_cose_key(QCBORDecodeContext *context,
             printf("/ crv / -1: %ld / %s /", item->val.int64, suit_cose_crv_to_str(item->val.int64));
             break;
         case -2: /* x */
-            printf("/ x / -2: / ");
+            printf("/ x / -2: ");
             suit_print_hex(item->val.string.ptr, item->val.string.len);
             break;
         case -3: /* y */
-            printf("/ y / -3: / ");
+            printf("/ y / -3: ");
             suit_print_hex(item->val.string.ptr, item->val.string.len);
             break;
         }
-        if (i + 1 != item->val.uCount) {
+        if (i + 1 != map_count) {
             printf(",");
         }
         printf("\n");
@@ -847,6 +859,10 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
                 }
                 printf("%*s[\n", indent_space + 2 * indent_delta, "");
                 printf("%*s/ protected: / ", indent_space + 3 * indent_delta, "");
+                QCBORDecode_PeekNext(&context, &item);
+                if (item.uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
                 if (item.val.string.len > 0) {
                     printf("<< ");
                     QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
