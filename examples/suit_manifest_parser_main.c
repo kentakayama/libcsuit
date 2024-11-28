@@ -23,7 +23,7 @@ int main(int argc,
     int exit_code = EXIT_SUCCESS;
     // check arguments.
     if (argc < 1) {
-        printf("%s <manifest file path> [tabstop 2] [indent 4]\n", argv[0]);
+        printf("%s <manifest file path> [tabstop 2] [indent 4] [output]\n", argv[0]);
         return EXIT_FAILURE;
     }
     uint16_t tabstop = 2;
@@ -33,6 +33,10 @@ int main(int argc,
     uint16_t indent = 4;
     if (argc >= 4) {
         indent = atoi(argv[3]);
+    }
+    char *output = NULL;
+    if (argc >= 5) {
+        output = argv[4];
     }
     suit_err_t result = 0;
     char *manifest_file = argv[1];
@@ -128,6 +132,10 @@ int main(int argc,
         goto end;
     }
     printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
+
+    if (output != NULL) {
+        write_to_file(output, ret_pos, encode_len);
+    }
 
     if (manifest_len != encode_len) {
         printf("main : The manifest length is changed %ld => %ld\n", manifest_len, encode_len);
