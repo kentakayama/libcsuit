@@ -264,6 +264,11 @@ suit_err_t suit_decode_actor_id_from_item(QCBORDecodeContext *context,
             actor_id->actor_id_str.ptr = (uint8_t *)item->label.string.ptr;
             actor_id->actor_id_str.len = item->label.string.len;
             break;
+        case QCBOR_TYPE_UINT64:
+            if (item->label.uint64 >= INT64_MAX) {
+                return SUIT_ERR_INVALID_TYPE_OF_KEY;
+            }
+            // fallthrough
         case QCBOR_TYPE_INT64:
             actor_id->type = SUIT_ACTOR_TYPE_INT;
             actor_id->actor_id_i64 = item->label.int64;
@@ -294,6 +299,10 @@ suit_err_t suit_decode_actor_id_from_item(QCBORDecodeContext *context,
             actor_id->actor_id_str.ptr = (uint8_t *)item->val.string.ptr;
             actor_id->actor_id_str.len = item->val.string.len;
             break;
+        case QCBOR_TYPE_UINT64:
+            if (item->val.uint64 >= INT64_MAX) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
         case QCBOR_TYPE_INT64:
             actor_id->type = SUIT_ACTOR_TYPE_INT;
             actor_id->actor_id_i64 = item->val.int64;

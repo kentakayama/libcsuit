@@ -169,12 +169,12 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_URI)
         case SUIT_PARAMETER_URI:
             QCBORDecode_GetTextString(context, &val.str);
+            if (val.str.len > SUIT_MAX_URI_LENGTH) {
+                result = SUIT_ERR_NO_MEMORY;
+                goto error;
+            }
             for (size_t j = 0; j < suit_index->len; j++) {
                 uint8_t tmp_index = suit_index->index[j];
-                if (val.str.len > SUIT_MAX_URI_LENGTH) {
-                    result = SUIT_ERR_NO_MEMORY;
-                    goto error;
-                }
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_URI) ||
                     directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
