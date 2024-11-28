@@ -10,6 +10,7 @@
     \brief  A sample to use libcsuit processing
  */
 
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h> // pid_t
@@ -141,7 +142,11 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
                 printf("fetched from %s as %s (%ld bytes) to %s\n\n", pairs[i].binary_in_hex, pairs[i].url, fetch_ret->buf_len, filename);
             }
 
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+            write_to_file_component_metadata(filename, fetch_args.ptr, fetch_ret->buf_len, &fetch_args.component_metadata);
+#else
             write_to_file(filename, fetch_args.ptr, fetch_ret->buf_len);
+#endif /* LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
             break;
         }
     }
@@ -320,13 +325,14 @@ suit_err_t __wrap_suit_invoke_callback(suit_invoke_args_t invoke_args)
 suit_err_t store_component(const char *dst,
                            UsefulBufC src,
                            UsefulBufC encryption_info,
-                           suit_mechanism_t mechanisms[])
+                           suit_mechanism_t mechanisms[],
+                           const suit_component_metadata_t *component_metadata)
 {
     suit_err_t result = SUIT_SUCCESS;
     UsefulBuf decrypted_payload_buf = NULLUsefulBuf;
 
     if (!UsefulBuf_IsNULLOrEmptyC(encryption_info)) {
-#ifndef LIBCSUIT_DISABLE_ENCRYPTION
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
         decrypted_payload_buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
         decrypted_payload_buf.len = SUIT_MAX_DATA_SIZE;
         UsefulBufC tmp = NULLUsefulBufC;
@@ -343,10 +349,14 @@ suit_err_t store_component(const char *dst,
         src = tmp;
 #else
         return SUIT_ERR_NOT_IMPLEMENTED;
-#endif /* LIBCSUIT_DISABLE_ENCRYPTION */
+#endif /* LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO */
     }
 
-    size_t len = write_to_file(dst, src.ptr, src.len);
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+    ssize_t len = write_to_file_component_metadata(dst, src.ptr, src.len, component_metadata);
+#else
+    ssize_t len = write_to_file(dst, src.ptr, src.len);
+#endif
     if (len != src.len) {
         result = SUIT_ERR_FATAL;
         goto out;
@@ -361,7 +371,8 @@ out:
 suit_err_t copy_component(const char *dst,
                           const char *src,
                           UsefulBufC encryption_info,
-                          suit_mechanism_t mechanisms[])
+                          suit_mechanism_t mechanisms[],
+                          suit_component_metadata_t *component_metadata)
 {
     UsefulBuf buf;
     buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
@@ -374,7 +385,7 @@ suit_err_t copy_component(const char *dst,
         return SUIT_ERR_NO_MEMORY;
     }
     buf.len = len;
-    suit_err_t result = store_component(dst, UsefulBuf_Const(buf), encryption_info, mechanisms);
+    suit_err_t result = store_component(dst, UsefulBuf_Const(buf), encryption_info, mechanisms, component_metadata);
     free(buf.ptr);
     return result;
 }
@@ -409,12 +420,12 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
     }
     switch (store_args.operation) {
     case SUIT_STORE:
-        result = store_component(dst, store_args.src_buf, store_args.encryption_info, store_args.mechanisms);
+        result = store_component(dst, store_args.src_buf, store_args.encryption_info, store_args.mechanisms, &store_args.component_metadata);
         break;
     case SUIT_COPY:
         result = suit_component_identifier_to_filename(&store_args.src, SUIT_MAX_NAME_LENGTH, src);
         if (result == SUIT_SUCCESS) {
-            result = copy_component(dst, src, store_args.encryption_info, store_args.mechanisms);
+            result = copy_component(dst, src, store_args.encryption_info, store_args.mechanisms, &store_args.component_metadata);
         }
         break;
     case SUIT_SWAP:

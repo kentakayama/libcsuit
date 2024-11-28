@@ -1182,6 +1182,10 @@ suit_err_t suit_print_component_metadata(const suit_component_metadata_t *compon
                                          const uint32_t indent_delta)
 {
     bool comma = false;
+    if (component_metadata->exists == 0) {
+        printf("{}");
+        return SUIT_SUCCESS;
+    }
     printf("{\n");
 
     if (component_metadata->exists & SUIT_META_CONTAINS_DEFAULT_PERMISSIONS) {
@@ -2410,15 +2414,23 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
     printf("  src-buf : ");
     suit_print_hex_in_max(store_args.src_buf.ptr, store_args.src_buf.len, SUIT_MAX_PRINT_BYTE_COUNT);
     printf("\n");
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
     if (!UsefulBuf_IsNULLOrEmptyC(store_args.encryption_info)) {
         printf("  encryption-info : ");
         suit_print_hex_string(store_args.encryption_info.ptr, store_args.encryption_info.len);
         printf("\n");
     }
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
     printf("  fetch-args : ");
     suit_print_hex(store_args.fetch_args.ptr, store_args.fetch_args.len);
     printf("\n");
-
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+    printf("  component-metadata : ");
+    suit_print_component_metadata(&store_args.component_metadata, 2, 2);
+    printf("\n");
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
     printf("  ptr : %p (%ld)\n", store_args.src_buf.ptr, store_args.src_buf.len);
     printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", store_args.report.record_on_success, store_args.report.record_on_failure, store_args.report.sysinfo_success, store_args.report.sysinfo_failure);
     printf("}\n\n");
@@ -2432,12 +2444,17 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
 
     suit_err_t ret = SUIT_SUCCESS;
     printf("fetch callback : {\n");
-    printf("  uri : ");
-    suit_print_tstr_in_max(fetch_args.uri, fetch_args.uri_len, SUIT_MAX_PRINT_URI_COUNT);
-    printf(" (%ld)\n", fetch_args.uri_len);
+    printf("  uri : \"%s\" (%ld, including NUL)\n", fetch_args.uri, fetch_args.uri_len);
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
     printf("  fetch-args : ");
     suit_print_hex(fetch_args.args.ptr, fetch_args.args.len);
     printf("\n");
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+    printf("  component-metadata : ");
+    suit_print_component_metadata(&fetch_args.component_metadata, 2, 2);
+    printf("\n");
+#endif /* !LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
     printf("  dst-component-identifier : ");
     suit_print_component_identifier(&fetch_args.dst);
     printf("\n");

@@ -48,6 +48,7 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
 
     size_t length = item.val.uCount;
     for (size_t i = 0; i < length; i++) {
+        memset(&val, 0, sizeof(val));
         QCBORDecode_PeekNext(context, &item);
         if (!(item.uLabelType == QCBOR_TYPE_INT64 || item.uLabelType == QCBOR_TYPE_UINT64)) {
             result = SUIT_ERR_INVALID_TYPE_OF_KEY;
@@ -168,12 +169,12 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_URI)
         case SUIT_PARAMETER_URI:
             QCBORDecode_GetTextString(context, &val.str);
+            if (val.str.len > SUIT_MAX_URI_LENGTH) {
+                result = SUIT_ERR_NO_MEMORY;
+                goto error;
+            }
             for (size_t j = 0; j < suit_index->len; j++) {
                 uint8_t tmp_index = suit_index->index[j];
-                if (val.str.len > SUIT_MAX_URI_LENGTH) {
-                    result = SUIT_ERR_NO_MEMORY;
-                    goto error;
-                }
                 if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_URI) ||
                     directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
                     parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
@@ -599,9 +600,9 @@ suit_err_t suit_process_fetch(suit_extracted_t *extracted,
             if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
                 fetch.encryption_info = parameters[tmp_index].encryption_info;
                 memcpy(fetch.mechanisms, suit_inputs->mechanisms, sizeof(fetch.mechanisms));
-                if (sizeof(fetch.mechanisms) != sizeof(suit_mechanism_t) * 4) {
-                    return SUIT_ERR_FATAL;
-                }
+            }
+            if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
+                fetch.component_metadata = parameters[tmp_index].component_metadata;
             }
 
             /* the size of uri is already checked at suit-directive-override-parameters */
@@ -645,10 +646,9 @@ suit_err_t suit_process_fetch(suit_extracted_t *extracted,
 
             if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
                 store.encryption_info = parameters[tmp_index].encryption_info;
-                memcpy(store.mechanisms, suit_inputs->mechanisms, sizeof(store.mechanisms));
-                if (sizeof(store.mechanisms) != sizeof(suit_mechanism_t) * 4) {
-                    return SUIT_ERR_FATAL;
-                }
+            }
+            if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
+                store.component_metadata = parameters[tmp_index].component_metadata;
             }
             if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) {
                 store.fetch_args = parameters[tmp_index].fetch_args;
@@ -957,14 +957,10 @@ suit_err_t suit_process_write(const suit_extracted_t *extracted,
         store.src_buf = parameters[tmp_index].content;
         if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
             store.encryption_info = parameters[tmp_index].encryption_info;
-
-            if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
-                store.encryption_info = parameters[tmp_index].encryption_info;
-                memcpy(store.mechanisms, suit_inputs->mechanisms, sizeof(store.mechanisms));
-                if (sizeof(store.mechanisms) != sizeof(suit_mechanism_t) * SUIT_MAX_KEY_NUM) {
-                    return SUIT_ERR_FATAL;
-                }
-            }
+            memcpy(store.mechanisms, suit_inputs->mechanisms, sizeof(store.mechanisms));
+        }
+        if (parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
+            store.component_metadata = parameters[tmp_index].component_metadata;
         }
         store.report = report;
         const suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
@@ -1386,7 +1382,7 @@ suit_err_t suit_process_copy_params(QCBORDecodeContext *context,
                     if (!(parameters[src_index].exists & SUIT_PARAMETER_COMPONENT_METADATA)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    parameters[tmp_index].exists != SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
+                    parameters[tmp_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
                     parameters[tmp_index].component_metadata = parameters[src_index].component_metadata;
                     break;
 #endif
