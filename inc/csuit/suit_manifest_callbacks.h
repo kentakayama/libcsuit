@@ -75,6 +75,17 @@ suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
 suit_err_t suit_condition_callback(suit_condition_args_t condition_args);
 
 /*!
+    \brief  SUIT set-version callback triggerd in libcsuit
+    \param[in]      set_version         Array of int a.k.a. SUIT_Condition_Version_Comparison_Value. See \ref suit_int64_array_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+
+    This function is expected to be replaced by user defined function
+    using -Xlinker --wrap suit_set_version_callback. See Makefile.process as an example.
+    The libcsuit may trigger this function at suit-set-version requesting to check the condition.
+*/
+suit_err_t suit_set_version_callback(suit_int64_array_t set_version);
+
+/*!
     \brief  SUIT wait callback triggerd in libcsuit
     \param[in]      wait_args     Wait and suit-report arguments. See \ref suit_wait_args_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.

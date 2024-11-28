@@ -734,6 +734,7 @@ typedef struct suit_severable_members_digests {
 
 /* SUIT_Unseverable_Members */
 typedef struct suit_unseverable_members {
+    suit_int64_array_t              set_version;
     suit_command_sequence_t         validate;
     suit_command_sequence_t         load;
     suit_command_sequence_t         invoke;
@@ -1143,6 +1144,8 @@ typedef union {
          * if suit-manifest-component-id is specified.
          */
         uint16_t manifest_component_id  : 1;
+        /*! 1: Request libcsuit to process suit-set-version section. */
+        uint16_t set_version            : 1;
         /*! 1: Request libcsuit to process suit-dependency-resolution section. */
         uint16_t dependency_resolution  : 1;
         /*! 1: Request libcsuit to process suit-payload-fetch section. */
@@ -1200,7 +1203,9 @@ typedef struct suit_extracted {
 #if !defined(DISABLE_LIBCSUIT_MANIFEST_COMPONENT_ID)
     suit_component_identifier_t manifest_component_id;
 #endif
-
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
+    suit_int64_array_t set_version;
+#endif
     uint8_t components_len;
     suit_component_with_index_t components[SUIT_MAX_INDEX_NUM];
     suit_payloads_t payloads;

@@ -2114,6 +2114,26 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
             break;
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID */
 
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
+        case SUIT_SET_VERSION:
+            if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+                QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+                QCBORDecode_EnterArray(&context, &item);
+                if (item.val.uCount > SUIT_MAX_ARRAY_LENGTH) {
+                    result = SUIT_ERR_NO_MEMORY;
+                }
+                else {
+                    extracted->set_version.len = item.val.uCount;
+                    for (size_t i = 0; i < extracted->set_version.len; i++) {
+                        QCBORDecode_GetInt64(&context, &extracted->set_version.int64[i]);
+                    }
+                    QCBORDecode_ExitArray(&context);
+                    QCBORDecode_ExitBstrWrapped(&context);
+                }
+            }
+            break;
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_SET_VERSION */
+
         case SUIT_VALIDATE:
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->validate);
@@ -2534,6 +2554,23 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
             store.src_buf = suit_inputs->manifest;
             store.operation = SUIT_STORE;
             result = suit_store_callback(store);
+            if (result != SUIT_SUCCESS) {
+                goto error;
+            }
+        }
+        else if (!suit_inputs->process_flags.allow_missing) {
+            result = SUIT_ERR_MANIFEST_KEY_NOT_FOUND;
+            goto error;
+        }
+    }
+#endif
+
+    /* set-version */
+#if !defined(LIBCSUIT_DISABLE_SET_VERSION)
+    if (suit_inputs->process_flags.set_version) {
+        manifest_key = SUIT_SET_VERSION;
+        if (extracted.set_version.len > 0) {
+            result = suit_set_version_callback(extracted.set_version);
             if (result != SUIT_SUCCESS) {
                 goto error;
             }

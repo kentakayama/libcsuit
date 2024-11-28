@@ -51,6 +51,14 @@ suit_err_t suit_condition_callback(suit_condition_args_t condition_args)
 }
 
 /*
+ *  Public callback function for suit-set-version. See csuit/suit_manifest_callbacks.h
+ */
+suit_err_t suit_set_version_callback(suit_int64_array_t set_version)
+{
+    return suit_print_set_version(set_version);
+}
+
+/*
  *  Public callback function for suit-directive-wait. See csuit/suit_manifest_callbacks.h
  */
 suit_err_t suit_wait_callback(suit_wait_args_t wait_args)
