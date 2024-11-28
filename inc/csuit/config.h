@@ -104,6 +104,11 @@ extern "C" {
 
 
 /* XXX: DO NOT EDIT BELOW */
+
+#if defined(LIBCSUIT_DISABLE_ENCRYPTION)
+#define LIBCSUIT_DISABLE_ENCRYPTED_PAYLOAD
+#endif
+
 /*
  * Disable features if the document is disabled.
  */
