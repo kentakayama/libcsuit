@@ -226,6 +226,12 @@ ssize_t write_to_file_component_metadata(const char *file_path,
 
     while ((next_sep = strchr(next_sep + 1, sep)) != NULL) {
         const int dir_name_len = next_sep - file_path;
+        if (dir_name_len == 0) {
+            // e.g.  /usr/local/bin
+            //       ^
+            //    hit here
+            continue;
+        }
         memcpy(dir_name, file_path, dir_name_len);
         dir_name[dir_name_len] = '\0';
         result = mkdir(dir_name, dir_permissions);
