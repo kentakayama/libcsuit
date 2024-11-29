@@ -713,6 +713,8 @@ typedef struct suit_severable_manifest_members {
     uint8_t                         dependency_resolution_status;
     suit_command_sequence_t         payload_fetch;
     uint8_t                         payload_fetch_status;
+    suit_command_sequence_t         candidate_verification;
+    uint8_t                         candidate_verification_status;
     suit_command_sequence_t         install;
     uint8_t                         install_status;
     suit_text_map_t                 text;
@@ -726,6 +728,7 @@ typedef struct suit_severable_manifest_members {
 typedef struct suit_severable_members_digests {
     suit_digest_t                   dependency_resolution;
     suit_digest_t                   payload_fetch;
+    suit_digest_t                   candidate_verification;
     suit_digest_t                   install;
     suit_digest_t                   text;
     suit_digest_t                   coswid;
@@ -810,6 +813,8 @@ typedef struct suit_encode {
     suit_digest_t dependency_resolution_digest;
     UsefulBufC payload_fetch;
     suit_digest_t payload_fetch_digest;
+    UsefulBufC candidate_verification;
+    suit_digest_t candidate_verification_digest;
     UsefulBufC install;
     suit_digest_t install_digest;
     UsefulBufC text;
@@ -1150,6 +1155,8 @@ typedef union {
         uint16_t dependency_resolution  : 1;
         /*! 1: Request libcsuit to process suit-payload-fetch section. */
         uint16_t payload_fetch          : 1;
+        /*! 1: Request libcsuit to process suit-candidate-verification section. */
+        uint16_t candidate_verification : 1;
         /*! 1: Request libcsuit to process suit-install section. */
         uint16_t install                : 1;
         /*! 1: Request libcsuit to process suit-uninstall section. */
@@ -1223,6 +1230,10 @@ typedef struct suit_extracted {
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
     UsefulBufC payload_fetch;
     suit_digest_t payload_fetch_digest;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_CANDIDATE_VERIFICATION)
+    UsefulBufC candidate_verification;
+    suit_digest_t candidate_verification_digest;
 #endif
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
     UsefulBufC install;
