@@ -52,6 +52,13 @@ suit_err_t suit_encode_append_severed_members(const suit_encode_t *suit_encode,
     }
 #endif /* !LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH */
 
+#if !defined(LIBCSUIT_DISABLE_ENVELOPE_CANDIDATE_VERIFICATION)
+    if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->candidate_verification) &&
+        suit_encode->candidate_verification_digest.bytes.len > 0) {
+        QCBOREncode_AddBytesToMapN(context, SUIT_SEVERED_CANDIDATE_VERIFICATION, suit_encode->candidate_verification);
+    }
+#endif /* !LIBCSUIT_DISABLE_ENVELOPE_CANDIDATE_VERIFICATION */
+
 #if !defined(LIBCSUIT_DISABLE_ENVELOPE_INSTALL)
     if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->install) &&
         suit_encode->install_digest.bytes.len > 0) {
@@ -1160,7 +1167,26 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
     }
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH */
 
-    // 17
+    // 18
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_CANDIDATE_VERIFICATION)
+    if (suit_encode->candidate_verification_digest.bytes.len > 0) {
+        /* severed */
+#if defined(LIBCSUIT_DISABLE_ENVELOPE_CANDIDATE_VERIFICATION)
+        return SUIT_ERR_NOT_IMPLEMENTED;
+#else
+        QCBOREncode_AddUInt64(&context, SUIT_CANDIDATE_VERIFICATION);
+        result = suit_encode_append_digest(&suit_encode->candidate_verification_digest, 0, &context);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+#endif /* LIBCSUIT_DISABLE_ENVELOPE_CANDIDATE_VERIFICATION */
+    }
+    else if (!UsefulBuf_IsNULLOrEmptyC(suit_encode->candidate_verification)) {
+        QCBOREncode_AddBytesToMapN(&context, SUIT_CANDIDATE_VERIFICATION, suit_encode->candidate_verification);
+    }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_CANDIDATE_VERIFICATION */
+
+    // 20
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
     if (suit_encode->install_digest.bytes.len > 0) {
         /* severed */
