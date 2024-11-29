@@ -8,7 +8,7 @@ Authentication Wrapper | 2 | suit-authentication-wrapper | SUIT Manifest | N/M |
 Manifest | 3 | suit-manifest | SUIT Manifest | N/M | RWX
 CoSWID (s) | 14 | suit-coswid | SUIT Update Management | RECOMMENDED | RWX
 Payload Fetch (s) | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
-Candidate Verification | 18 | suit-candidate-verification | SUIT Multiple Trust Domains | N/M | ---
+Candidate Verification | 18 | suit-candidate-verification | SUIT Multiple Trust Domains | N/M | RWX
 Payload Installation (s) | 20 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description (s) | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
 SUIT MUD (s) | ? | suit-mud | SUIT MUD | OPTIONAL | ---
@@ -27,7 +27,7 @@ Image Invocation | 9 | suit-invoke | SUIT Manifest | OPTIONAL | RWX
 CoSWID | 14 | suit-coswid | SUIT Update Management | RECOMMENDED | RWX
 Dependency Resolution | 15 | suit-dependency-resolution | SUIT Multiple Trust Domains | N/M | RWX
 Payload Fetch | 16 | suit-payload-fetch | SUIT Manifest | OPTIONAL | RWX
-Candidate Verification | 18 | suit-candidate-verification | SUIT Multiple Trust Domains | N/M | ---
+Candidate Verification | 18 | suit-candidate-verification | SUIT Multiple Trust Domains | N/M | RWX
 Payload Installation | 20 | suit-install | SUIT Manifest | OPTIONAL | RWX
 Text Description | 23 | suit-text | SUIT Manifest | OPTIONAL | RWX
 Uninstall | 24 | suit-uninstall | SUIT Multiple Trust Domains | N/M | RWX
