@@ -135,6 +135,8 @@ char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key)
         return "reference-uri";
     case SUIT_MANIFEST_COMPONENT_ID:
         return "manifest-component-id";
+    case SUIT_SET_VERSION:
+        return "set-version";
     case SUIT_VALIDATE:
         return "validate";
     case SUIT_LOAD:
@@ -457,6 +459,18 @@ char* suit_cose_alg_to_str(int64_t id)
         return "AES-CCM-64-128-128";
     case 33:
         return "AES-CCM-64-128-256";
+    case -65534:
+        return "A128CTR";
+    case -65533:
+        return "A192CTR";
+    case -65532:
+        return "A256CTR";
+    case -65531:
+        return "A128CBC";
+    case -65530:
+        return "A192CBC";
+    case -65529:
+        return "A256CBC";
     }
     return NULL;
 }
@@ -520,15 +534,15 @@ void suit_print_cose_key(QCBORDecodeContext *context,
             printf("/ crv / -1: %ld / %s /", item->val.int64, suit_cose_crv_to_str(item->val.int64));
             break;
         case -2: /* x */
-            printf("/ x / -2: / ");
+            printf("/ x / -2: ");
             suit_print_hex(item->val.string.ptr, item->val.string.len);
             break;
         case -3: /* y */
-            printf("/ y / -3: / ");
+            printf("/ y / -3: ");
             suit_print_hex(item->val.string.ptr, item->val.string.len);
             break;
         }
-        if (i + 1 != item->val.uCount) {
+        if (i + 1 != map_count) {
             printf(",");
         }
         printf("\n");
@@ -846,6 +860,10 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
                 }
                 printf("%*s[\n", indent_space + 2 * indent_delta, "");
                 printf("%*s/ protected: / ", indent_space + 3 * indent_delta, "");
+                QCBORDecode_PeekNext(&context, &item);
+                if (item.uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                }
                 if (item.val.string.len > 0) {
                     printf("<< ");
                     QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
@@ -897,21 +915,28 @@ suit_err_t suit_print_encryption_info(const suit_buf_t *encryption_info,
     return result;
 }
 
+suit_err_t suit_print_int64_array(suit_int64_array_t i64s)
+{
+    printf("[");
+    for (size_t i = 0; i < i64s.len; i++) {
+        printf(" %ld", i64s.int64[i]);
+        if (i + 1 != i64s.len) {
+            printf(",");
+        }
+    }
+    printf(" ]");
+    return SUIT_SUCCESS;
+}
+
 suit_err_t suit_print_version_match(const suit_version_match_t *version_match,
                                     const uint32_t indent_space,
                                     const uint32_t indent_delta)
 {
     printf("[\n");
     printf("%*s/ comparison-type / %d / %s /,\n", indent_space + indent_delta, "", version_match->type, suit_version_comparison_type_to_str(version_match->type));
-    printf("%*s/ comparison-value / [", indent_space + indent_delta, "");
-    for (size_t j = 0; j < version_match->value.len; j++) {
-        printf(" %ld", version_match->value.int64[j]);
-        if (j + 1 != version_match->value.len) {
-            printf(",");
-        }
-    }
-    printf(" ]\n%*s]", indent_space, "");
-
+    printf("%*s/ comparison-value / ", indent_space + indent_delta, "");
+    suit_print_int64_array(version_match->value);
+    printf("\n%*s]", indent_space, "");
     return SUIT_SUCCESS;
 }
 
@@ -2029,6 +2054,19 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         comma = true;
     }
 
+    if (manifest->unsev_mem.set_version.len > 0) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ set-version / 6: << ", indent_space + indent_delta, "");
+        result = suit_print_int64_array(manifest->unsev_mem.set_version);
+        printf(" >>");
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        comma = true;
+    }
+
     if (manifest->unsev_mem.validate.len > 0) {
         if (comma) {
             printf(",\n");
@@ -2536,6 +2574,15 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", condition_args.report.record_on_success, condition_args.report.record_on_failure, condition_args.report.sysinfo_success, condition_args.report.sysinfo_failure);
     printf("}\n\n");
 
+    return result;
+}
+
+suit_err_t suit_print_set_version(suit_int64_array_t set_version)
+{
+    suit_err_t result = SUIT_SUCCESS;
+    printf("set-version callback : ");
+    result = suit_print_int64_array(set_version);
+    printf("\n\n");
     return result;
 }
 

@@ -1129,6 +1129,51 @@ suit_err_t suit_decode_components_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
+suit_err_t suit_decode_set_version(const suit_decode_mode_t mode,
+                                   const suit_buf_t *buf,
+                                   suit_int64_array_t *set_version)
+{
+    QCBORDecodeContext context;
+    QCBORItem item;
+    QCBORDecode_Init(&context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_qcbor_get(&context, &item, true, QCBOR_TYPE_ARRAY);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    set_version->len = item.val.uCount;
+    if (set_version->len > SUIT_MAX_INDEX_NUM) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    for (size_t i = 0; i < set_version->len; i++) {
+        result = suit_qcbor_get(&context, &item, true, QCBOR_TYPE_INT64);
+        if (!suit_continue(mode, result)) {
+            break;
+        }
+        set_version->int64[i] = item.val.int64;
+    }
+    QCBORError error = QCBORDecode_Finish(&context);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+    }
+    return result;
+}
+
+suit_err_t suit_decode_set_version_from_bstr(const suit_decode_mode_t mode,
+                                             QCBORDecodeContext *context,
+                                             QCBORItem *item,
+                                             bool next,
+                                             suit_int64_array_t *set_version)
+{
+    suit_err_t result = suit_qcbor_get(context, item, next, QCBOR_TYPE_BYTE_STRING);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    suit_buf_t buf;
+    buf.len = item->val.string.len;
+    buf.ptr = (uint8_t *)item->val.string.ptr;
+    return suit_decode_set_version(mode, &buf, set_version);
+}
+
 #if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
 suit_err_t suit_decode_dependency_metadata_from_item(const suit_decode_mode_t mode,
                                                      QCBORDecodeContext *context,
@@ -1639,6 +1684,14 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             break;
 
         /* SUIT_Unseverabme_Members */
+        case SUIT_SET_VERSION:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
+            result = suit_decode_set_version_from_bstr(mode, context, item, false, &manifest->unsev_mem.set_version);
+            break;
+#endif /* LIBCSUIT_DISABLE_MANIFEST_SET_VERSION */
+
         case SUIT_VALIDATE:
             result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.validate);
             break;

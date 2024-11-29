@@ -18,9 +18,9 @@ process | :green_square::green_square::green_square: | :green_square::green_squa
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
-encode | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
-process | :green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
+decode | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
+encode | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
+process | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -87,6 +87,7 @@ Sequence Number | 2 | suit-manifest-sequence-number | SUIT Manifest | REQUIRED |
 Common Data | 3 | suit-common | SUIT Manifest | REQUIRED | RWX
 Reference URI | 4 | suit-reference-uri | SUIT Manifest | N/M | RWX
 Manifest Component ID | 5 | suit-manifest-component-id | SUIT Multiple Trust Domains | N/M | RWX
+Set Version | 6 | suit-set-version | SUIT Update Management | N/M | RWX
 Image Validation | 7 | suit-validate | SUIT Manifest | REQUIRED | RWX
 Image Loading | 8 | suit-load | SUIT Manifest | OPTIONAL | RWX
 Image Invocation | 9 | suit-invoke | SUIT Manifest | OPTIONAL | RWX

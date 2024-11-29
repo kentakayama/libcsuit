@@ -318,6 +318,40 @@ suit_err_t suit_append_directive_override_parameters(const suit_parameters_list_
     return result;
 }
 
+suit_err_t suit_encode_int64_array(const suit_int64_array_t *set_version,
+                                   suit_encode_t *suit_encode,
+                                   UsefulBuf *buf)
+{
+    if (set_version->len == 0) {
+        buf->len = 0;
+        return SUIT_SUCCESS;
+    }
+
+    suit_err_t result = SUIT_SUCCESS;
+    UsefulBuf tmp_buf;
+    result = suit_use_suit_encode_buf(suit_encode, 0, &tmp_buf);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    QCBOREncodeContext context;
+    QCBOREncode_Init(&context, tmp_buf);
+    QCBOREncode_OpenArray(&context);
+    for (size_t i = 0; i < set_version->len; i++) {
+        QCBOREncode_AddInt64(&context, set_version->int64[i]);
+    }
+    QCBOREncode_CloseArray(&context);
+    UsefulBufC t_buf;
+    QCBORError error = QCBOREncode_Finish(&context, &t_buf);
+    if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
+        result = suit_error_from_qcbor_error(error);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
+    *buf = (UsefulBuf){.ptr = (void *)t_buf.ptr, .len = t_buf.len};
+    return suit_fix_suit_encode_buf(suit_encode, t_buf.len);
+}
+
 suit_err_t suit_encode_shared_sequence(suit_command_sequence_t *cmd_seq,
                                        suit_encode_t *suit_encode,
                                        UsefulBuf *buf)
@@ -850,6 +884,16 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         }
     }
 
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
+    UsefulBuf set_version_buf = NULLUsefulBuf;
+    if (manifest->unsev_mem.set_version.len > 0) {
+        result = suit_encode_int64_array(&manifest->unsev_mem.set_version, suit_encode, &set_version_buf);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+    }
+#endif
+
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
     UsefulBuf load_buf = NULLUsefulBuf;
     if (manifest->unsev_mem.load.len > 0) {
@@ -1032,6 +1076,13 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
         suit_encode_append_component_identifier(&manifest->manifest_component_id, SUIT_MANIFEST_COMPONENT_ID, &context);
     }
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID */
+
+    // 6
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
+    if (!UsefulBuf_IsNULLOrEmpty(set_version_buf)) {
+        QCBOREncode_AddBytesToMapN(&context, SUIT_SET_VERSION, UsefulBuf_Const(set_version_buf));
+    }
+#endif /* !LIBCSUIT_DISABLE_MANIFEST_SET_VERSION */
 
     // 7
     if (!UsefulBuf_IsNULLOrEmpty(validate_buf)) {

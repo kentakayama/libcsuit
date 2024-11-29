@@ -21,9 +21,15 @@
 extern "C" {
 #endif
 
+#ifndef SUIT_MAX_PRINT_BYTE_COUNT
 #define SUIT_MAX_PRINT_BYTE_COUNT        64
+#endif
+#ifndef SUIT_MAX_PRINT_TEXT_COUNT
 #define SUIT_MAX_PRINT_TEXT_COUNT        64
+#endif
+#ifndef SUIT_MAX_PRINT_URI_COUNT
 #define SUIT_MAX_PRINT_URI_COUNT         64
+#endif
 
 char* suit_err_to_str(suit_err_t error);
 char* suit_cbor_tag_to_str(cbor_tag_key_t tag);
@@ -79,6 +85,12 @@ suit_err_t suit_print_invoke(suit_invoke_args_t invoke_args);
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
 suit_err_t suit_print_condition(suit_condition_args_t condition_args);
+/*!
+    \brief Print SUIT set-version callback
+    \param[in]      set_version         Array of int a.k.a. SUIT_Condition_Version_Comparison_Value. See \ref suit_int64_array_t.
+    \return         This returns one of the error codes defined by \ref suit_err_t.
+*/
+suit_err_t suit_print_set_version(suit_int64_array_t set_version);
 
 /*!
     \brief Print SUIT wait callback
