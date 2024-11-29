@@ -18,9 +18,9 @@ process | :green_square::green_square::green_square: | :green_square::green_squa
 ### SUIT Update Management
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
-decode | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
-encode | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
-process | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::red_square::red_square: | 
+decode | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square: | 
+encode | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square: | 
+process | :green_square::green_square: | :green_square::green_square::green_square::green_square::green_square: | :green_square::green_square::green_square: | :green_square::green_square::green_square::green_square::green_square::green_square: | 
 ### SUIT Encrypted Payload
 Operation | Metadata | Condition | Directive | Parameter | Text
 ---|---|---|---|---|---
@@ -169,9 +169,9 @@ Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RWX
 Device ID | 24 | suit-parameter-device-identifier | SUIT Manifest | N/M | RWX
 Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management | N/M | RWX
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RWX
-Version | 28 | suit-parameter-version | SUIT Update Management | N/M | ---
+Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX
 Wait Info | 29 | suit-parameter-wait-info | SUIT Update Management | N/M | RWX
-Component Metadata | 30 | suit-parameter-component-metadata | SUIT Update Management | N/M | ---
+Component Metadata | 30 | suit-parameter-component-metadata | SUIT Update Management | N/M | RWX
 
 ### SUIT Text
 
@@ -200,25 +200,25 @@ Version Required | 7 | suit-text-version-required | SUIT Update Management | N/M
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
-Event Authorization | 1 | suit-wait-event-authorization | SUIT Update Management | N/M | ---
-Event Power | 2 | suit-wait-event-power | SUIT Update Management | N/M | ---
-Event Network | 3 | suit-wait-event-network | SUIT Update Management | N/M | ---
-Event Other Device Version | 4 | suit-wait-event-other-device-version | SUIT Update Management | N/M | ---
-Event Time | 5 | suit-wait-event-time | SUIT Update Management | N/M | ---
-Event Time of Day | 6 | suit-wait-event-time-of-day | SUIT Update Management | N/M | ---
-Event Day of Week | 7 | suit-wait-event-day-of-week | SUIT Update Management | N/M | ---
+Event Authorization | 1 | suit-wait-event-authorization | SUIT Update Management | N/M | RWX
+Event Power | 2 | suit-wait-event-power | SUIT Update Management | N/M | RWX
+Event Network | 3 | suit-wait-event-network | SUIT Update Management | N/M | RWX
+Event Other Device Version | 4 | suit-wait-event-other-device-version | SUIT Update Management | N/M | RWX
+Event Time | 5 | suit-wait-event-time | SUIT Update Management | N/M | RWX
+Event Time of Day | 6 | suit-wait-event-time-of-day | SUIT Update Management | N/M | RWX
+Event Day of Week | 7 | suit-wait-event-day-of-week | SUIT Update Management | N/M | RWX
 
 ### SUIT Component Metadata
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
-Default Permissions | 1 | suit-meta-default-permissions | SUIT Update Management | N/M | ---
-User Permissions | 2 | suit-meta-user-permissions | SUIT Update Management | N/M | ---
-Group Permissions | 3 | suit-meta-group-permissions | SUIT Update Management | N/M | ---
-Role Permissions | 4 | suit-meta-role-permissions | SUIT Update Management | N/M | ---
-File Type | 5 | suit-meta-file-type | SUIT Update Management | N/M | ---
-Modification Time | 6 | suit-meta-modification-time | SUIT Update Management | N/M | ---
-Creation Time | 7 | suit-meta-creation-time | SUIT Update Management | N/M | ---
-Creator | 8 | suit-meta-creator | SUIT Update Management | N/M | ---
+Default Permissions | 1 | suit-meta-default-permissions | SUIT Update Management | N/M | RWX
+User Permissions | 2 | suit-meta-user-permissions | SUIT Update Management | N/M | RWX
+Group Permissions | 3 | suit-meta-group-permissions | SUIT Update Management | N/M | RWX
+Role Permissions | 4 | suit-meta-role-permissions | SUIT Update Management | N/M | RWX
+File Type | 5 | suit-meta-file-type | SUIT Update Management | N/M | RWX
+Modification Time | 6 | suit-meta-modification-time | SUIT Update Management | N/M | RWX
+Creation Time | 7 | suit-meta-creation-time | SUIT Update Management | N/M | RWX
+Creator | 8 | suit-meta-creator | SUIT Update Management | N/M | RWX
 ## SUIT Report
 ### SUIT_Report
 
