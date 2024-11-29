@@ -2105,6 +2105,29 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         comma = true;
     }
 
+    if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_IN_MANIFEST) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ coswid(%s) / 14: ", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.coswid_status));
+        result = suit_print_hex(manifest->sev_man_mem.coswid.ptr, manifest->sev_man_mem.coswid.len);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        comma = true;
+    }
+    else if (manifest->sev_mem_dig.coswid.algorithm_id != SUIT_ALGORITHM_ID_INVALID) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ coswid / 14: ", indent_space + indent_delta, "");
+        result = suit_print_digest(&manifest->sev_mem_dig.coswid, indent_space + indent_delta, indent_delta);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        comma = true;
+    }
+
     if (manifest->sev_man_mem.dependency_resolution_status & SUIT_SEVERABLE_IN_MANIFEST) {
         if (comma) {
             printf(",\n");
@@ -2211,26 +2234,6 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
             return result;
         }
         printf("%*s] >>", indent_space + indent_delta, "");
-        comma = true;
-    }
-
-    if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_IN_MANIFEST) {
-        if (comma) {
-            printf(",\n");
-        }
-        printf("%*s/ coswid(%s) / %d: ", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.coswid_status), SUIT_COSWID);
-        result = suit_print_hex(manifest->sev_man_mem.coswid.ptr, manifest->sev_man_mem.coswid.len);
-        if (result != SUIT_SUCCESS) {
-            return result;
-        }
-        comma = true;
-    }
-    else if (manifest->sev_mem_dig.coswid.algorithm_id != SUIT_ALGORITHM_ID_INVALID) {
-        printf("%*s/ coswid / %d: ", indent_space + indent_delta, "", SUIT_COSWID);
-        result = suit_print_digest(&manifest->sev_mem_dig.coswid, indent_space + indent_delta, indent_delta);
-        if (result != SUIT_SUCCESS) {
-            return result;
-        }
         comma = true;
     }
 
