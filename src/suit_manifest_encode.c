@@ -978,7 +978,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_COSWID)
     if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_EXISTS) {
         suit_encode->coswid = (UsefulBufC){.ptr = manifest->sev_man_mem.coswid.ptr, .len = manifest->sev_man_mem.coswid.len};
-        if (manifest->sev_man_mem.text_status & SUIT_SEVERABLE_IN_ENVELOPE) {
+        if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_IN_ENVELOPE) {
             result = suit_generate_digest_include_header(suit_encode->coswid.ptr, suit_encode->coswid.len, suit_encode, &suit_encode->coswid_digest);
             if (result != SUIT_SUCCESS) {
                 return result;
