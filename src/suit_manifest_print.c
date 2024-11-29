@@ -2105,11 +2105,34 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         comma = true;
     }
 
+    if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_IN_MANIFEST) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ coswid(%s) / 14: ", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.coswid_status));
+        result = suit_print_hex(manifest->sev_man_mem.coswid.ptr, manifest->sev_man_mem.coswid.len);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        comma = true;
+    }
+    else if (manifest->sev_mem_dig.coswid.algorithm_id != SUIT_ALGORITHM_ID_INVALID) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ coswid / 14: ", indent_space + indent_delta, "");
+        result = suit_print_digest(&manifest->sev_mem_dig.coswid, indent_space + indent_delta, indent_delta);
+        if (result != SUIT_SUCCESS) {
+            return result;
+        }
+        comma = true;
+    }
+
     if (manifest->sev_man_mem.dependency_resolution_status & SUIT_SEVERABLE_IN_MANIFEST) {
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ dependency-resolution(%s) / %d: << [\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.dependency_resolution_status), SUIT_DEPENDENCY_RESOLUTION);
+        printf("%*s/ dependency-resolution(%s) / 15: << [\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.dependency_resolution_status));
         result = suit_print_cmd_seq(mode, &manifest->sev_man_mem.dependency_resolution, indent_space + 2 * indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2121,7 +2144,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ dependency-resolution / %d: ", indent_space + indent_delta, "", SUIT_DEPENDENCY_RESOLUTION);
+        printf("%*s/ dependency-resolution / 15: ", indent_space + indent_delta, "");
         result = suit_print_digest(&manifest->sev_mem_dig.dependency_resolution, indent_space + indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2133,7 +2156,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ payload-fetch(%s) / %d: << [\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.payload_fetch_status), SUIT_PAYLOAD_FETCH);
+        printf("%*s/ payload-fetch(%s) / 16: << [\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.payload_fetch_status));
         result = suit_print_cmd_seq(mode, &manifest->sev_man_mem.payload_fetch, indent_space + 2 * indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2145,7 +2168,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ payload-fetch / %d: ", indent_space + indent_delta, "", SUIT_PAYLOAD_FETCH);
+        printf("%*s/ payload-fetch / 16: ", indent_space + indent_delta, "");
         result = suit_print_digest(&manifest->sev_mem_dig.payload_fetch, indent_space + indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2157,7 +2180,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ install(%s) / %d: << [\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.install_status), SUIT_INSTALL);
+        printf("%*s/ install(%s) / 20: << [\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.install_status));
         result = suit_print_cmd_seq(mode, &manifest->sev_man_mem.install, indent_space + 2 * indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2169,7 +2192,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ install / %d: ", indent_space + indent_delta, "", SUIT_INSTALL);
+        printf("%*s/ install / 20: ", indent_space + indent_delta, "");
         result = suit_print_digest(&manifest->sev_mem_dig.install, indent_space + indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2181,7 +2204,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ text(%s) / %d: << {\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.text_status), SUIT_TEXT);
+        printf("%*s/ text(%s) / 23: << {\n", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.text_status));
         result = suit_print_text(&manifest->sev_man_mem.text, indent_space + 2 * indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2193,7 +2216,7 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         if (comma) {
             printf(",\n");
         }
-        printf("%*s/ text / %d: ", indent_space + indent_delta, "", SUIT_TEXT);
+        printf("%*s/ text / 23: ", indent_space + indent_delta, "");
         result = suit_print_digest(&manifest->sev_mem_dig.text, indent_space + indent_delta, indent_delta);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2211,26 +2234,6 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
             return result;
         }
         printf("%*s] >>", indent_space + indent_delta, "");
-        comma = true;
-    }
-
-    if (manifest->sev_man_mem.coswid_status & SUIT_SEVERABLE_IN_MANIFEST) {
-        if (comma) {
-            printf(",\n");
-        }
-        printf("%*s/ coswid(%s) / %d: ", indent_space + indent_delta, "", suit_str_member_is_verified(manifest->sev_man_mem.coswid_status), SUIT_COSWID);
-        result = suit_print_hex(manifest->sev_man_mem.coswid.ptr, manifest->sev_man_mem.coswid.len);
-        if (result != SUIT_SUCCESS) {
-            return result;
-        }
-        comma = true;
-    }
-    else if (manifest->sev_mem_dig.coswid.algorithm_id != SUIT_ALGORITHM_ID_INVALID) {
-        printf("%*s/ coswid / %d: ", indent_space + indent_delta, "", SUIT_COSWID);
-        result = suit_print_digest(&manifest->sev_mem_dig.coswid, indent_space + indent_delta, indent_delta);
-        if (result != SUIT_SUCCESS) {
-            return result;
-        }
         comma = true;
     }
 

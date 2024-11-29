@@ -2115,7 +2115,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
-        case SUIT_SET_VERSION:
+        case SUIT_SET_VERSION: // unseverable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_EnterBstrWrapped(&context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
                 QCBORDecode_EnterArray(&context, &item);
@@ -2134,7 +2134,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
             break;
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_SET_VERSION */
 
-        case SUIT_VALIDATE:
+        case SUIT_VALIDATE: // unseverable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->validate);
             }
@@ -2144,7 +2144,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
             break;
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION)
-        case SUIT_DEPENDENCY_RESOLUTION:
+        case SUIT_DEPENDENCY_RESOLUTION: // severable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->dependency_resolution);
             }
@@ -2158,7 +2158,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
-        case SUIT_PAYLOAD_FETCH:
+        case SUIT_PAYLOAD_FETCH: // severable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->payload_fetch);
             }
@@ -2172,7 +2172,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
-        case SUIT_INSTALL:
+        case SUIT_INSTALL: // severable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->install);
             }
@@ -2186,7 +2186,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_INSTALL */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
-        case SUIT_UNINSTALL:
+        case SUIT_UNINSTALL: // unseverable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->uninstall);
             }
@@ -2197,7 +2197,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_UNINSTALL */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
-        case SUIT_LOAD:
+        case SUIT_LOAD: // unseverable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->load);
             }
@@ -2208,7 +2208,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_LOAD */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
-        case SUIT_INVOKE:
+        case SUIT_INVOKE: // unseverable
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
                 QCBORDecode_GetByteString(&context, &extracted->invoke);
             }
@@ -2219,22 +2219,34 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_INVOKE */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_TEXT)
-        case SUIT_TEXT:
+        case SUIT_TEXT: // severable
             error = QCBORDecode_GetNext(&context, &item);
             if (error != QCBOR_SUCCESS) {
                 goto error;
             }
-            // XXX: ignore this
+            if (item.uDataType == QCBOR_TYPE_BYTE_STRING || item.uDataType == QCBOR_TYPE_ARRAY) {
+                // ignore
+                suit_qcbor_skip_any(&context, &item);
+            }
+            else {
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
             break;
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_TEXT */
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_COSWID)
-        case SUIT_COSWID:
+        case SUIT_COSWID: // severable
             error = QCBORDecode_GetNext(&context, &item);
             if (error != QCBOR_SUCCESS) {
                 goto error;
             }
-            // XXX: ignore this
+            if (item.uDataType == QCBOR_TYPE_BYTE_STRING || item.uDataType == QCBOR_TYPE_ARRAY) {
+                // ignore
+                suit_qcbor_skip_any(&context, &item);
+            }
+            else {
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
             break;
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_COSWID */
 
@@ -2504,7 +2516,10 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
                 if (error != QCBOR_SUCCESS) {
                     goto error;
                 }
-                // XXX: ignore this
+                if (item.uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                    goto error;
+                }
                 break;
 #endif /* !LIBCSUIT_DISABLE_ENVELOPE_TEXT */
 
@@ -2514,7 +2529,10 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
                 if (error != QCBOR_SUCCESS) {
                     goto error;
                 }
-                // XXX: ignore this
+                if (item.uDataType != QCBOR_TYPE_BYTE_STRING) {
+                    result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                    goto error;
+                }
                 break;
 #endif /* !LIBCSUIT_DISABLE_ENVELOPE_COSWID */
 

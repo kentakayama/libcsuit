@@ -1673,9 +1673,14 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
                 result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.coswid);
             }
             else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
-                /* bstr .cbor concise-software-identity */
+                /* bstr .cbor concise-swid-tag */
                 manifest->sev_man_mem.coswid.ptr = (uint8_t *)item->val.string.ptr;
                 manifest->sev_man_mem.coswid.len = item->val.string.len;
+
+                manifest->sev_man_mem.coswid_status |= SUIT_SEVERABLE_IN_MANIFEST;
+                if (manifest->is_verified) {
+                    manifest->sev_man_mem.coswid_status |= SUIT_SEVERABLE_IS_VERIFIED;
+                }
             }
             else {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
@@ -2125,6 +2130,9 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 #else
                 if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.coswid);
+                    if (!suit_continue(mode, result)) {
+                        break;
+                    }
                     envelope->manifest.sev_man_mem.coswid_status |= SUIT_SEVERABLE_IS_VERIFIED;
                     if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                         return SUIT_ERR_INVALID_TYPE_OF_VALUE;
