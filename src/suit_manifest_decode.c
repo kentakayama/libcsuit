@@ -1614,6 +1614,31 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #endif /* LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH */
             break;
 
+        case SUIT_CANDIDATE_VERIFICATION:
+#if defined(LIBCSUIT_DISABLE_MANIFEST_CANDIDATE_VERIFICATION)
+            return SUIT_ERR_NOT_IMPLEMENTED;
+#else
+            if (item->uDataType == QCBOR_TYPE_ARRAY) {
+                /* SUIT_Digest */
+                result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.candidate_verification);
+            }
+            else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
+                /* bstr .cbor SUIT_Command_Sequence */
+                result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->sev_man_mem.candidate_verification);
+                if (result != SUIT_SUCCESS) {
+                    return result;
+                }
+                manifest->sev_man_mem.candidate_verification_status |= SUIT_SEVERABLE_IN_MANIFEST;
+                if (manifest->is_verified) {
+                    manifest->sev_man_mem.candidate_verification_status |= SUIT_SEVERABLE_IS_VERIFIED;
+                }
+            }
+            else {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+#endif /* LIBCSUIT_DISABLE_MANIFEST_CANDIDATE_VERIFICATION */
+            break;
+
         case SUIT_INSTALL:
 #if defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
             return SUIT_ERR_NOT_IMPLEMENTED;
