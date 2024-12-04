@@ -1073,7 +1073,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
     // 4
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
     if (manifest->reference_uri.len > 0) {
-        QCBOREncode_AddBytesToMapN(&context, SUIT_REFERENCE_URI, (UsefulBufC){.ptr = manifest->reference_uri.ptr, .len = manifest->reference_uri.len});
+        QCBOREncode_AddTextToMapN(&context, SUIT_REFERENCE_URI, (UsefulBufC){.ptr = manifest->reference_uri.ptr, .len = manifest->reference_uri.len});
     }
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI */
 
