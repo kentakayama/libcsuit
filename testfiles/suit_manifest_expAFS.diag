@@ -1,31 +1,4 @@
-<!--
- Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
-
- SPDX-License-Identifier: BSD-2-Clause
--->
-
-## Example 1: Fetch and Decrypt AES-KW + Encrypted Payload to slots
-{: numbered='no'}
-
-### CBOR Diagnostic Notation of SUIT Manifest
-{: numbered='no'}
-
-~~~~
 / SUIT_Envelope_Tagged / 107({
-  / authentication-wrapper / 2: << [
-    << [
-      / digest-algorithm-id: / -16 / SHA256 /,
-      / digest-bytes: / h'6D74BD3110A2573236E03DD78693D5B21C299C917A4327D9939DDF3582A41DE3'
-    ] >>,
-    << / COSE_Mac0_Tagged / 17([
-      / protected: / << {
-        / algorithm-id / 1: 5 / HMAC256 /
-      } >>,
-      / unprotected: / {},
-      / payload: / null,
-      / tag: / h'E6837A54A9B5813F8D5EDAD48AB96D5D7388D9D1C89AB29EC55AE964F67E01ED'
-    ]) >>
-  ] >>,
   / manifest / 3: << {
     / manifest-version / 1: 1,
     / manifest-sequence-number / 2: 1,
@@ -76,19 +49,3 @@
     ] >>
   } >>
 })
-~~~~
-
-
-### CBOR Binary in Hex
-{: numbered='no'}
-
-~~~~
-D86BA2025853825824822F58206D74BD3110A2573236E03DD78693D5B21C
-299C917A4327D9939DDF3582A41DE3582AD18443A10105A0F65820E6837A
-54A9B5813F8D5EDAD48AB96D5D7388D9D1C89AB29EC55AE964F67E01ED03
-588FA4010102010349A1028281410081410114587C8C0C0114A20E182E15
-7826636F6170733A2F2F6578616D706C652E636F6D2F656E637279707465
-642D6669726D77617265150F0C0014A213583ED8608443A10101A1054CF1
-4AAB9D81D51F7AD943FE87F6818340A2012204456B69642D31581875603F
-FC9518D794713C8CA8A115A7FB32565A6D59534D621601160F
-~~~~
