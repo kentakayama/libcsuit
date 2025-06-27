@@ -1,24 +1,8 @@
-<!--
- Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
-
- SPDX-License-Identifier: BSD-2-Clause
--->
-
-## B.6. Example 5: Two Images
-
-https://tools.ietf.org/html/draft-ietf-suit-manifest-27#appendix-B.6
-
-{: numbered='no'}
-
-### CBOR Diagnostic Notation of SUIT Manifest
-{: numbered='no'}
-
-~~~~
 / SUIT_Envelope = / 107({
   / authentication-wrapper / 2: << [
     << [
       / digest-algorithm-id: / -16 / SHA256 /,
-      / digest-bytes: / h'15ce60f77657e4531dc329155f8b0ed78f94bdc6d165b2665473693dcc34f470'
+      / digest-bytes: / h'15CE60F77657E4531DC329155F8B0ED78F94BDC6D165B2665473693DCC34F470'
     ] >>,
     << / COSE_Sign1_Tagged / 18([
       / protected: / << {
@@ -26,7 +10,7 @@ https://tools.ietf.org/html/draft-ietf-suit-manifest-27#appendix-B.6
       } >>,
       / unprotected: / {},
       / payload: / null,
-      / signature: / h'c0933c7918517d1141e1b91b734fbbb8cad5ebbd20e29e8d13e9150787486c957f31ba7301c792667aad370d28e07579dd27defe9a6642e2aba233262f41ceee'
+      / signature: / h'F3B3EFCC47C797508E2316A5FBEBBE3D462C30240CD5349BD781E17C0FEEE58BBC3C8066704C93761A5B5931AAE1BA08632D14880E7FCF6481661045D1399233'
     ]) >>
   ] >>,
   / manifest / 3: << {
@@ -86,24 +70,3 @@ https://tools.ietf.org/html/draft-ietf-suit-manifest-27#appendix-B.6
     ] >>
   } >>
 })
-~~~~
-
-
-### CBOR Binary in Hex
-{: numbered='no'}
-
-~~~~
-d86ba2025873825824822f582015ce60f77657e4531dc329155f8b0ed78f
-94bdc6d165b2665473693dcc34f470584ad28443a10128a0f65840c0933c
-7918517d1141e1b91b734fbbb8cad5ebbd20e29e8d13e9150787486c957f
-31ba7301c792667aad370d28e07579dd27defe9a6642e2aba233262f41ce
-ee03590101a601010205035895a202828141008141010458898c0c0014a4
-0150fa6b4a53d5ad5fdfbe9de663e4d41ffe02501492af1425695e48bf42
-9b2d51f2ab45035824822f582000112233445566778899aabbccddeeff01
-23456789abcdeffedcba98765432100e1987d0010f020f0c0114a2035824
-822f58200123456789abcdeffedcba987654321000112233445566778899
-aabbccddeeff0e1a00012c220749880c00030f0c01030f0945840c001702
-14584f900c0014a115781c687474703a2f2f6578616d706c652e636f6d2f
-66696c65312e62696e1502030f0c0114a115781c687474703a2f2f657861
-6d706c652e636f6d2f66696c65322e62696e1502030f
-~~~~
