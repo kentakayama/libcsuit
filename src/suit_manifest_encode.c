@@ -1278,6 +1278,7 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         }
         switch (mechanisms[i].key.cose_algorithm_id) {
         case T_COSE_ALGORITHM_ES256:
+        case T_COSE_ALGORITHM_ESP256:
         case T_COSE_ALGORITHM_HMAC256:
             result = SUIT_SUCCESS;
             break;
