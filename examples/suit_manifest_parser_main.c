@@ -21,6 +21,10 @@ int main(int argc,
          char *argv[])
 {
     int exit_code = EXIT_SUCCESS;
+
+    uint8_t *manifest_buf = NULL;
+    suit_envelope_t *envelope = NULL;
+
     // check arguments.
     if (argc < 1) {
         printf("%s <manifest file path> [tabstop 2] [indent 4] [output]\n", argv[0]);
@@ -89,7 +93,7 @@ int main(int argc,
 
     // Read manifest file.
     printf("main : Read Manifest file.\n");
-    uint8_t *manifest_buf = malloc(SUIT_MAX_DATA_SIZE);
+    manifest_buf = malloc(SUIT_MAX_DATA_SIZE);
     if (manifest_buf == NULL) {
         printf("main : Failed to allocate memory.\n");
         exit_code = EXIT_FAILURE;
@@ -110,7 +114,7 @@ int main(int argc,
 #ifdef SKIP_ERROR
     mode = SUIT_DECODE_MODE_SKIP_ANY_ERROR;
 #endif
-    suit_envelope_t *envelope = calloc(1, sizeof(suit_envelope_t));
+    envelope = calloc(1, sizeof(suit_envelope_t));
     suit_buf_t buf = {.ptr = manifest_buf, .len = manifest_len};
     result = suit_decode_envelope(mode, &buf, envelope, mechanisms);
     if (result != SUIT_SUCCESS) {

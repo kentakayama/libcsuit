@@ -6,7 +6,7 @@
 
 DIAG2CBOR=diag2cbor.rb
 
-CFLAGS = -Wall -g -D SUIT_MAX_PRINT_BYTE_COUNT=1024 -D SUIT_MAX_PRINT_TEXT_COUNT=1024 -D SUIT_MAX_PRINT_URI_COUNT=1024
+CFLAGS = -Wall -g -DSUIT_MAX_PRINT_BYTE_COUNT=1024 -DSUIT_MAX_PRINT_TEXT_COUNT=1024 -DSUIT_MAX_PRINT_URI_COUNT=1024
 LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
 INC = $(CMD_INC) -I ./inc -I ./examples/inc
 TARGET = ./bin/suit_manifest_parser
@@ -47,8 +47,8 @@ $(TARGET): $(OBJS) | ./bin
 ./obj/%.o: %.c | ./obj/src ./obj/examples
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
-TEST_NUM := 0 1 2A 2B 3 4 5 U I D AF AW EW ED S0 S2 S3 S4 U0 U1 U2 U3
-EXPS := $(foreach num,$(TEST_NUM),./testfiles/suit_manifest_exp$(num).cbor)
+TEST_NUM := 0 1 2A 2B 3 4 5 U I D AF AFS AW EW ED S0 S2 S3 S4 U0 U1 U2 U3
+EXPS := $(foreach num,$(TEST_NUM),./testfiles/suit_manifest_exp$(num).suit)
 define test-one
 	$(TARGET) $1 2 > tmp.result
 	@cat tmp.result
