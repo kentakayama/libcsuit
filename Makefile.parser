@@ -50,7 +50,7 @@ $(TARGET): $(OBJS) | ./bin
 TEST_NUM := 0 1 2A 2B 3 4 5 U I D AF AFS AW EW ED S0 S2 S3 U0 U1
 EXPS := $(foreach num,$(TEST_NUM),./testfiles/suit_manifest_exp$(num).suit)
 define test-one
-	$(TARGET) $1 2 > tmp.result
+	$(TARGET) $1 2 | tee tmp.result
 	@cat tmp.result
 	@grep '^    ' tmp.result | $(DIAG2CBOR) > tmp.printed.cbor
 	@diff $1 tmp.printed.cbor
