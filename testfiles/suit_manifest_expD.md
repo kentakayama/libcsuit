@@ -90,12 +90,12 @@
       / directive-set-component-index / 12, 0,
       / directive-override-parameters / 20, {
         / NOTE: encrypted payload and encryption-info /
-        / parameter-content / 18: h'C43E94F3B51A5DBB76ECFAD44CA7DEFE71D26A36E10054723DDF0A93CD9B68D9F4B61FCC31CD0CBE30D3FFDF6AB7541BFF1980968A836E17D3BBDE7332',
+        / parameter-content / 18: h'6D5BE4F569E98AE01F38B071EF025437B742FF28854AB32C868BC6A76CD33B5CA112FF22BA95EA4672B7199C89A7829183794A21A6BE345C4371DCB0DC',
         / parameter-encryption-info / 19: << 96([
           / protected: / h'',
           / unprotected: / {
             / alg / 1: -65534 / A128CTR /,
-            / IV / 5: h'F8FC5E335366171540C1B416ABFDC9A7'
+            / IV / 5: h'67E3BA7CD42D02BBC39C508B5EA0F1C4'
           },
           / payload: / null / detached ciphertext /,
           / recipients: / [
@@ -107,11 +107,11 @@
                 / ephemeral key / -1: {
                   / kty / 1: 2 / EC2 /,
                   / crv / -1: 1 / P-256 /,
-                  / x / -2: h'7AAF18EC7FAB5071B267FA3B8D8FF248A78DAAD9D9B8318EAE8925089F3C9431',
-                  / y / -3: h'84BADF92D62F3804E8DE964ABB21EC6A732B46B2B02DCD2908E6A666C6D4871B'
+                  / x / -2: h'F2452399667F57993B14C5F1107F667884854C190894FC08531C1E2290A7BA19',
+                  / y / -3: h'275EDDE29FD75C9393AFFA706F8FAD3C49D03D67D47F8B0C027BE5F0BCA884CB'
                 }
               },
-              / payload: / h'F003092CB552689003EB0ACDD081595E6499FF028745DADF'
+              / payload: / h'7D806DA1ACEC6F704D803F0CFE7420525C81E1957699FCCE'
             ]
           ]
         ]) >>
