@@ -108,7 +108,7 @@ suit_err_t suit_validate_cose_mac0(const UsefulBufC maced_cose,
     struct t_cose_mac_validate_ctx mac_ctx;
     enum t_cose_err_t cose_result;
 
-    t_cose_mac_validate_init(&mac_ctx, 0);
+    t_cose_mac_validate_init(&mac_ctx, T_COSE_OPT_MESSAGE_TYPE_MAC0);
     t_cose_mac_set_validate_key(&mac_ctx, secret_key->cose_key);
     if (UsefulBuf_IsNULLOrEmptyC(*returned_payload)) {
         cose_result = t_cose_mac_validate_msg(&mac_ctx,
@@ -141,7 +141,7 @@ suit_err_t suit_compute_cose_mac0(const UsefulBufC raw_cbor,
     enum t_cose_err_t cose_result;
     UsefulBufC tmp_maced_cose;
 
-    t_cose_mac_compute_init(&mac_ctx, 0, secret_key->cose_algorithm_id);
+    t_cose_mac_compute_init(&mac_ctx, T_COSE_OPT_MESSAGE_TYPE_MAC0, secret_key->cose_algorithm_id);
     t_cose_mac_set_computing_key(&mac_ctx, secret_key->cose_key, NULL_Q_USEFUL_BUF_C);
     cose_result = t_cose_mac_compute_detached(&mac_ctx, NULL_Q_USEFUL_BUF_C, raw_cbor, *returned_payload, &tmp_maced_cose);
     if (cose_result != T_COSE_SUCCESS) {
