@@ -2055,6 +2055,14 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
     }
     printf("\n%*s} >>", indent_space + indent_delta, "");
 
+    if (manifest->reference_uri.len > 0) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ reference-uri / 4: \"%.*s\"", indent_space + indent_delta, "", (int)manifest->reference_uri.len, manifest->reference_uri.ptr);
+        comma = true;
+    }
+
     if (manifest->manifest_component_id.len > 0) {
         if (comma) {
             printf(",\n");
