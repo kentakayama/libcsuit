@@ -55,7 +55,7 @@ int main(int argc,
     mechanisms[0].cose_tag = CBOR_TAG_COSE_SIGN1;
     mechanisms[0].use = false;
 
-    mechanisms[1].key.cose_algorithm_id = T_COSE_ALGORITHM_ESP256;
+    mechanisms[1].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
     result = suit_set_suit_key_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanisms[1].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
@@ -73,7 +73,7 @@ int main(int argc,
     mechanisms[2].cose_tag = CBOR_TAG_COSE_SIGN1;
     mechanisms[2].use = false;
 
-    mechanisms[3].key.cose_algorithm_id = T_COSE_ALGORITHM_ESP256;
+    mechanisms[3].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
     result = suit_set_suit_key_from_cose_key(delegated_authority_es256_cose_key_private, &mechanisms[3].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
