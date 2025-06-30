@@ -326,12 +326,12 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_STRICT_ORDER         = 12,
     SUIT_PARAMETER_SOFT_FAILURE         = 13,
     SUIT_PARAMETER_IMAGE_SIZE           = 14,
-    SUIT_PARAMETER_FETCH_ARGS           = 16, /* XXX */
     SUIT_PARAMETER_CONTENT              = 18,
     SUIT_PARAMETER_URI                  = 21,
     SUIT_PARAMETER_SOURCE_COMPONENT     = 22,
     SUIT_PARAMETER_INVOKE_ARGS          = 23,
     SUIT_PARAMETER_DEVICE_IDENTIFIER    = 24,
+    SUIT_PARAMETER_FETCH_ARGS           = 25,
 
     /* draft-ietf-suit-update-management */
     SUIT_PARAMETER_USE_BEFORE           = 4,
@@ -339,7 +339,7 @@ typedef enum suit_parameter_key {
     SUIT_PARAMETER_UPDATE_PRIORITY      = 27,
     SUIT_PARAMETER_VERSION              = 28,
     SUIT_PARAMETER_WAIT_INFO            = 29,
-    SUIT_PARAMETER_COMPONENT_METADATA   = 30, /* XXX */
+    SUIT_PARAMETER_COMPONENT_METADATA   = 30,
 
     /* draft-ietf-suit-firmware-encryption */
     SUIT_PARAMETER_ENCRYPTION_INFO      = 19,
