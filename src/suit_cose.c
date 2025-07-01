@@ -162,6 +162,7 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
 {
     struct t_cose_encrypt_dec_ctx    decrypt_context;
     struct t_cose_recipient_dec_esdh dec_recipient;
+    uint64_t tags[T_COSE_MAX_TAGS_TO_RETURN];
 
     t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT | T_COSE_OPT_ENABLE_NON_AEAD);
     t_cose_recipient_dec_esdh_init(&dec_recipient);
@@ -181,7 +182,7 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
                                             working_buf,
                                             returned_payload,
                                             NULL,
-                                            NULL);
+                                            tags);
 }
 
 enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_payload,
@@ -192,8 +193,9 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_paylo
 {
     struct t_cose_recipient_dec_keywrap kw_unwrap_recipient;
     struct t_cose_encrypt_dec_ctx decrypt_context;
+    uint64_t tags[T_COSE_MAX_TAGS_TO_RETURN];
 
-    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT | T_COSE_OPT_ENABLE_NON_AEAD);
+    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_ENABLE_NON_AEAD);
     t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
     t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
     t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
@@ -205,7 +207,7 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_paylo
                                             working_buf,
                                             returned_payload,
                                             NULL,
-                                            NULL);
+                                            tags);
 }
 
 suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
