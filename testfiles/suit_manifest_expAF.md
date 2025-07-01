@@ -15,7 +15,7 @@
   / authentication-wrapper / 2: << [
     << [
       / digest-algorithm-id: / -16 / SHA256 /,
-      / digest-bytes: / h'8814BC46089ACA6A863A7BA8393F9747589940EFA40641335EF86155598F06C3'
+      / digest-bytes: / h'3C92AECEAA7225DDD5129A83B2842BF28CC53B2C9467C5BF256E7108F2DA7C9C'
     ] >>,
     << / COSE_Mac0_Tagged / 17([
       / protected: / << {
@@ -23,7 +23,7 @@
       } >>,
       / unprotected: / {},
       / payload: / null,
-      / tag: / h'B68572F6F0494FEAF390CE44B462F2A7BDF73EF5DFE9FB8E12585A12F8F641AD'
+      / tag: / h'46CB34181A04B967023D4C9E136DC5DC591D8A9BE9365DE4D282C9D6168C01FB'
     ]) >>
   ] >>,
   / manifest / 3: << {
@@ -40,7 +40,8 @@
       / directive-set-component-index / 12, 1 / ['encrypted-firmware'] /,
       / directive-override-parameters / 20, {
         / parameter-image-size / 14: 46,
-        / parameter-uri / 21: "https://example.com/encrypted-firmware"
+        / parameter-uri / 21:
+          "coaps://example.com/encrypted-firmware"
       },
       / directive-fetch / 21, 15,
 
@@ -54,7 +55,7 @@
           / unprotected: / {
             / IV / 5: h'F14AAB9D81D51F7AD943FE87'
           },
-          / payload: / null / detached ciphertext /,
+          / ciphertext: / null / detached ciphertext /,
           / recipients: / [
             [
               / protected: / h'',
@@ -62,7 +63,9 @@
                 / alg / 1: -3 / A128KW /,
                 / kid / 4: 'kid-1'
               },
-              / payload: / h'75603FFC9518D794713C8CA8A115A7FB32565A6D59534D62' / CEK encrypted with KEK /
+              / ciphertext: /
+                h'75603FFC9518D794713C8CA8A115A7FB32565A6D59534D62'
+                / CEK encrypted with KEK /
             ]
           ]
         ]) >>,
@@ -79,12 +82,12 @@
 {: numbered='no'}
 
 ~~~~
-D86BA2025853825824822F58208814BC46089ACA6A863A7BA8393F974758
-9940EFA40641335EF86155598F06C3582AD18443A10105A0F65820B68572
-F6F0494FEAF390CE44B462F2A7BDF73EF5DFE9FB8E12585A12F8F641AD03
+D86BA2025853825824822F58203C92AECEAA7225DDD5129A83B2842BF28C
+C53B2C9467C5BF256E7108F2DA7C9C582AD18443A10105A0F6582046CB34
+181A04B967023D4C9E136DC5DC591D8A9BE9365DE4D282C9D6168C01FB03
 58B2A40101020103582BA102828152706C61696E746578742D6669726D77
 6172658152656E637279707465642D6669726D7761726514587C8C0C0114
-A20E182E15782668747470733A2F2F6578616D706C652E636F6D2F656E63
+A20E182E157826636F6170733A2F2F6578616D706C652E636F6D2F656E63
 7279707465642D6669726D77617265150F0C0014A213583ED8608443A101
 01A1054CF14AAB9D81D51F7AD943FE87F6818340A2012204456B69642D31
 581875603FFC9518D794713C8CA8A115A7FB32565A6D59534D621601160F

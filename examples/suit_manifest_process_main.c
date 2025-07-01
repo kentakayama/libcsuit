@@ -539,8 +539,8 @@ int main(int argc, char *argv[]) {
     suit_err_t result = 0;
 
     int num_key = 0;
-    #define NUM_PUBLIC_KEYS_FOR_ECDH        2
-    UsefulBufC public_keys_for_ecdh[NUM_PUBLIC_KEYS_FOR_ECDH] = {
+    #define NUM_PUBLIC_KEYS_FOR_ECDSA       2
+    UsefulBufC public_keys_for_ecdsa[NUM_PUBLIC_KEYS_FOR_ECDSA] = {
         trust_anchor_prime256v1_cose_key_public,
         delegated_authority_es256_cose_key_public,
     };
@@ -566,9 +566,9 @@ int main(int argc, char *argv[]) {
     suit_inputs->ptr = suit_inputs->buf;
 
     printf("\nmain : Read public keys.\n");
-    for (int i = 0; i < NUM_PUBLIC_KEYS_FOR_ECDH; i++) {
+    for (int i = 0; i < NUM_PUBLIC_KEYS_FOR_ECDSA; i++) {
         suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
-        result = suit_set_suit_key_from_cose_key(public_keys_for_ecdh[i], &suit_inputs->mechanisms[num_key].key);
+        result = suit_set_suit_key_from_cose_key(public_keys_for_ecdsa[i], &suit_inputs->mechanisms[num_key].key);
         if (result != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
@@ -627,7 +627,7 @@ int main(int argc, char *argv[]) {
     suit_inputs->manifest.ptr = suit_inputs->buf;
     suit_inputs->manifest.len = read_from_file(argv[optind], suit_inputs->buf, SUIT_MAX_DATA_SIZE);
     if (suit_inputs->manifest.len <= 0) {
-        printf("main : Failed to read Manifest file. (%s)\n", argv[1]);
+        printf("main : Failed to read Manifest file. (%s)\n", argv[optind]);
         return EXIT_FAILURE;
     }
     suit_inputs->left_len -= suit_inputs->manifest.len;

@@ -19,11 +19,11 @@
     ] >>,
     << / COSE_Sign1_Tagged / 18([
       / protected: / << {
-        / algorithm-id / 1: -7 / ES256 /
+        / algorithm-id / 1: -9 / ESP256 /
       } >>,
       / unprotected: / {},
       / payload: / null,
-      / signature: / h'CB4EADA6BEC17EEB22EB836FB2BF9136A6EF733C11DAC955F543BBDCAA373B859321BC77969917E4C70F049527607F4C32752D53E01346E96BFF4880B437DF64'
+      / signature: / h'2B20A797AC7DBEBC53147592BB110AEC43A2489AC19A169BB59FF6BD429300A9719FEB7DF277E4B8D1D821C816854229F266AC62AFD9DB52114F608EE66B187B'
     ]) >>
   ] >>,
   / manifest / 3: << {
@@ -35,9 +35,11 @@
       ]
     } >>,
     / install / 20: << [
-      / directive-set-component-index / 12, 0 / ['plaintext-firmware'] /,
+      / directive-set-component-index / 12,
+        0 / ['plaintext-firmware'] /,
       / directive-override-parameters / 20, {
-        / parameter-content / 18: h'758C4B7BBAE2C4C1D462423E0F0DC3164FFA7B85BB94D4BD6D7ED26AB32FEB063385D4D3465927EC82CB5E198A59',
+        / parameter-content / 18:
+          h'758C4B7BBAE2C4C1D462423E0F0DC3164FFA7B85BB94D4BD6D7ED26AB32FEB063385D4D3465927EC82CB5E198A59',
         / parameter-encryption-info / 19: << 96([
           / protected: / << {
             / alg / 1: 1 / A128GCM /
@@ -45,7 +47,7 @@
           / unprotected: / {
             / IV / 5: h'F14AAB9D81D51F7AD943FE87'
           },
-          / payload: / null / detached ciphertext /,
+          / ciphertext: / null / detached ciphertext /,
           / recipients: / [
             [
               / protected: / << {
@@ -60,13 +62,15 @@
                 },
                 / kid / 4: 'kid-2'
               },
-              / payload: / h'A06B8E6550F308712B1DF044B21B7D11D9B22792F1DE0997'
+              / ciphertext: /
+                h'A06B8E6550F308712B1DF044B21B7D11D9B22792F1DE0997'
                 / CEK encrypted with KEK /
             ]
           ]
         ]) >>
       },
-      / directive-write / 18, 15 / consumes the SUIT_Encryption_Info above /
+      / directive-write / 18,
+        15 / consumes the SUIT_Encryption_Info above /
     ] >>
   } >>
 })
@@ -78,10 +82,10 @@
 
 ~~~~
 D86BA2025873825824822F58201DB69EF1477E9942815F29F78E09957B26
-B4ADD03902BDB3D1EDF3DA2075F593584AD28443A10126A0F65840CB4EAD
-A6BEC17EEB22EB836FB2BF9136A6EF733C11DAC955F543BBDCAA373B8593
-21BC77969917E4C70F049527607F4C32752D53E01346E96BFF4880B437DF
-640358E8A4010102010357A1028181526465637279707465642D6669726D
+B4ADD03902BDB3D1EDF3DA2075F593584AD28443A10128A0F658402B20A7
+97AC7DBEBC53147592BB110AEC43A2489AC19A169BB59FF6BD429300A971
+9FEB7DF277E4B8D1D821C816854229F266AC62AFD9DB52114F608EE66B18
+7B0358E8A4010102010357A1028181526465637279707465642D6669726D
 776172651458C7860C0014A212582E758C4B7BBAE2C4C1D462423E0F0DC3
 164FFA7B85BB94D4BD6D7ED26AB32FEB063385D4D3465927EC82CB5E198A
 5913588CD8608443A10101A1054CF14AAB9D81D51F7AD943FE87F6818344

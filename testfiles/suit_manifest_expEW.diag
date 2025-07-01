@@ -1,0 +1,49 @@
+/ SUIT_Envelope_Tagged / 107({
+  / manifest / 3: << {
+    / manifest-version / 1: 1,
+    / manifest-sequence-number / 2: 1,
+    / common / 3: << {
+      / components / 2: [
+        ['decrypted-firmware']
+      ]
+    } >>,
+    / install / 20: << [
+      / directive-set-component-index / 12,
+        0 / ['plaintext-firmware'] /,
+      / directive-override-parameters / 20, {
+        / parameter-content / 18:
+          h'758C4B7BBAE2C4C1D462423E0F0DC3164FFA7B85BB94D4BD6D7ED26AB32FEB063385D4D3465927EC82CB5E198A59',
+        / parameter-encryption-info / 19: << 96([
+          / protected: / << {
+            / alg / 1: 1 / A128GCM /
+          } >>,
+          / unprotected: / {
+            / IV / 5: h'F14AAB9D81D51F7AD943FE87'
+          },
+          / ciphertext: / null / detached ciphertext /,
+          / recipients: / [
+            [
+              / protected: / << {
+                / alg / 1: -29 / ECDH-ES + A128KW /
+              } >>,
+              / unprotected: / {
+                / ephemeral key / -1: {
+                  / kty / 1: 2 / EC2 /,
+                  / crv / -1: 1 / P-256 /,
+                  / x / -2: h'73024F415AA51529A66CCEFD88F3F62A734492FF45F6AD37FD2888E73EAF19DA',
+                  / y / -3: h'4005B48A6FD091AA6ABFE3CFBEEDE88B347E521D43405FDBD7D2CFF0EBC21B26'
+                },
+                / kid / 4: 'kid-2'
+              },
+              / ciphertext: /
+                h'A06B8E6550F308712B1DF044B21B7D11D9B22792F1DE0997'
+                / CEK encrypted with KEK /
+            ]
+          ]
+        ]) >>
+      },
+      / directive-write / 18,
+        15 / consumes the SUIT_Encryption_Info above /
+    ] >>
+  } >>
+})

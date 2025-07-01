@@ -1,0 +1,52 @@
+/ SUIT_Envelope_Tagged / 107({
+  / manifest / 3: << {
+    / manifest-version / 1: 1,
+    / manifest-sequence-number / 2: 0,
+    / common / 3: << {
+      / dependencies / 1: {
+        / component-index / 1: {
+          / dependency-prefix / 1: [
+            'dependent.suit'
+          ]
+        }
+      },
+      / components / 2: [
+        ['10']
+      ]
+    } >>,
+    / manifest-component-id / 5: [
+      'depending.suit'
+    ],
+    / invoke / 9: << [
+      / directive-set-component-index / 12, 0,
+      / directive-override-parameters / 20, {
+        / parameter-invoke-args / 23: 'cat 00 10'
+      },
+      / directive-invoke / 23, 15
+    ] >>,
+    / dependency-resolution / 15: << [
+      / directive-set-component-index / 12, 1,
+      / directive-override-parameters / 20, {
+        / parameter-image-digest / 3: << [
+          / digest-algorithm-id: / -16 / SHA256 /,
+          / digest-bytes: / h'0F02CAF6D3E61920D36BF3CEA7F862A13BB8FB1F09C3F4C29B121FEAB78EF3D8'
+        ] >>,
+        / parameter-image-size / 14: 190,
+        / parameter-uri / 21: "#dependent.suit"
+      },
+      / directive-fetch / 21, 2,
+      / condition-image-match / 3, 15
+    ] >>,
+    / install / 20: << [
+      / directive-set-component-index / 12, 1,
+      / directive-process-dependency / 11, 0,
+
+      / directive-set-component-index / 12, 0,
+      / directive-override-parameters / 20, {
+        / parameter-content / 18: ' in multiple trust domains'
+      },
+      / directive-write / 18, 15
+    ] >>
+  } >>,
+  "#dependent.suit": h'D86BA2025873825824822F58200F02CAF6D3E61920D36BF3CEA7F862A13BB8FB1F09C3F4C29B121FEAB78EF3D8584AD28443A10128A0F65840A25F337126369D2E0B451C01DBD8CDB84A77E7F6C39E789DB3D227753494000C9D250001FDDCA39B4B4E3755A7278C11998171905F56C394CFBB907105DA804F035842A6010102000347A102818142303005814E646570656E64656E742E73756974094D8414A11746636174203030170F14528414A1124B68656C6C6F20776F726C64120F'
+})

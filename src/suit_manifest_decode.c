@@ -1755,9 +1755,8 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
             return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-            result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
-            if (result != SUIT_SUCCESS) {
-                return result;
+            if (item->uDataType != QCBOR_TYPE_TEXT_STRING) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
             manifest->reference_uri.len = item->val.string.len;
             manifest->reference_uri.ptr = (uint8_t *)item->val.string.ptr;

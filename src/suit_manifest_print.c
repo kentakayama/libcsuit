@@ -395,12 +395,22 @@ char* suit_cose_alg_to_str(int64_t id)
 
     case -7:
         return "ES256";
-    case -8:
-        return "EdDSA";
+    case -9:
+        return "ESP256";
     case -35:
         return "ES384";
+    case -51:
+        return "ESP384";
     case -36:
         return "ES512";
+    case -52:
+        return "ESP512";
+    case -8:
+        return "EdDSA";
+    case -19:
+        return "Ed25519";
+    case -53:
+        return "Ed448";
 
     case -46:
         return "HSS-LMS";
@@ -2044,6 +2054,14 @@ suit_err_t suit_print_manifest(const suit_decode_mode_t mode,
         comma = true;
     }
     printf("\n%*s} >>", indent_space + indent_delta, "");
+
+    if (manifest->reference_uri.len > 0) {
+        if (comma) {
+            printf(",\n");
+        }
+        printf("%*s/ reference-uri / 4: \"%.*s\"", indent_space + indent_delta, "", (int)manifest->reference_uri.len, manifest->reference_uri.ptr);
+        comma = true;
+    }
 
     if (manifest->manifest_component_id.len > 0) {
         if (comma) {

@@ -37,7 +37,8 @@
     / install / 20: << [
       / fetch encrypted firmware /
       / directive-override-parameters / 20, {
-        / parameter-content / 18: h'758C4B7BBAE2C4C1D462423E0F0DC3164FFA7B85BB94D4BD6D7ED26AB32FEB063385D4D3465927EC82CB5E198A59',
+        / parameter-content / 18:
+          h'758C4B7BBAE2C4C1D462423E0F0DC3164FFA7B85BB94D4BD6D7ED26AB32FEB063385D4D3465927EC82CB5E198A59',
         / parameter-encryption-info / 19: << 96([
           / protected: / << {
             / alg / 1: 1 / A128GCM /
@@ -45,7 +46,7 @@
           / unprotected: / {
             / IV / 5: h'F14AAB9D81D51F7AD943FE87'
           },
-          / payload: / null / detached ciphertext /,
+          / ciphertext: / null / detached ciphertext /,
           / recipients: / [
             [
               / protected: / h'',
@@ -53,7 +54,9 @@
                 / alg / 1: -3 / A128KW /,
                 / kid / 4: 'kid-1'
               },
-              / payload: / h'75603FFC9518D794713C8CA8A115A7FB32565A6D59534D62' / CEK encrypted with KEK /
+              / ciphertext: /
+                h'75603FFC9518D794713C8CA8A115A7FB32565A6D59534D62'
+                / CEK encrypted with KEK /
             ]
           ]
         ]) >>

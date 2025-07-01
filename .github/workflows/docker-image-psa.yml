@@ -1,7 +1,7 @@
 # Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 # SPDX-License-Identifier: BSD-2-Clause
 
-name: Docker Image CI for libteep with Mbed TLS
+name: Docker Image CI for libcsuit with Mbed TLS
 
 on:
   pull_request:

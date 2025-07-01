@@ -107,22 +107,25 @@ suit_err_t suit_validate_cose_mac0(const UsefulBufC maced_cose,
 {
     struct t_cose_mac_validate_ctx mac_ctx;
     enum t_cose_err_t cose_result;
+    uint64_t tags[T_COSE_MAX_TAGS_TO_RETURN];
 
     t_cose_mac_validate_init(&mac_ctx, 0);
     t_cose_mac_set_validate_key(&mac_ctx, secret_key->cose_key);
     if (UsefulBuf_IsNULLOrEmptyC(*returned_payload)) {
-        cose_result = t_cose_mac_validate(&mac_ctx,
-                                           maced_cose,
-                                           NULL_Q_USEFUL_BUF_C,
-                                           returned_payload,
-                                           NULL);
+        cose_result = t_cose_mac_validate_msg(&mac_ctx,
+                                               maced_cose,
+                                               NULL_Q_USEFUL_BUF_C,
+                                               returned_payload,
+                                               NULL,
+                                               tags);
     }
     else {
-        cose_result = t_cose_mac_validate_detached(&mac_ctx,
-                                                    maced_cose,
-                                                    NULL_Q_USEFUL_BUF_C,
-                                                   *returned_payload,
-                                                    NULL);
+        cose_result = t_cose_mac_validate_detached_msg(&mac_ctx,
+                                                        maced_cose,
+                                                        NULL_Q_USEFUL_BUF_C,
+                                                       *returned_payload,
+                                                        NULL,
+                                                        tags);
     }
     if (cose_result != T_COSE_SUCCESS) {
         return SUIT_ERR_FAILED_TO_VERIFY;
@@ -139,7 +142,7 @@ suit_err_t suit_compute_cose_mac0(const UsefulBufC raw_cbor,
     enum t_cose_err_t cose_result;
     UsefulBufC tmp_maced_cose;
 
-    t_cose_mac_compute_init(&mac_ctx, 0, secret_key->cose_algorithm_id);
+    t_cose_mac_compute_init(&mac_ctx, T_COSE_OPT_MESSAGE_TYPE_MAC0, secret_key->cose_algorithm_id);
     t_cose_mac_set_computing_key(&mac_ctx, secret_key->cose_key, NULL_Q_USEFUL_BUF_C);
     cose_result = t_cose_mac_compute_detached(&mac_ctx, NULL_Q_USEFUL_BUF_C, raw_cbor, *returned_payload, &tmp_maced_cose);
     if (cose_result != T_COSE_SUCCESS) {
@@ -159,9 +162,9 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
 {
     struct t_cose_encrypt_dec_ctx    decrypt_context;
     struct t_cose_recipient_dec_esdh dec_recipient;
-    struct t_cose_parameter         *params;
+    uint64_t tags[T_COSE_MAX_TAGS_TO_RETURN];
 
-    t_cose_encrypt_dec_init(&decrypt_context, 0);
+    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT | T_COSE_OPT_ENABLE_NON_AEAD);
     t_cose_recipient_dec_esdh_init(&dec_recipient);
     t_cose_recipient_dec_esdh_set_key(&dec_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
 
@@ -172,13 +175,14 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_esdh(const UsefulBufC encrypted_payl
     t_cose_encrypt_dec_add_recipient(&decrypt_context,
                                      (struct t_cose_recipient_dec *)&dec_recipient);
 
-    return t_cose_encrypt_dec_detached(&decrypt_context,
-                                        encryption_info,
-                                        NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
-                                        encrypted_payload,
-                                        working_buf,
-                                        returned_payload,
-                                        &params);
+    return t_cose_encrypt_dec_detached_msg(&decrypt_context,
+                                            encryption_info,
+                                            NULL_Q_USEFUL_BUF_C, /* in/unused: AAD */
+                                            encrypted_payload,
+                                            working_buf,
+                                            returned_payload,
+                                            NULL,
+                                            tags);
 }
 
 enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_payload,
@@ -189,13 +193,21 @@ enum t_cose_err_t suit_decrypt_cose_encrypt_aes(const UsefulBufC encrypted_paylo
 {
     struct t_cose_recipient_dec_keywrap kw_unwrap_recipient;
     struct t_cose_encrypt_dec_ctx decrypt_context;
+    uint64_t tags[T_COSE_MAX_TAGS_TO_RETURN];
 
-    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT);
+    t_cose_encrypt_dec_init(&decrypt_context, T_COSE_OPT_ENABLE_NON_AEAD);
     t_cose_recipient_dec_keywrap_init(&kw_unwrap_recipient);
     t_cose_recipient_dec_keywrap_set_kek(&kw_unwrap_recipient, mechanism->key.cose_key, NULL_Q_USEFUL_BUF_C);
     t_cose_encrypt_dec_add_recipient(&decrypt_context, (struct t_cose_recipient_dec *)&kw_unwrap_recipient);
 
-    return t_cose_encrypt_dec_detached(&decrypt_context, encryption_info, NULL_Q_USEFUL_BUF_C, encrypted_payload, working_buf, returned_payload, NULL);
+    return t_cose_encrypt_dec_detached_msg(&decrypt_context,
+                                            encryption_info,
+                                            NULL_Q_USEFUL_BUF_C,
+                                            encrypted_payload,
+                                            working_buf,
+                                            returned_payload,
+                                            NULL,
+                                            tags);
 }
 
 suit_err_t suit_decrypt_cose_encrypt(const UsefulBufC encrypted_payload,
@@ -334,6 +346,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     int hash;
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ESP256:
     case T_COSE_ALGORITHM_ECDH_ES_A128KW:
         nid = PSA_ECC_FAMILY_SECP_R1;
         hash = PSA_ALG_SHA_256;
@@ -428,6 +441,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     const char *group_name;
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ESP256:
     case T_COSE_ALGORITHM_ECDH_ES_A128KW:
         group_name = "prime256v1";
         break;
@@ -498,6 +512,7 @@ suit_err_t suit_create_es_key(suit_key_t *key)
     const char *group_name;
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ESP256:
     case T_COSE_ALGORITHM_ECDH_ES_A128KW:
         group_name = "prime256v1";
         break;
@@ -581,6 +596,18 @@ suit_err_t suit_key_init_es256_key_pair(const unsigned char *private_key,
     return suit_create_es_key(cose_key_pair);
 }
 
+suit_err_t suit_key_init_esp256_key_pair(const unsigned char *private_key,
+                                        const unsigned char *public_key,
+                                        suit_key_t *cose_key_pair)
+{
+    cose_key_pair->private_key = private_key;
+    cose_key_pair->private_key_len = PRIME256V1_PRIVATE_KEY_LENGTH;
+    cose_key_pair->public_key = public_key;
+    cose_key_pair->public_key_len = PRIME256V1_PUBLIC_KEY_LENGTH;
+    cose_key_pair->cose_algorithm_id = T_COSE_ALGORITHM_ESP256;
+    return suit_create_es_key(cose_key_pair);
+}
+
 suit_err_t suit_key_init_es384_key_pair(const unsigned char *private_key,
                                         const unsigned char *public_key,
                                         suit_key_t *cose_key_pair)
@@ -593,7 +620,19 @@ suit_err_t suit_key_init_es384_key_pair(const unsigned char *private_key,
     return suit_create_es_key(cose_key_pair);
 }
 
-suit_err_t suit_key_init_es521_key_pair(const unsigned char *private_key,
+suit_err_t suit_key_init_esp384_key_pair(const unsigned char *private_key,
+                                        const unsigned char *public_key,
+                                        suit_key_t *cose_key_pair)
+{
+    cose_key_pair->private_key = private_key;
+    cose_key_pair->private_key_len = SECP384R1_PRIVATE_KEY_LENGTH;
+    cose_key_pair->public_key = public_key;
+    cose_key_pair->public_key_len = SECP384R1_PUBLIC_KEY_LENGTH;
+    cose_key_pair->cose_algorithm_id = T_COSE_ALGORITHM_ESP384;
+    return suit_create_es_key(cose_key_pair);
+}
+
+suit_err_t suit_key_init_es512_key_pair(const unsigned char *private_key,
                                         const unsigned char *public_key,
                                         suit_key_t *cose_key_pair)
 {
@@ -602,6 +641,18 @@ suit_err_t suit_key_init_es521_key_pair(const unsigned char *private_key,
     cose_key_pair->public_key = public_key;
     cose_key_pair->public_key_len = SECP521R1_PUBLIC_KEY_LENGTH;
     cose_key_pair->cose_algorithm_id = T_COSE_ALGORITHM_ES512;
+    return suit_create_es_key(cose_key_pair);
+}
+
+suit_err_t suit_key_init_esp512_key_pair(const unsigned char *private_key,
+                                        const unsigned char *public_key,
+                                        suit_key_t *cose_key_pair)
+{
+    cose_key_pair->private_key = private_key;
+    cose_key_pair->private_key_len = SECP521R1_PRIVATE_KEY_LENGTH;
+    cose_key_pair->public_key = public_key;
+    cose_key_pair->public_key_len = SECP521R1_PUBLIC_KEY_LENGTH;
+    cose_key_pair->cose_algorithm_id = T_COSE_ALGORITHM_ESP512;
     return suit_create_es_key(cose_key_pair);
 }
 
@@ -616,7 +667,6 @@ suit_err_t suit_key_init_ecdh_p256_public_key(const unsigned char *public_key,
     return suit_create_es_key(cose_public_key);
 }
 
-
 suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key,
                                           suit_key_t *cose_public_key)
 {
@@ -625,6 +675,17 @@ suit_err_t suit_key_init_es256_public_key(const unsigned char *public_key,
     cose_public_key->public_key = public_key;
     cose_public_key->public_key_len = PRIME256V1_PUBLIC_KEY_LENGTH;
     cose_public_key->cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+    return suit_create_es_key(cose_public_key);
+}
+
+suit_err_t suit_key_init_esp256_public_key(const unsigned char *public_key,
+                                           suit_key_t *cose_public_key)
+{
+    cose_public_key->private_key = NULL;
+    cose_public_key->private_key_len = 0;
+    cose_public_key->public_key = public_key;
+    cose_public_key->public_key_len = PRIME256V1_PUBLIC_KEY_LENGTH;
+    cose_public_key->cose_algorithm_id = T_COSE_ALGORITHM_ESP256;
     return suit_create_es_key(cose_public_key);
 }
 
@@ -639,7 +700,18 @@ suit_err_t suit_key_init_es384_public_key(const unsigned char *public_key,
     return suit_create_es_key(cose_public_key);
 }
 
-suit_err_t suit_key_init_es521_public_key(const unsigned char *public_key,
+suit_err_t suit_key_init_esp384_public_key(const unsigned char *public_key,
+                                           suit_key_t *cose_public_key)
+{
+    cose_public_key->private_key = NULL;
+    cose_public_key->private_key_len = 0;
+    cose_public_key->public_key = public_key;
+    cose_public_key->public_key_len = SECP384R1_PUBLIC_KEY_LENGTH;
+    cose_public_key->cose_algorithm_id = T_COSE_ALGORITHM_ESP384;
+    return suit_create_es_key(cose_public_key);
+}
+
+suit_err_t suit_key_init_es512_public_key(const unsigned char *public_key,
                                           suit_key_t *cose_public_key)
 {
     cose_public_key->private_key = NULL;
@@ -647,6 +719,17 @@ suit_err_t suit_key_init_es521_public_key(const unsigned char *public_key,
     cose_public_key->public_key = public_key;
     cose_public_key->public_key_len = SECP521R1_PUBLIC_KEY_LENGTH;
     cose_public_key->cose_algorithm_id = T_COSE_ALGORITHM_ES512;
+    return suit_create_es_key(cose_public_key);
+}
+
+suit_err_t suit_key_init_esp512_public_key(const unsigned char *public_key,
+                                           suit_key_t *cose_public_key)
+{
+    cose_public_key->private_key = NULL;
+    cose_public_key->private_key_len = 0;
+    cose_public_key->public_key = public_key;
+    cose_public_key->public_key_len = SECP521R1_PUBLIC_KEY_LENGTH;
+    cose_public_key->cose_algorithm_id = T_COSE_ALGORITHM_ESP512;
     return suit_create_es_key(cose_public_key);
 }
 
@@ -742,8 +825,11 @@ suit_err_t suit_free_key(const suit_key_t *key)
         t_cose_key_free_symmetric(key->cose_key);
         break;
     case T_COSE_ALGORITHM_ES256:
+    case T_COSE_ALGORITHM_ESP256:
     case T_COSE_ALGORITHM_ES384:
+    case T_COSE_ALGORITHM_ESP384:
     case T_COSE_ALGORITHM_ES512:
+    case T_COSE_ALGORITHM_ESP512:
 #if defined(LIBCSUIT_PSA_CRYPTO_C)
 #if defined(LIBCSUIT_USE_T_COSE_1)
         psa_destroy_key((psa_key_handle_t)key->cose_key.k.key_handle);
@@ -891,6 +977,9 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
                 else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
                     result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
                 }
+                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ESP256) {
+                    result = suit_key_init_esp256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+                }
                 else {
                     result = SUIT_ERR_NOT_IMPLEMENTED;
                 }
@@ -901,7 +990,10 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
                     result = suit_key_init_ecdh_p256_public_key(public_key.ptr, suit_key);
                 }
                 else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
-                    result = suit_key_init_es256_public_key(public_key.ptr, suit_key);
+                    result = suit_key_init_es256_public_key(public_key.ptr, suit_key);                    
+                }
+                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ESP256) {
+                    result = suit_key_init_esp256_public_key(public_key.ptr, suit_key);
                 }
                 else {
                     result = SUIT_ERR_NOT_IMPLEMENTED;

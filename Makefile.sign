@@ -31,10 +31,13 @@ else
 endif
 
 ifeq ($(SIGNER),TAM)
-    CFLAGS += "-DSUIT_MANIFEST_SIGNER_TAM=1"
+    CFLAGS += -DSUIT_MANIFEST_SIGNER_TAM=1
     TARGET = ./bin/suit_manifest_sign_delegate
+else ifeq ($(SIGNER),MAC)
+	CFLAGS += -DSUIT_MANIFEST_SIGNER_MAC=1
+	TARGET = ./bin/suit_manifest_mac
 else
-    CFLAGS += "-DSUIT_MANIFEST_SIGNER_TRUST_ANCHOR=1"
+    CFLAGS += -DSUIT_MANIFEST_SIGNER_TRUST_ANCHOR=1
 endif
 
 .PHONY: all

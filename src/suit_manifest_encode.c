@@ -1073,7 +1073,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
     // 4
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
     if (manifest->reference_uri.len > 0) {
-        QCBOREncode_AddBytesToMapN(&context, SUIT_REFERENCE_URI, (UsefulBufC){.ptr = manifest->reference_uri.ptr, .len = manifest->reference_uri.len});
+        QCBOREncode_AddTextToMapN(&context, SUIT_REFERENCE_URI, (UsefulBufC){.ptr = manifest->reference_uri.ptr, .len = manifest->reference_uri.len});
     }
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI */
 
@@ -1278,6 +1278,7 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         }
         switch (mechanisms[i].key.cose_algorithm_id) {
         case T_COSE_ALGORITHM_ES256:
+        case T_COSE_ALGORITHM_ESP256:
         case T_COSE_ALGORITHM_HMAC256:
             result = SUIT_SUCCESS;
             break;

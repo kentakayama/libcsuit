@@ -15,13 +15,27 @@
 #include "trust_anchor_prime256v1_cose_key_private.h"
 UsefulBufC private_key = trust_anchor_prime256v1_cose_key_private;
 UsefulBufC public_key = NULLUsefulBufC;
+int cose_algorithm = T_COSE_ALGORITHM_ESP256;
+cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
 #elif defined(SUIT_MANIFEST_SIGNER_TAM)
 #include "tam_es256_cose_key_private.h"
 UsefulBufC private_key = tam_es256_cose_key_private;
 #include "trust_anchor_prime256v1_cose_key_public.h"
 UsefulBufC public_key = trust_anchor_prime256v1_cose_key_public;
+int cose_algorithm = T_COSE_ALGORITHM_ESP256;
+cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
+#elif defined(SUIT_MANIFEST_SIGNER_MAC)
+#include "trust_anchor_hmac256_cose_key_secret.h"
+UsefulBufC private_key = trust_anchor_hmac256_cose_key_secret;
+UsefulBufC public_key = NULLUsefulBufC;
+int cose_algorithm = T_COSE_ALGORITHM_HMAC256;
+cbor_tag_key_t cose_tag = CBOR_TAG_COSE_MAC0;
 #else
 #error Signing key is not specified
+UsefulBufC private_key = NULLUsefulBufC;
+UsefulBufC public_key = NULLUsefulBufC;
+int cose_algorithm = 0;
+cbor_tag_key_t cose_tag = 0;
 #endif
 
 #define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
@@ -44,23 +58,23 @@ int main(int argc,
     uint8_t *manifest_buf = NULL;
     uint8_t *encode_buf = NULL;
 
-    mechanisms[0].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+    mechanisms[0].key.cose_algorithm_id = cose_algorithm;
     result = suit_set_suit_key_from_cose_key(private_key, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create signing key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    mechanisms[0].cose_tag = CBOR_TAG_COSE_SIGN1;
+    mechanisms[0].cose_tag = cose_tag;
     mechanisms[0].use = true;
 
     if (!UsefulBuf_IsNULLOrEmptyC(public_key)) {
-        mechanisms[1].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+        mechanisms[1].key.cose_algorithm_id = cose_algorithm;
         result = suit_set_suit_key_from_cose_key(public_key, &mechanisms[1].key);
         if (result != SUIT_SUCCESS) {
             printf("main : Failed to create verification key of trust anchor. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
         }
-        mechanisms[1].cose_tag = CBOR_TAG_COSE_SIGN1;
+        mechanisms[1].cose_tag = cose_tag;
         mechanisms[1].use = true;
     }
 

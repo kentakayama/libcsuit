@@ -4,7 +4,7 @@
  SPDX-License-Identifier: BSD-2-Clause
 -->
 
-## Example 1: Fetch and Decrypt AES-KW + Encrypted Payload
+## Example 1: Fetch and Decrypt AES-KW + Encrypted Payload to slots
 {: numbered='no'}
 
 ### CBOR Diagnostic Notation of SUIT Manifest
@@ -15,7 +15,7 @@
   / authentication-wrapper / 2: << [
     << [
       / digest-algorithm-id: / -16 / SHA256 /,
-      / digest-bytes: / h'A6D2C13A0DEFD57A09FA65C24206A9A8747261E6EA017532B3DAB0419C42A2FC'
+      / digest-bytes: / h'6D74BD3110A2573236E03DD78693D5B21C299C917A4327D9939DDF3582A41DE3'
     ] >>,
     << / COSE_Mac0_Tagged / 17([
       / protected: / << {
@@ -23,7 +23,7 @@
       } >>,
       / unprotected: / {},
       / payload: / null,
-      / tag: / h'DB350AC9603B0BBA3895B850196993633F314A9066634B31BF62E596FD870434'
+      / tag: / h'E6837A54A9B5813F8D5EDAD48AB96D5D7388D9D1C89AB29EC55AE964F67E01ED'
     ]) >>
   ] >>,
   / manifest / 3: << {
@@ -40,7 +40,8 @@
       / directive-set-component-index / 12, 1 / [h'01'] /,
       / directive-override-parameters / 20, {
         / parameter-image-size / 14: 46,
-        / parameter-uri / 21: "https://example.com/encrypted-firmware"
+        / parameter-uri / 21:
+          "coaps://example.com/encrypted-firmware"
       },
       / directive-fetch / 21, 15,
 
@@ -54,7 +55,7 @@
           / unprotected: / {
             / IV / 5: h'F14AAB9D81D51F7AD943FE87'
           },
-          / payload: / null / detached ciphertext /,
+          / ciphertext: / null / detached ciphertext /,
           / recipients: / [
             [
               / protected: / h'',
@@ -62,7 +63,9 @@
                 / alg / 1: -3 / A128KW /,
                 / kid / 4: 'kid-1'
               },
-              / payload: / h'75603FFC9518D794713C8CA8A115A7FB32565A6D59534D62' / CEK encrypted with KEK /
+              / ciphertext: /
+                h'75603FFC9518D794713C8CA8A115A7FB32565A6D59534D62'
+                / CEK encrypted with KEK /
             ]
           ]
         ]) >>,
@@ -80,11 +83,11 @@
 {: numbered='no'}
 
 ~~~~
-D86BA2025853825824822F5820A6D2C13A0DEFD57A09FA65C24206A9A874
-7261E6EA017532B3DAB0419C42A2FC582AD18443A10105A0F65820DB350A
-C9603B0BBA3895B850196993633F314A9066634B31BF62E596FD87043403
+D86BA2025853825824822F58206D74BD3110A2573236E03DD78693D5B21C
+299C917A4327D9939DDF3582A41DE3582AD18443A10105A0F65820E6837A
+54A9B5813F8D5EDAD48AB96D5D7388D9D1C89AB29EC55AE964F67E01ED03
 588FA4010102010349A1028281410081410114587C8C0C0114A20E182E15
-782668747470733A2F2F6578616D706C652E636F6D2F656E637279707465
+7826636F6170733A2F2F6578616D706C652E636F6D2F656E637279707465
 642D6669726D77617265150F0C0014A213583ED8608443A10101A1054CF1
 4AAB9D81D51F7AD943FE87F6818340A2012204456B69642D31581875603F
 FC9518D794713C8CA8A115A7FB32565A6D59534D621601160F
