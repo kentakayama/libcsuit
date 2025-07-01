@@ -107,8 +107,9 @@ suit_err_t suit_validate_cose_mac0(const UsefulBufC maced_cose,
 {
     struct t_cose_mac_validate_ctx mac_ctx;
     enum t_cose_err_t cose_result;
+    uint64_t tags[T_COSE_MAX_TAGS_TO_RETURN];
 
-    t_cose_mac_validate_init(&mac_ctx, T_COSE_OPT_MESSAGE_TYPE_MAC0);
+    t_cose_mac_validate_init(&mac_ctx, 0);
     t_cose_mac_set_validate_key(&mac_ctx, secret_key->cose_key);
     if (UsefulBuf_IsNULLOrEmptyC(*returned_payload)) {
         cose_result = t_cose_mac_validate_msg(&mac_ctx,
@@ -116,7 +117,7 @@ suit_err_t suit_validate_cose_mac0(const UsefulBufC maced_cose,
                                                NULL_Q_USEFUL_BUF_C,
                                                returned_payload,
                                                NULL,
-                                               NULL);
+                                               tags);
     }
     else {
         cose_result = t_cose_mac_validate_detached_msg(&mac_ctx,
@@ -124,7 +125,7 @@ suit_err_t suit_validate_cose_mac0(const UsefulBufC maced_cose,
                                                         NULL_Q_USEFUL_BUF_C,
                                                        *returned_payload,
                                                         NULL,
-                                                        NULL);
+                                                        tags);
     }
     if (cose_result != T_COSE_SUCCESS) {
         return SUIT_ERR_FAILED_TO_VERIFY;
