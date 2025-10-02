@@ -45,21 +45,21 @@ PUBLIC_INTERFACE = \
 OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
 .PHONY: all
-all: ./bin/$(NAME).a
+all: $(NAME).a
 
 include Makefile.common
 
 .PHONY: so
-so: ./bin/$(NAME).so
+so: $(NAME).so
 
 .PHONY: doc
 doc:
 	doxygen Doxyfile
 
-./bin/$(NAME).a: $(OBJS) | ./bin
+$(NAME).a: $(OBJS)
 	$(AR) -r $@ $^
 
-./bin/$(NAME).so: $(OBJS) | ./bin
+$(NAME).so: $(OBJS)
 	$(CC) -shared $^ $(LOCAL_CFLAGS) $(CFLAGS) -o $@
 
 ./obj/%.o: %.c | ./obj/src
@@ -75,17 +75,17 @@ define install-header
 endef
 
 .PHONY: instal
-install: all $(PUBLIC_INTERFACE)
+install: $(NAME).a $(PUBLIC_INTERFACE)
 	install -d $(DESTDIR)$(PREFIX)/lib/
-	install -m 644 ./bin/$(NAME).a $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 $(NAME).a $(DESTDIR)$(PREFIX)/lib/
 	install -d $(DESTDIR)$(PREFIX)/include/csuit
 	$(foreach header,$(PUBLIC_INTERFACE),$(call install-header,$(header),$(DESTDIR)$(PREFIX)/include/csuit))
 
 .PHONY: install_so
-install_so: ./bin/$(NAME).so
-	install -m 755 ./bin/$(NAME).so $(DESTDIR)$(PREFIX)/lib/$(NAME).so.1.0.0
-	ln -sf ./bin/$(NAME).so.1 $(DESTDIR)$(PREFIX)/lib/$(NAME).so
-	ln -sf ./bin/$(NAME).so.1.0.0 $(DESTDIR)$(PREFIX)/lib$(NAME).so.1
+install_so: $(NAME).so $(PUBLIC_INTERFACE)
+	install -m 755 $(NAME).so $(DESTDIR)$(PREFIX)/lib/$(NAME).so.1.0.0
+	ln -sf $(NAME).so.1 $(DESTDIR)$(PREFIX)/lib/$(NAME).so
+	ln -sf $(NAME).so.1.0.0 $(DESTDIR)$(PREFIX)/lib$(NAME).so.1
 
 .PHONY: uninstall
 uninstall:
@@ -95,7 +95,7 @@ uninstall:
 		$(NAME).a $(NAME).so $(NAME).so.1 $(NAME).so.1.0.0)
 
 .PHONY: build_test
-build_test: ./bin/$(NAME).a
+build_test: $(NAME).a
 	$(MAKE) -C test MBEDTLS=$(MBEDTLS) CMD_INC="$(CMD_INC)" CMD_LD="$(CMD_LD)"
 
 .PHONY: test
@@ -105,4 +105,4 @@ test: build_test
 .PHONY: clean
 clean:
 	$(MAKE) -C test clean
-	$(RM) $(OBJS) ./bin/$(NAME).a ./bin/$(NAME).so
+	$(RM) $(OBJS) $(NAME).a $(NAME).so
