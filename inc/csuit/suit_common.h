@@ -923,17 +923,33 @@ typedef struct suit_report_result {
     suit_record_t   result_record;
 } suit_report_result_t;
 
+typedef struct suit_report_inputs {
+    // Allocated buffer and CBOR encoding context for SUIT_Report.
+    // `buf` should be initialized by caller with enough memory.
+    // If buf is not set, the SUIT Manifest Processor will not produce SUIT_Report.
+    UsefulBuf buf;
+
+    // COSE operations are conducted if the protection_mechanism.key.cose_algorithm_id is not 0.
+    // NOTE: Currently only CBOR_TAG_COSE_SIGN1 is supported.
+    suit_mechanism_t    protection_mechanism;
+    QCBOREncodeContext  cbor_encoder;
+    union {
+        struct {
+            enum t_cose_err_t                   t_cose_error;
+            struct t_cose_sign_sign_ctx         sign_ctx;
+            struct t_cose_signature_sign_main   signer;
+        };
+    };
+
+    // input value from outside the SUIT Manifest Processor
+    UsefulBufC nonce;
+} suit_report_inputs_t;
+
 /*!
  * This passes enough data to construct SUIT_Report.
  */
 typedef struct suit_report_args {
     /* parameters for SUIT_Report */
-
-    // encoding buffer, should be allocated enough memory
-    UsefulBuf buf;
-
-    // this includes suit-reference and suit-nonce
-    suit_report_inputs_t inputs;
 
     suit_report_records_t suit_report_records;
     bool success;
@@ -1246,28 +1262,6 @@ typedef union {
         uint16_t coswid                 : 1;
     };
 } suit_process_flag_t;
-
-typedef struct suit_report_inputs {
-    // Allocated buffer and CBOR encoding context for SUIT_Report.
-    // `buf` should be initialized by caller with enough memory.
-    // If buf is not set, the SUIT Manifest Processor will not produce SUIT_Report.
-    UsefulBuf buf;
-
-    // COSE operations are conducted if the protection_mechanism.key.cose_algorithm_id is not 0.
-    // NOTE: Currently only CBOR_TAG_COSE_SIGN1 is supported.
-    suit_mechanism_t    protection_mechanism;
-    QCBOREncodeContext  cbor_encoder;
-    union {
-        struct {
-            enum t_cose_err_t                   t_cose_error;
-            struct t_cose_sign_sign_ctx         sign_ctx;
-            struct t_cose_signature_sign_main   signer;
-        };
-    };
-
-    // input value from outside the SUIT Manifest Processor
-    UsefulBufC nonce;
-} suit_report_inputs_t;
 
 typedef struct suit_inputs {
     /* sections requested to process */

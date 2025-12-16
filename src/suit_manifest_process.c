@@ -384,21 +384,6 @@ error:
             UsefulInputBuf_Tell(&context->InBuf),
             0
         );
-        // suit_report_callback(
-        //     (suit_report_args_t) {
-        //         .buf.len = suit_inputs->left_len,
-        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-        //         .inputs = suit_inputs->report_inputs,
-        //         .level0 = SUIT_MANIFEST,
-        //         .level1.manifest_key = SUIT_COMMON,
-        //         .level2.common_key = SUIT_SHARED_SEQUENCE,
-        //         .level3.condition_directive = directive,
-        //         .level4.parameter = parameter,
-        //         .qcbor_error = error,
-        //         .suit_error = result,
-        //         .policy = {0}
-        //     }
-        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -1655,20 +1640,6 @@ error:
             UsefulInputBuf_Tell(&context.InBuf),
             0
         );
-        // suit_report_callback(
-        //     (suit_report_args_t) {
-        //         .buf.len = suit_inputs->left_len,
-        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-        //         .inputs = suit_inputs->report_inputs,
-        //         .level0 = SUIT_MANIFEST,
-        //         .level1.manifest_key = command_key,
-        //         .level2.condition_directive = condition_directive_key,
-        //         .level3.parameter = SUIT_PARAMETER_INVALID,
-        //         .qcbor_error = error,
-        //         .suit_error = result,
-        //         .policy = report_policy
-        //     }
-        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -1800,20 +1771,6 @@ error:
             UsefulInputBuf_Tell(&context.InBuf),
             0
         );
-        // suit_report_callback(
-        //     (suit_report_args_t) {
-        //         .buf.len = suit_inputs->left_len,
-        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-        //         .inputs = suit_inputs->report_inputs,
-        //         .level0 = SUIT_MANIFEST,
-        //         .level1.manifest_key = SUIT_COMMON,
-        //         .level2.common_key = SUIT_SHARED_SEQUENCE,
-        //         .level3.condition_directive = condition_directive_key,
-        //         .level4.parameter = SUIT_PARAMETER_INVALID,
-        //         .qcbor_error = error,
-        //         .suit_error = result
-        //     }
-        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -1882,20 +1839,6 @@ error:
             command_buf.ptr - suit_inputs->manifest.ptr,
             0
         );
-        // suit_report_callback(
-        //     (suit_report_args_t) {
-        //         .buf.len = suit_inputs->left_len,
-        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-        //         .inputs = suit_inputs->report_inputs,
-        //         .level0 = SUIT_MANIFEST,
-        //         .level1.manifest_key = command_key,
-        //         .level2.condition_directive = SUIT_CONDITION_INVALID,
-        //         .level3.parameter = SUIT_PARAMETER_INVALID,
-        //         .qcbor_error = QCBOR_SUCCESS,
-        //         .suit_error = result,
-        //         .policy = {0}
-        //     }
-        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -2085,19 +2028,6 @@ error:
             UsefulInputBuf_Tell(&context->InBuf),
             0
         );
-        // suit_report_callback(
-        //     (suit_report_args_t) {
-        //         .buf.len = suit_inputs->left_len,
-        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-        //         .inputs = suit_inputs->report_inputs,
-        //         .level0 = SUIT_MANIFEST,
-        //         .level1.manifest_key = manifest_key,
-        //         .level2.common_key = common_key,
-        //         .level3.parameter = SUIT_PARAMETER_INVALID,
-        //         .qcbor_error = error,
-        //         .suit_error = result
-        //     }
-        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -2360,19 +2290,6 @@ out:
             UsefulInputBuf_Tell(&context.InBuf),
             0
         );
-        // suit_report_callback(
-        //     (suit_report_args_t) {
-        //         .buf.len = suit_inputs->left_len,
-        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-        //         .inputs = suit_inputs->report_inputs,
-        //         .level0 = SUIT_MANIFEST,
-        //         .level1.manifest_key = manifest_key,
-        //         .level2.condition_directive = SUIT_CONDITION_INVALID,
-        //         .level3.parameter = SUIT_PARAMETER_INVALID,
-        //         .qcbor_error = error,
-        //         .suit_error = result
-        //     }
-        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -2486,19 +2403,6 @@ error:
             UsefulInputBuf_Tell(&context->InBuf),
             0
         );
-        // suit_report_callback(
-        //     (suit_report_args_t) {
-        //         .buf.len = suit_inputs->left_len,
-        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-        //         .inputs = suit_inputs->report_inputs,
-        //         .level0 = SUIT_DELEGATION,
-        //         .level1.manifest_key = SUIT_MANIFEST_KEY_INVALID,
-        //         .level2.condition_directive = SUIT_CONDITION_INVALID,
-        //         .level3.parameter = SUIT_PARAMETER_INVALID,
-        //         .qcbor_error = error,
-        //         .suit_error = result
-        //     }
-        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -2911,19 +2815,6 @@ error:
     }
 
     QCBORError cbor_error = QCBOREncode_Finish(&suit_inputs->report_inputs.cbor_encoder, &suit_inputs->suit_report);
-    // suit_report_callback(
-    //     (suit_report_args_t) {
-    //         .buf.len = suit_inputs->left_len,
-    //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
-    //         .inputs = suit_inputs->report_inputs,
-    //         .level0 = envelope_key,
-    //         .level1.manifest_key = manifest_key,
-    //         .level2.condition_directive = SUIT_CONDITION_INVALID,
-    //         .level3.parameter = SUIT_PARAMETER_INVALID,
-    //         .qcbor_error = error,
-    //         .suit_error = result
-    //     }
-    // );
     if (cbor_error != QCBOR_SUCCESS) {
         return SUIT_ERR_WHILE_REPORTING;
     }
