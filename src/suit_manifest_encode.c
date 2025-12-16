@@ -1373,3 +1373,98 @@ out:
     return result;
 }
 
+void suit_encode_append_suit_report_result(
+        QCBOREncodeContext *cbor_encoder,
+        suit_err_t result,
+        suit_manifest_key_t manifest_key,
+        size_t section_offset,
+        uint64_t component_index)
+{
+    if (result == SUIT_SUCCESS || result == SUIT_ERR_ABORT) {
+        return;
+    }
+    // suit-report-result => { start
+    QCBOREncode_OpenMapInMapN(cbor_encoder, SUIT_REPORT_RESULT);
+    {
+        // suit-report-result-code => int,
+        switch (result) {
+        case SUIT_ERR_NOT_A_SUIT_MANIFEST:
+        case SUIT_ERR_NOT_CANONICAL_CBOR:
+        case SUIT_ERR_REDUNDANT:
+        case SUIT_ERR_MANIFEST_KEY_NOT_FOUND:
+        case SUIT_ERR_INVALID_TYPE_OF_VALUE:
+        case SUIT_ERR_INVALID_VALUE:
+        case SUIT_ERR_INVALID_TYPE_OF_KEY:
+        case SUIT_ERR_INVALID_KEY:
+        case SUIT_ERR_NO_MORE_ITEMS:
+        case SUIT_ERR_NO_MEMORY:
+        case SUIT_ERR_FATAL:
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_CBOR_PARSE);
+            break;
+        case SUIT_ERR_NOT_IMPLEMENTED:
+        case SUIT_ERR_INVALID_MANIFEST_VERSION:
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_COMMAND_UNSUPPORTED);
+            break;
+        case SUIT_ERR_AUTHENTICATION_NOT_FOUND:
+        case SUIT_ERR_FAILED_TO_VERIFY:
+        case SUIT_ERR_FAILED_TO_VERIFY_DELEGATION:
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_UNAUTHORIZED);
+            break;
+        case SUIT_ERR_COMPONENT_NOT_FOUND:
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED);
+            break;
+        case SUIT_ERR_PARAMETER_NOT_FOUND:
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_PARAMETER_UNSUPPORTED);
+            break;
+        case SUIT_ERR_FAILED_TO_ENCRYPT:
+        case SUIT_ERR_FAILED_TO_DECRYPT:
+        case SUIT_ERR_FAILED_TO_SIGN:
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_OPERATION_FAILED);                
+            break;
+        case SUIT_ERR_CONDITION_MISMATCH:
+        case SUIT_ERR_TRY_OUT:
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_CONDITION_FAILED);
+            break;
+        case SUIT_ERR_ABORT:
+        default:
+            // should not reach here
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, SUIT_REPORT_RESULT_CODE,
+                                       SUIT_REPORT_REASON_OK);
+        }
+
+        // suit-report-result-record => [ start
+        QCBOREncode_OpenArrayInMapN(cbor_encoder, SUIT_REPORT_RESULT_RECORD);
+        {
+            // suit-record-manifest-id: [* uint ]
+            QCBOREncode_OpenArray(cbor_encoder);
+
+            // TODO: encode dependency tree
+            QCBOREncode_CloseArray(cbor_encoder);
+
+            // suit-record-manifest-section: int
+            QCBOREncode_AddInt64(cbor_encoder, manifest_key);
+
+            // suit-record-section-offset : uint
+            QCBOREncode_AddUInt64(cbor_encoder, section_offset);
+
+            // suit-record-component-index : uint
+            // NOTE: none of SUIT_Component_Identifier is processed here
+            QCBOREncode_AddUInt64(cbor_encoder, 0);
+
+            // suit-record-properties : {*$$SUIT_Parameters}
+            // NOTE: none of command sequence are processed yet
+            QCBOREncode_OpenMap(cbor_encoder);
+            QCBOREncode_CloseMap(cbor_encoder);
+        }
+        QCBOREncode_CloseArray(cbor_encoder);
+    } // ] suit-report-result-record end
+    QCBOREncode_CloseArray(cbor_encoder);
+    // } suit-report-result end
+}

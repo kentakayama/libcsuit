@@ -14,10 +14,18 @@
  */
 
 #include "csuit/suit_manifest_decode.h"
+#include "csuit/suit_manifest_encode.h"
 #include "csuit/suit_manifest_process.h"
 #include "csuit/suit_manifest_callbacks.h"
 
-suit_err_t suit_set_parameters(QCBORDecodeContext *context,
+#if defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+#define LIBCSUIT_REPORT_ENABLED (if(0))
+#else
+#define LIBCSUIT_REPORT_ENABLED (if(!UsefulBuf_IsNULLOrEmpty(suit_inputs->report_inputs.buf)))
+#endif /* LIBCSUIT_ENABLE_SUIT_REPORT */
+
+suit_err_t suit_set_parameters(suit_inputs_t *suit_inputs,
+                               QCBORDecodeContext *context,
                                const suit_con_dir_key_t directive,
                                const suit_index_t *suit_index,
                                suit_parameter_args_t parameters[],
@@ -369,17 +377,28 @@ suit_err_t suit_set_parameters(QCBORDecodeContext *context,
 error:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = SUIT_MANIFEST,
-                .level1.manifest_key = SUIT_COMMON,
-                .level2.common_key = SUIT_SHARED_SEQUENCE,
-                .level3.condition_directive = directive,
-                .level4.parameter = parameter,
-                .qcbor_error = error,
-                .suit_error = result
-            }
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            SUIT_COMMON,
+            UsefulInputBuf_Tell(&context->InBuf),
+            0
         );
+        // suit_report_callback(
+        //     (suit_report_args_t) {
+        //         .buf.len = suit_inputs->left_len,
+        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+        //         .inputs = suit_inputs->report_inputs,
+        //         .level0 = SUIT_MANIFEST,
+        //         .level1.manifest_key = SUIT_COMMON,
+        //         .level2.common_key = SUIT_SHARED_SEQUENCE,
+        //         .level3.condition_directive = directive,
+        //         .level4.parameter = parameter,
+        //         .qcbor_error = error,
+        //         .suit_error = result,
+        //         .policy = {0}
+        //     }
+        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -387,9 +406,10 @@ error:
 }
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE)
-suit_err_t suit_override_multiple(QCBORDecodeContext *context,
-                                    suit_parameter_args_t parameters[],
-                                    const bool may_soft_failure)
+suit_err_t suit_override_multiple(suit_inputs_t *suit_inputs,
+                                  QCBORDecodeContext *context,
+                                  suit_parameter_args_t parameters[],
+                                  const bool may_soft_failure)
 {
     QCBORItem item;
     suit_index_t suit_index;
@@ -403,11 +423,11 @@ suit_err_t suit_override_multiple(QCBORDecodeContext *context,
             return SUIT_ERR_INVALID_TYPE_OF_KEY;
         }
         if (SUIT_MAX_COMPONENT_NUM < item.label.int64) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         suit_index.index[0] = item.label.int64;
         suit_index.len = 1;
-        result = suit_set_parameters(context, SUIT_DIRECTIVE_OVERRIDE_MULTIPLE, &suit_index, parameters, may_soft_failure);
+        result = suit_set_parameters(suit_inputs, context, SUIT_DIRECTIVE_OVERRIDE_MULTIPLE, &suit_index, parameters, may_soft_failure);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -460,6 +480,8 @@ suit_payload_t* suit_key_to_payload(suit_extracted_t *extracted,
     return NULL;
 }
 
+
+// returns one of SUIT_SUCCESS, SUIT_ERR_COMPONENT_NOT_FOUND, SUIT_ERR_NO_MEMORY
 suit_err_t suit_set_index(QCBORDecodeContext *context,
                           const suit_extracted_t *extracted,
                           suit_index_t *suit_index)
@@ -477,13 +499,13 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
     switch (item.uDataType) {
     case QCBOR_TYPE_INT64:
         if (item.val.int64 < 0) {
-            return SUIT_ERR_INVALID_VALUE;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         // fallthrough
     case QCBOR_TYPE_UINT64:
         QCBORDecode_GetUInt64(context, &val.u64);
         if (val.u64 > UINT8_MAX) {
-            return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         suit_index->index[0] = (uint8_t)val.u64;
         suit_index->len = 1;
@@ -509,7 +531,7 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
         for (size_t i = 0; i < suit_index->len; i++) {
             QCBORDecode_GetUInt64(context, &val.u64);
             if (val.u64 > UINT8_MAX) {
-                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                return SUIT_ERR_COMPONENT_NOT_FOUND;
             }
             suit_index->index[i] = (uint8_t)val.u64;
         }
@@ -518,12 +540,12 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
 #endif /* !LIBCSUIT_DISABLE_COMPONENT_INDEX_ARRAY */
 
     default:
-        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+        return SUIT_ERR_COMPONENT_NOT_FOUND;
     }
 
     error = QCBORDecode_GetError(context);
     if (error != QCBOR_SUCCESS) {
-        return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+        return SUIT_ERR_COMPONENT_NOT_FOUND;
     }
     return SUIT_SUCCESS;
 }
@@ -580,7 +602,7 @@ suit_err_t suit_process_fetch(suit_extracted_t *extracted,
         }
         const suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
         if (dst == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
 
         suit_payload_t *payload = suit_key_to_payload(extracted, parameters[tmp_index].uri);
@@ -677,7 +699,7 @@ suit_err_t suit_process_invoke(const suit_extracted_t *extracted,
 
         const suit_component_identifier_t *component = suit_index_to_component_identifier(extracted, tmp_index);
         if (component == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
 
         suit_invoke_args_t invoke = {0};
@@ -705,7 +727,8 @@ suit_err_t suit_index_is_dependency(const suit_extracted_t *extracted,
             return SUIT_SUCCESS;
         }
     }
-    return SUIT_ERR_NOT_FOUND;
+    // treat that the dependency manifest is also a component
+    return SUIT_ERR_COMPONENT_NOT_FOUND;
 }
 #endif /* !LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
 
@@ -724,7 +747,7 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
         suit_condition_args_t args = {0};
         const suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
         if (dst == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         args.dst = *dst;
         args.condition = condition;
@@ -863,7 +886,7 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
 
             suit_payload_t *payload = suit_index_to_payload(extracted, tmp_index);
             if (payload == NULL) {
-                return SUIT_ERR_NOT_FOUND;
+                return SUIT_ERR_COMPONENT_NOT_FOUND;
             }
             tmp_inputs.manifest = payload->bytes;
 
@@ -925,7 +948,7 @@ suit_err_t suit_process_wait(suit_extracted_t *extracted,
         }
         const suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
         if (dst == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         wait_args.dst = *dst;
         wait_args.wait_info = parameters[tmp_index].wait_info;
@@ -965,7 +988,7 @@ suit_err_t suit_process_write(const suit_extracted_t *extracted,
         store.report = report;
         const suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
         if (dst == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         store.dst = *dst;
         store.operation = SUIT_STORE;
@@ -1013,12 +1036,12 @@ suit_err_t suit_process_copy_swap(const suit_extracted_t *extracted,
         const suit_component_identifier_t *tmp;
         tmp = suit_index_to_component_identifier(extracted, parameters[tmp_index].source_component);
         if (tmp == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         store.src = *tmp;
         tmp = suit_index_to_component_identifier(extracted, tmp_index);
         if (tmp == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         store.dst = *tmp;
         suit_err_t result = suit_store_callback(store);
@@ -1040,7 +1063,7 @@ suit_err_t suit_process_unlink(const suit_extracted_t *extracted,
         const uint8_t tmp_index = suit_index->index[i];
         const suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
         if (dst == NULL) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         suit_store_args_t store = {0};
         store.report = report;
@@ -1173,7 +1196,7 @@ suit_err_t suit_process_copy_params(QCBORDecodeContext *context,
         if (item.label.int64 < 0) {
             return SUIT_ERR_INVALID_TYPE_OF_KEY;
         } else if (extracted->components_len < item.label.int64) {
-            return SUIT_ERR_NOT_FOUND;
+            return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         const uint8_t src_index = item.label.int64;
         size_t len = item.val.uCount;
@@ -1411,7 +1434,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 {
     suit_err_t result = SUIT_SUCCESS;
     suit_con_dir_key_t condition_directive_key = SUIT_CONDITION_INVALID;
-    suit_rep_policy_t report;
+    suit_rep_policy_t report_policy;
     union {
         uint64_t u64;
         int64_t i64;
@@ -1444,17 +1467,17 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_SET_PARAMETERS)
         case SUIT_DIRECTIVE_SET_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, suit_index, parameters, may_soft_failure);
+            result = suit_set_parameters(suit_inputs, &context, SUIT_DIRECTIVE_SET_PARAMETERS, suit_index, parameters, may_soft_failure);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_SET_PARAMETERS */
 
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, suit_index, parameters, may_soft_failure);
+            result = suit_set_parameters(suit_inputs, &context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, suit_index, parameters, may_soft_failure);
             break;
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE)
         case SUIT_DIRECTIVE_OVERRIDE_MULTIPLE:
-            result = suit_override_multiple(&context, parameters, may_soft_failure);
+            result = suit_override_multiple(suit_inputs, &context, parameters, may_soft_failure);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE */
 
@@ -1466,50 +1489,50 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_FETCH)
         case SUIT_DIRECTIVE_FETCH:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_fetch(extracted, parameters, suit_index, report, suit_inputs);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_fetch(extracted, parameters, suit_index, report_policy, suit_inputs);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_FETCH */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_WRITE)
         case SUIT_DIRECTIVE_WRITE:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_write(extracted, parameters, suit_index, report, suit_inputs);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_write(extracted, parameters, suit_index, report_policy, suit_inputs);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_WRITE */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_COPY)
         case SUIT_DIRECTIVE_COPY:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_copy_swap(extracted, parameters, false, suit_index, report, suit_inputs);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_copy_swap(extracted, parameters, false, suit_index, report_policy, suit_inputs);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_COPY */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_SWAP)
        case SUIT_DIRECTIVE_SWAP:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_copy_swap(extracted, parameters, true, suit_index, report, suit_inputs);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_copy_swap(extracted, parameters, true, suit_index, report_policy, suit_inputs);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_SWAP */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_UNLINK)
         case SUIT_DIRECTIVE_UNLINK:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_unlink(extracted, suit_index, report);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_unlink(extracted, suit_index, report_policy);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_UNLINK */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_INVOKE)
         case SUIT_DIRECTIVE_INVOKE:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_invoke(extracted, parameters, report, suit_index);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_invoke(extracted, parameters, report_policy, suit_index);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_INVOKE */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_WAIT)
         case SUIT_DIRECTIVE_WAIT:
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_wait(extracted, parameters, suit_index, report);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_wait(extracted, parameters, suit_index, report_policy);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_WAIT */
 
@@ -1538,7 +1561,7 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                 suit_inputs_t tmp_inputs = *suit_inputs;
                 suit_payload_t *payload = suit_index_to_payload(extracted, tmp_index);
                 if (payload == NULL) {
-                    return SUIT_ERR_NOT_FOUND;
+                    return SUIT_ERR_COMPONENT_NOT_FOUND;
                 }
                 tmp_inputs.manifest = payload->bytes;
 
@@ -1594,8 +1617,8 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 #if !defined(LIBCSUIT_DISABLE_CONDITION_VERSION)
         case SUIT_CONDITION_VERSION:
 #endif
-            QCBORDecode_GetUInt64(&context, &report.val);
-            result = suit_process_condition(extracted, condition_directive_key, parameters, suit_index, report, suit_inputs);
+            QCBORDecode_GetUInt64(&context, &report_policy.val);
+            result = suit_process_condition(extracted, condition_directive_key, parameters, suit_index, report_policy, suit_inputs);
             break;
 
         case SUIT_DIRECTIVE_INVALID:
@@ -1625,17 +1648,27 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 error:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = SUIT_MANIFEST,
-                .level1.manifest_key = command_key,
-                .level2.condition_directive = condition_directive_key,
-                .level3.parameter = SUIT_PARAMETER_INVALID,
-                .qcbor_error = error,
-                .suit_error = result,
-                .report = report
-            }
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            command_key,
+            UsefulInputBuf_Tell(&context.InBuf),
+            0
         );
+        // suit_report_callback(
+        //     (suit_report_args_t) {
+        //         .buf.len = suit_inputs->left_len,
+        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+        //         .inputs = suit_inputs->report_inputs,
+        //         .level0 = SUIT_MANIFEST,
+        //         .level1.manifest_key = command_key,
+        //         .level2.condition_directive = condition_directive_key,
+        //         .level3.parameter = SUIT_PARAMETER_INVALID,
+        //         .qcbor_error = error,
+        //         .suit_error = result,
+        //         .policy = report_policy
+        //     }
+        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -1680,12 +1713,12 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
             break;
 
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, &suit_index, parameters, false);
+            result = suit_set_parameters(suit_inputs, &context, SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, &suit_index, parameters, false);
             break;
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_SET_PARAMETERS)
         case SUIT_DIRECTIVE_SET_PARAMETERS:
-            result = suit_set_parameters(&context, SUIT_DIRECTIVE_SET_PARAMETERS, &suit_index, parameters, false);
+            result = suit_set_parameters(suit_inputs, &context, SUIT_DIRECTIVE_SET_PARAMETERS, &suit_index, parameters, false);
             break;
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_SET_PARAMETERS */
 
@@ -1760,17 +1793,27 @@ suit_err_t suit_process_shared_sequence(suit_extracted_t *extracted,
 error:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = SUIT_MANIFEST,
-                .level1.manifest_key = SUIT_COMMON,
-                .level2.common_key = SUIT_SHARED_SEQUENCE,
-                .level3.condition_directive = condition_directive_key,
-                .level4.parameter = SUIT_PARAMETER_INVALID,
-                .qcbor_error = error,
-                .suit_error = result
-            }
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            SUIT_SHARED_SEQUENCE,
+            UsefulInputBuf_Tell(&context.InBuf),
+            0
         );
+        // suit_report_callback(
+        //     (suit_report_args_t) {
+        //         .buf.len = suit_inputs->left_len,
+        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+        //         .inputs = suit_inputs->report_inputs,
+        //         .level0 = SUIT_MANIFEST,
+        //         .level1.manifest_key = SUIT_COMMON,
+        //         .level2.common_key = SUIT_SHARED_SEQUENCE,
+        //         .level3.condition_directive = condition_directive_key,
+        //         .level4.parameter = SUIT_PARAMETER_INVALID,
+        //         .qcbor_error = error,
+        //         .suit_error = result
+        //     }
+        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -1832,17 +1875,27 @@ suit_err_t suit_process_common_and_command_sequence(suit_extracted_t *extracted,
 error:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = SUIT_MANIFEST,
-                .level1.manifest_key = command_key,
-                .level2.condition_directive = SUIT_CONDITION_INVALID,
-                .level3.parameter = SUIT_PARAMETER_INVALID,
-                .qcbor_error = QCBOR_SUCCESS,
-                .suit_error = result,
-                .report = {0}
-            }
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            command_key,
+            command_buf.ptr - suit_inputs->manifest.ptr,
+            0
         );
+        // suit_report_callback(
+        //     (suit_report_args_t) {
+        //         .buf.len = suit_inputs->left_len,
+        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+        //         .inputs = suit_inputs->report_inputs,
+        //         .level0 = SUIT_MANIFEST,
+        //         .level1.manifest_key = command_key,
+        //         .level2.condition_directive = SUIT_CONDITION_INVALID,
+        //         .level3.parameter = SUIT_PARAMETER_INVALID,
+        //         .qcbor_error = QCBOR_SUCCESS,
+        //         .suit_error = result,
+        //         .policy = {0}
+        //     }
+        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -1934,10 +1987,23 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
         return suit_error_from_qcbor_error(error);
     }
 
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+    if (verified) {
+        // SUIT_Reference = [
+        //   suit-report-manifest-digest: SUIT_Digest
+        //
+        // XXX: this is not actual CDDL definition of the SUIT_Report
+        QCBOREncode_OpenArrayInMapN(&suit_inputs->report_inputs.cbor_encoder, SUIT_REPORT_REFERENCE);
+        suit_encode_append_digest(digest, 0, &suit_inputs->report_inputs.cbor_encoder);
+        // NOTE: this array will be closed in the suit-manifest section.
+    }
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+
     return (verified) ? SUIT_SUCCESS : SUIT_ERR_FAILED_TO_VERIFY;
 }
 
-suit_err_t suit_extract_common(QCBORDecodeContext *context,
+suit_err_t suit_extract_common(suit_inputs_t *suit_inputs, 
+                               QCBORDecodeContext *context,
                                suit_extracted_t *extracted)
 {
     QCBORItem item;
@@ -2012,16 +2078,26 @@ suit_err_t suit_extract_common(QCBORDecodeContext *context,
 error:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = SUIT_MANIFEST,
-                .level1.manifest_key = manifest_key,
-                .level2.common_key = common_key,
-                .level3.parameter = SUIT_PARAMETER_INVALID,
-                .qcbor_error = error,
-                .suit_error = result
-            }
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            manifest_key,
+            UsefulInputBuf_Tell(&context->InBuf),
+            0
         );
+        // suit_report_callback(
+        //     (suit_report_args_t) {
+        //         .buf.len = suit_inputs->left_len,
+        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+        //         .inputs = suit_inputs->report_inputs,
+        //         .level0 = SUIT_MANIFEST,
+        //         .level1.manifest_key = manifest_key,
+        //         .level2.common_key = common_key,
+        //         .level3.parameter = SUIT_PARAMETER_INVALID,
+        //         .qcbor_error = error,
+        //         .suit_error = result
+        //     }
+        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -2029,7 +2105,7 @@ error:
 }
 
 
-suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
+suit_err_t suit_extract_manifest(suit_inputs_t *suit_inputs, suit_extracted_t *extracted)
 {
     suit_err_t result = SUIT_SUCCESS;
     QCBORDecodeContext context;
@@ -2042,28 +2118,32 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
     QCBORDecode_EnterMap(&context, &item);
     if (item.uDataType != QCBOR_TYPE_MAP) {
         result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
-        goto error;
+        goto out;
     }
     size_t manifest_key_len = item.val.uCount;
     for (size_t i = 0; i < manifest_key_len; i++) {
         error = QCBORDecode_PeekNext(&context, &item);
         if (error != QCBOR_SUCCESS) {
-            goto error;
+            goto out;
         }
         if (!(item.uLabelType == QCBOR_TYPE_INT64 || item.uLabelType == QCBOR_TYPE_UINT64)) {
             result = SUIT_ERR_INVALID_TYPE_OF_KEY;
-            goto error;
+            goto out;
+        }
+        if (item.label.int64 <= manifest_key) {
+            result = SUIT_ERR_NOT_CANONICAL_CBOR;
+            goto out;
         }
         manifest_key = item.label.int64;
         switch (manifest_key) {
         case SUIT_MANIFEST_VERSION:
             error = QCBORDecode_GetNext(&context, &item);
             if (error != QCBOR_SUCCESS) {
-                goto error;
+                goto out;
             }
             if (!(item.uDataType == QCBOR_TYPE_INT64 || item.uDataType == QCBOR_TYPE_UINT64)) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
-                goto error;
+                goto out;
             }
             size_t j = 0;
             for (; j < LIBCSUIT_SUPPORTED_VERSIONS_LEN; j++) {
@@ -2079,29 +2159,36 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
         case SUIT_MANIFEST_SEQUENCE_NUMBER:
             error = QCBORDecode_GetNext(&context, &item);
             if (error != QCBOR_SUCCESS) {
-                goto error;
+                goto out;
             }
             if (!(item.uDataType == QCBOR_TYPE_INT64 || item.uDataType == QCBOR_TYPE_UINT64)) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
-                goto error;
+                goto out;
             }
             // TODO: check sequence-number
             break;
 
         case SUIT_COMMON:
-            result = suit_extract_common(&context, extracted);
+            result = suit_extract_common(suit_inputs, &context, extracted);
             if (result != SUIT_SUCCESS) {
-                goto error;
+                goto out;
             }
             break;
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
         case SUIT_REFERENCE_URI:
-            error = QCBORDecode_GetNext(&context, &item);
-            if (error != QCBOR_SUCCESS) {
-                goto error;
+            QCBORDecode_GetNext(&context, &item);
+            if (!(item.uDataType == QCBOR_TYPE_TEXT_STRING)) {
+                result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
+                goto out;
             }
-            // XXX: ignore this
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+            // SUIT_Reference = [
+            //   suit-report-manifest-digest : SUIT_Digest,
+            //   suit-report-manifest-uri : tstr <= HERE
+            // ]
+            QCBOREncode_AddText(&suit_inputs->report_inputs.cbor_encoder, item.val.string);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
             break;
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI */
 
@@ -2222,7 +2309,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
         case SUIT_TEXT: // severable
             error = QCBORDecode_GetNext(&context, &item);
             if (error != QCBOR_SUCCESS) {
-                goto error;
+                goto out;
             }
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING || item.uDataType == QCBOR_TYPE_ARRAY) {
                 // ignore
@@ -2238,7 +2325,7 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
         case SUIT_COSWID: // severable
             error = QCBORDecode_GetNext(&context, &item);
             if (error != QCBOR_SUCCESS) {
-                goto error;
+                goto out;
             }
             if (item.uDataType == QCBOR_TYPE_BYTE_STRING || item.uDataType == QCBOR_TYPE_ARRAY) {
                 // ignore
@@ -2252,30 +2339,40 @@ suit_err_t suit_extract_manifest(suit_extracted_t *extracted)
 
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
-            goto error;
+            goto out;
         }
 
     }
 
     error = QCBORDecode_GetError(&context);
     if (error != QCBOR_SUCCESS) {
-        goto error;
+        result = suit_error_from_qcbor_error(error);
     }
-    return result;
 
-error:
+out:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
-    if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = SUIT_MANIFEST,
-                .level1.manifest_key = manifest_key,
-                .level2.condition_directive = SUIT_CONDITION_INVALID,
-                .level3.parameter = SUIT_PARAMETER_INVALID,
-                .qcbor_error = error,
-                .suit_error = result
-            }
+    QCBOREncode_CloseArray(&suit_inputs->report_inputs.cbor_encoder);
+    if (result != SUIT_SUCCESS && result != SUIT_ERR_ABORT) {
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            manifest_key,
+            UsefulInputBuf_Tell(&context.InBuf),
+            0
         );
+        // suit_report_callback(
+        //     (suit_report_args_t) {
+        //         .buf.len = suit_inputs->left_len,
+        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+        //         .inputs = suit_inputs->report_inputs,
+        //         .level0 = SUIT_MANIFEST,
+        //         .level1.manifest_key = manifest_key,
+        //         .level2.condition_directive = SUIT_CONDITION_INVALID,
+        //         .level3.parameter = SUIT_PARAMETER_INVALID,
+        //         .qcbor_error = error,
+        //         .suit_error = result
+        //     }
+        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -2382,16 +2479,26 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
 error:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = SUIT_DELEGATION,
-                .level1.manifest_key = SUIT_MANIFEST_KEY_INVALID,
-                .level2.condition_directive = SUIT_CONDITION_INVALID,
-                .level3.parameter = SUIT_PARAMETER_INVALID,
-                .qcbor_error = error,
-                .suit_error = result
-            }
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            SUIT_DELEGATION, // XXX: yet this is not top level command sequence
+            UsefulInputBuf_Tell(&context->InBuf),
+            0
         );
+        // suit_report_callback(
+        //     (suit_report_args_t) {
+        //         .buf.len = suit_inputs->left_len,
+        //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+        //         .inputs = suit_inputs->report_inputs,
+        //         .level0 = SUIT_DELEGATION,
+        //         .level1.manifest_key = SUIT_MANIFEST_KEY_INVALID,
+        //         .level2.condition_directive = SUIT_CONDITION_INVALID,
+        //         .level3.parameter = SUIT_PARAMETER_INVALID,
+        //         .qcbor_error = error,
+        //         .suit_error = result
+        //     }
+        // );
         return SUIT_ERR_ABORT;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
@@ -2404,6 +2511,44 @@ error:
  */
 suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
 {
+    /* before processing the manifest
+     * initialize the SUIT_Report encoder if a buffer is allocated for it */
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+    if (!UsefulBuf_IsNULLOrEmpty(suit_inputs->report_inputs.buf)) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    QCBOREncode_Init(&suit_inputs->report_inputs.cbor_encoder, suit_inputs->report_inputs.buf);
+    switch (suit_inputs->report_inputs.protection_mechanism.key.cose_algorithm_id) {
+    case 0:
+        // raw SUIT_Report, do nothing here
+        break;
+    case CBOR_TAG_COSE_SIGN1:
+        // use t_cose two-step sign to save memory
+        t_cose_sign_sign_init(&suit_inputs->report_inputs.sign_ctx,
+                              T_COSE_OPT_MESSAGE_TYPE_SIGN1);
+        t_cose_signature_sign_main_init(&suit_inputs->report_inputs.signer,
+                                         suit_inputs->report_inputs.protection_mechanism.key.cose_algorithm_id);
+        t_cose_signature_sign_main_set_signing_key(&suit_inputs->report_inputs.signer,
+                                                    suit_inputs->report_inputs.protection_mechanism.key.cose_key,
+                                                    suit_inputs->report_inputs.protection_mechanism.kid);
+        t_cose_sign_add_signer(&suit_inputs->report_inputs.sign_ctx,
+                                t_cose_signature_sign_from_main(&suit_inputs->report_inputs.signer));
+        suit_inputs->report_inputs.t_cose_error = 
+            t_cose_sign_encode_start(&suit_inputs->report_inputs.sign_ctx,
+                                     &suit_inputs->report_inputs.cbor_encoder);
+        QCBOREncode_BstrWrap(&suit_inputs->report_inputs.cbor_encoder);
+        break;
+    default:
+        return SUIT_ERR_NOT_IMPLEMENTED;
+    }
+    // SUIT_Report start {
+    QCBOREncode_OpenMap(&suit_inputs->report_inputs.cbor_encoder);
+    // ? suit-report-nonce         => bstr,
+    if (!UsefulBuf_IsNULLOrEmptyC(suit_inputs->report_inputs.nonce)) {
+        QCBOREncode_AddBytesToMapN(&suit_inputs->report_inputs.cbor_encoder, SUIT_REPORT_NONCE, suit_inputs->report_inputs.nonce);
+    }
+#endif
+
     QCBORDecodeContext context;
     QCBORError error = QCBOR_SUCCESS;
     QCBORItem item;
@@ -2437,6 +2582,10 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
             extracted.payloads.len++;
         }
         else if (item.uLabelType == QCBOR_TYPE_INT64) {
+            if (item.label.int64 <= envelope_key) {
+                result = SUIT_ERR_NOT_CANONICAL_CBOR;
+                goto error;
+            }
             envelope_key = item.label.int64;
             switch (envelope_key) {
 #if !defined(LIBCSUIT_DISABLE_ENVELOPE_DELEGATION)
@@ -2552,10 +2701,10 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     error = QCBORDecode_Finish(&context);
     if (error != QCBOR_SUCCESS) {
         result = SUIT_ERR_NOT_A_SUIT_MANIFEST;
-        goto out;
+        goto error;
     }
 
-    result = suit_extract_manifest(&extracted);
+    result = suit_extract_manifest(suit_inputs, &extracted);
     if (result != SUIT_SUCCESS) {
         goto error;
     }
@@ -2720,23 +2869,63 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
         goto error;
     }
 
-out:
-    return result;
-
 error:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
-    if (result != SUIT_ERR_ABORT) {
-        suit_report_callback(
-            (suit_report_args_t) {
-                .level0 = envelope_key,
-                .level1.manifest_key = manifest_key,
-                .level2.condition_directive = SUIT_CONDITION_INVALID,
-                .level3.parameter = SUIT_PARAMETER_INVALID,
-                .qcbor_error = error,
-                .suit_error = result
-            }
+    if (result == SUIT_SUCCESS) {
+        // suit-report-result => true
+        QCBOREncode_AddBoolToMapN(&suit_inputs->report_inputs.cbor_encoder,
+                                   SUIT_REPORT_RESULT, true);
+    }
+    else if (result != SUIT_ERR_ABORT) {
+        // the suit-report-result is not encoded yet
+        suit_encode_append_suit_report_result(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            manifest_key,
+            UsefulInputBuf_Tell(&context.InBuf),
+            0
         );
-        return SUIT_ERR_ABORT;
+    }
+    QCBOREncode_CloseMap(&suit_inputs->report_inputs.cbor_encoder);
+    // } SUIT_Report end
+
+    switch (suit_inputs->report_inputs.protection_mechanism.key.cose_algorithm_id) {
+    case 0:
+        // raw SUIT_Report, do nothing here
+        break;
+    case CBOR_TAG_COSE_SIGN1:
+        // use t_cose two-step sign to save memory
+        UsefulBufC payload;
+        QCBOREncode_CloseBstrWrap2(&suit_inputs->report_inputs.cbor_encoder, false, &payload);
+        enum t_cose_err_t t_cose_error = t_cose_sign_encode_finish(
+            &suit_inputs->report_inputs.sign_ctx,
+            NULL_Q_USEFUL_BUF_C,
+            payload,
+            &suit_inputs->report_inputs.cbor_encoder);
+        if (t_cose_error != T_COSE_SUCCESS) {
+            return SUIT_ERR_WHILE_REPORTING;
+        }
+        break;
+    default:
+        return SUIT_ERR_WHILE_REPORTING;
+    }
+
+    QCBORError cbor_error = QCBOREncode_Finish(&suit_inputs->report_inputs.cbor_encoder, &suit_inputs->suit_report);
+    // suit_report_callback(
+    //     (suit_report_args_t) {
+    //         .buf.len = suit_inputs->left_len,
+    //         .buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len),
+    //         .inputs = suit_inputs->report_inputs,
+    //         .level0 = envelope_key,
+    //         .level1.manifest_key = manifest_key,
+    //         .level2.condition_directive = SUIT_CONDITION_INVALID,
+    //         .level3.parameter = SUIT_PARAMETER_INVALID,
+    //         .qcbor_error = error,
+    //         .suit_error = result
+    //     }
+    // );
+    if (cbor_error != QCBOR_SUCCESS) {
+        return SUIT_ERR_WHILE_REPORTING;
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;

@@ -20,6 +20,8 @@
 #if defined(LIBCSUIT_USE_T_COSE_1)
 #include "t_cose/t_cose_common.h"
 #else
+#include "t_cose/t_cose_sign_sign.h"
+#include "t_cose/t_cose_signature_sign_main.h"
 #include "t_cose/t_cose_key.h"
 #endif /* LIBCSUIT_USE_T_COSE_1 */
 
@@ -44,6 +46,7 @@ typedef enum {
 
     SUIT_ERR_NO_MEMORY,                 /*! exceed the allocated memory */
     SUIT_ERR_NOT_FOUND,                 /*! the specified content does not exist or unaccessible */
+    SUIT_ERR_COMPONENT_NOT_FOUND,       /*! the component index is invalid or the component not found */
     SUIT_ERR_PARAMETER_NOT_FOUND,       /*! required suit-parameter does not exist */
     SUIT_ERR_AUTHENTICATION_NOT_FOUND,  /*! suit-authentication-wrapper does not exist */
     SUIT_ERR_MANIFEST_KEY_NOT_FOUND,    /*! other SUIT_Envelope key does not exist */
@@ -65,6 +68,9 @@ typedef enum {
     SUIT_ERR_NOT_CANONICAL_CBOR,        /*! not encoded with canonical CBOR */
     SUIT_ERR_INVALID_MANIFEST_VERSION,  /*! does not support SUIT Manifest version specified by suit-manifest-version */
     SUIT_ERR_TRY_OUT,                   /*! all command_sequence in try-each section failed */
+
+    SUIT_ERR_WHILE_REPORTING,           /*! any error occurred while encoding/signing the SUIT Report */
+
     SUIT_ERR_ABORT,                     /*! abort to execute, mainly for libcsuit internal */
 } suit_err_t;
 
@@ -842,6 +848,58 @@ typedef union suit_rep_policy {
     };
 } suit_rep_policy_t;
 
+/* draft-ietf-suit-report */
+
+typedef enum suit_report_key {
+    SUIT_REPORT_INVALID             = 0,
+    SUIT_REPORT_NONCE               = 2,
+    SUIT_REPORT_RECORDS             = 3,
+    SUIT_REPORT_RESULT              = 4,
+    SUIT_REPORT_RESULT_CODE         = 5,
+    SUIT_REPORT_RESULT_RECORD       = 6,
+    SUIT_REPORT_RESULT_REASON       = 7,
+    SUIT_REPORT_CAPABILITY_REPORT   = 8,
+    SUIT_REPORT_REFERENCE           = 99,
+} suit_report_key_t;
+
+typedef enum suit_report_record_key {
+    SUIT_REPORT_MANIFEST_ID         = 0,
+    SUIT_REPORT_MANIFEST_SECTION    = 1,
+    SUIT_REPORT_SECTION_OFFSET      = 2,
+    SUIT_REPORT_COMPONENT_INDEX     = 3,
+    SUIT_REPORT_RECORD_PROPERTIES   = 4,
+} suit_report_record_key_t;
+
+typedef enum suit_report_reason {
+    SUIT_REPORT_REASON_OK                       = 0,
+    SUIT_REPORT_REASON_CBOR_PARSE /* FAILURE */ = 1,
+    SUIT_REPORT_REASON_COSE_UNSUPPORTED         = 2,
+    SUIT_REPORT_REASON_ALG_UNSUPPORTED          = 3,
+    SUIT_REPORT_REASON_UNAUTHORIZED             = 4,
+    SUIT_REPORT_REASON_COMMAND_UNSUPPORTED      = 5,
+    SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED    = 6,
+    SUIT_REPORT_REASON_COMPONENT_UNAUTHORIZED   = 7,
+    SUIT_REPORT_REASON_PARAMETER_UNSUPPORTED    = 8,
+    SUIT_REPORT_REASON_SEVERING_UNSUPPORTED     = 9,
+    SUIT_REPORT_REASON_CONDITION_FAILED         = 10,
+    SUIT_REPORT_REASON_OPERATION_FAILED         = 11,
+    SUIT_REPORT_REASON_INVOKE_PENDING           = 12,
+} suit_report_reason_t;
+
+typedef enum suit_report_capability_report_key {
+    SUIT_REPORT_CAPABILITY_INVALID          = 0,
+    SUIT_REPORT_CAPABILITY_COMPONENT        = 1,
+    SUIT_REPORT_CAPABILITY_COMMAND          = 2,
+    SUIT_REPORT_CAPABILITY_PARAMETERS       = 3,
+    SUIT_REPORT_CAPABILITY_CRYPT_ALGO       = 4,
+    SUIT_REPORT_CAPABILITY_ENVELOPE         = 5,
+    SUIT_REPORT_CAPABILITY_MANIFEST         = 6,
+    SUIT_REPORT_CAPABILITY_COMMON           = 7,
+    SUIT_REPORT_CAPABILITY_TEXT             = 8,
+    SUIT_REPORT_CAPABILITY_TEXT_COMPONENT   = 9,
+    SUIT_REPORT_CAPABILITY_DEPENDENCY       = 10,
+} suit_report_capability_report_key_t;
+
 typedef struct suit_reference {
     UsefulBufC      manifest_uri;
     suit_digest_t   manifest_digest;
@@ -869,9 +927,14 @@ typedef struct suit_report_result {
  * This passes enough data to construct SUIT_Report.
  */
 typedef struct suit_report_args {
-    /* SUIT_Report */
-    suit_reference_t suit_reference;
-    UsefulBufC suit_nonce;
+    /* parameters for SUIT_Report */
+
+    // encoding buffer, should be allocated enough memory
+    UsefulBuf buf;
+
+    // this includes suit-reference and suit-nonce
+    suit_report_inputs_t inputs;
+
     suit_report_records_t suit_report_records;
     bool success;
     suit_report_result_t suit_report_result;
@@ -897,7 +960,7 @@ typedef struct suit_report_args {
     QCBORError qcbor_error;
     suit_err_t suit_error;
 
-    suit_rep_policy_t report;
+    suit_rep_policy_t policy;
 } suit_report_args_t;
 
 /*!
@@ -1184,6 +1247,28 @@ typedef union {
     };
 } suit_process_flag_t;
 
+typedef struct suit_report_inputs {
+    // Allocated buffer and CBOR encoding context for SUIT_Report.
+    // `buf` should be initialized by caller with enough memory.
+    // If buf is not set, the SUIT Manifest Processor will not produce SUIT_Report.
+    UsefulBuf buf;
+
+    // COSE operations are conducted if the protection_mechanism.key.cose_algorithm_id is not 0.
+    // NOTE: Currently only CBOR_TAG_COSE_SIGN1 is supported.
+    suit_mechanism_t    protection_mechanism;
+    QCBOREncodeContext  cbor_encoder;
+    union {
+        struct {
+            enum t_cose_err_t                   t_cose_error;
+            struct t_cose_sign_sign_ctx         sign_ctx;
+            struct t_cose_signature_sign_main   signer;
+        };
+    };
+
+    // input value from outside the SUIT Manifest Processor
+    UsefulBufC nonce;
+} suit_report_inputs_t;
+
 typedef struct suit_inputs {
     /* sections requested to process */
     suit_process_flag_t process_flags;
@@ -1195,7 +1280,11 @@ typedef struct suit_inputs {
     size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
 
-    UsefulBufC suit_nonce;
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+    suit_report_inputs_t report_inputs;
+    UsefulBufC suit_report;
+#endif
+
     uint8_t dependency_depth;
 
     size_t left_len;
@@ -1298,4 +1387,4 @@ suit_err_t suit_decode_components_from_item(suit_decode_mode_t mode,
 }
 #endif
 
-#endif  // SUIT_COMMON_H
+#endif  /* SUIT_COMMON_H */

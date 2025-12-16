@@ -68,6 +68,17 @@ suit_err_t suit_encode_envelope(suit_decode_mode_t mode,
                                 uint8_t **buf,
                                 size_t *len);
 
+suit_err_t suit_encode_append_digest(const suit_digest_t *digest,
+                                     const uint32_t label,
+                                     QCBOREncodeContext *context);
+
+void suit_encode_append_suit_report_result(
+        QCBOREncodeContext *cbor_encoder,
+        suit_err_t result,
+        suit_manifest_key_t manifest_key,
+        size_t section_offset,
+        uint64_t component_index);
+
 #ifdef __cplusplus
 }
 #endif
