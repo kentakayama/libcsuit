@@ -28,6 +28,8 @@ char* suit_err_to_str(suit_err_t error)
         return "SUIT_ERR_NO_MEMORY";
     case SUIT_ERR_NOT_FOUND:
         return "SUIT_ERR_NOT_FOUND";
+    case SUIT_ERR_COMPONENT_NOT_FOUND:
+        return "SUIT_ERR_COMPONENT_NOT_FOUND";
     case SUIT_ERR_PARAMETER_NOT_FOUND:
         return "SUIT_ERR_PARAMETER_NOT_FOUND";
     case SUIT_ERR_AUTHENTICATION_NOT_FOUND:
@@ -68,6 +70,8 @@ char* suit_err_to_str(suit_err_t error)
         return "SUIT_ERR_INVALID_MANIFEST_VERSION";
     case SUIT_ERR_TRY_OUT:
         return "SUIT_ERR_TRY_OUT";
+    case SUIT_ERR_WHILE_REPORTING:
+        return "SUIT_ERR_WHILE_REPORTING";
     case SUIT_ERR_ABORT:
         return "SUIT_ERR_ABORT";
     }
@@ -2713,9 +2717,9 @@ suit_err_t suit_print_report(suit_report_args_t report_args)
     }
     printf("\n");
 
-    printf("  QCBORError:    %d(%s)\n", report_args.qcbor_error, qcbor_err_to_str(report_args.qcbor_error));
-    printf("  suit_err_t:    %d(%s)\n", report_args.suit_error, suit_err_to_str(report_args.suit_error));
-    printf("  suit_rep_policy_t: RecPass%x RecFail%x SysPass%x SysFail%x\n", report_args.report.record_on_success, report_args.report.record_on_failure, report_args.report.sysinfo_success, report_args.report.sysinfo_failure);
+    // printf("  QCBORError:    %d(%s)\n", report_args.qcbor_error, qcbor_err_to_str(report_args.qcbor_error));
+    // printf("  suit_err_t:    %d(%s)\n", report_args.suit_error, suit_err_to_str(report_args.suit_error));
+    printf("  suit_rep_policy_t: RecPass%x RecFail%x SysPass%x SysFail%x\n", report_args.policy.record_on_success, report_args.policy.record_on_failure, report_args.policy.sysinfo_success, report_args.policy.sysinfo_failure);
 
     printf("}\n\n");
 

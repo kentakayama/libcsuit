@@ -90,6 +90,26 @@ suit_err_t suit_encode_append_manifest(const suit_encode_t *suit_encode,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_encode_append_version_match(const suit_version_match_t *version_match,
+                                            const uint32_t label,
+                                            QCBOREncodeContext *context)
+{
+    if (label > 0) {
+        /* in map */
+        QCBOREncode_OpenArrayInMapN(context, label);
+    }
+    else {
+        QCBOREncode_OpenArray(context);
+    }
+    QCBOREncode_AddInt64(context, version_match->type);
+    QCBOREncode_OpenArray(context);
+    for (size_t i = 0; i < version_match->value.len; i++) {
+        QCBOREncode_AddInt64(context, version_match->value.int64[i]);
+    }
+    QCBOREncode_CloseArray(context);
+    return SUIT_SUCCESS;
+}
+
 suit_err_t suit_encode_append_digest(const suit_digest_t *digest,
                                      const uint32_t label,
                                      QCBOREncodeContext *context)
@@ -1373,6 +1393,140 @@ out:
     return result;
 }
 
+void suit_encode_append_parameter(
+        QCBOREncodeContext *cbor_encoder,
+        suit_err_t result,
+        suit_rep_policy_t report_policy,
+        suit_con_dir_key_t condition,
+        uint8_t index,
+        suit_parameter_args_t parameters[])
+{
+
+
+    switch (condition) {
+    case SUIT_CONDITION_COMPONENT_SLOT:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddUInt64ToMapN(cbor_encoder, condition, parameters[index].component_slot);
+        }
+        break;
+    case SUIT_CONDITION_USE_BEFORE:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddUInt64ToMapN(cbor_encoder, condition, parameters[index].use_before);
+        }
+        break;
+    case SUIT_CONDITION_MINIMUM_BATTERY:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddUInt64ToMapN(cbor_encoder, condition, parameters[index].minimum_battery);
+        }
+        break;
+    case SUIT_CONDITION_UPDATE_AUTHORIZED:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddInt64ToMapN(cbor_encoder, condition, parameters[index].update_priority);
+        }
+        break;
+    case SUIT_CONDITION_VENDOR_IDENTIFIER:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddBytesToMapN(cbor_encoder, condition, parameters[index].vendor_id);
+        }
+        break;
+    case SUIT_CONDITION_CLASS_IDENTIFIER:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddBytesToMapN(cbor_encoder, condition, parameters[index].class_id);
+        }
+        break;
+    case SUIT_CONDITION_DEVICE_IDENTIFIER:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddBytesToMapN(cbor_encoder, condition, parameters[index].device_id);
+        }
+        break;
+    case SUIT_CONDITION_CHECK_CONTENT:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            QCBOREncode_AddBytesToMapN(cbor_encoder, condition, parameters[index].content);
+        }
+        break;
+    case SUIT_CONDITION_IMAGE_MATCH:
+    case SUIT_CONDITION_IMAGE_NOT_MATCH:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            // suit_encode_append_digest();
+            if (parameters[index].image_size > 0) {
+                QCBOREncode_AddUInt64ToMapN(cbor_encoder, condition, parameters[index].image_size);
+            }
+            if (parameters[index].image_digest.algorithm_id != 0) {
+                suit_encode_append_digest(&parameters[index].image_digest, condition, cbor_encoder);                
+            }
+        }
+        break;
+    case SUIT_CONDITION_VERSION:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            suit_encode_append_version_match(&parameters[index].version_match, condition, cbor_encoder);
+        }
+        break;
+    case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+        if ((result == SUIT_SUCCESS && report_policy.record_on_success) ||
+            (result != SUIT_SUCCESS && report_policy.record_on_failure)) {
+            suit_encode_append_digest(&parameters[index].image_digest, condition, cbor_encoder);                
+        }
+        break;
+    case SUIT_CONDITION_ABORT:
+        // no parameter exists
+        break;
+    case SUIT_CONDITION_IS_DEPENDENCY:
+        // no parameter exists
+        break;
+    default:
+        break;
+    }
+}
+
+void suit_encode_append_suit_record(
+        QCBOREncodeContext *cbor_encoder,
+        uint32_t label,
+        suit_manifest_key_t manifest_key,
+        size_t section_offset,
+        uint64_t component_index)
+{
+    if (label != 0) {
+        QCBOREncode_OpenArrayInMapN(cbor_encoder, label);
+    }
+    else {
+        QCBOREncode_OpenArray(cbor_encoder);
+    }
+
+    // suit-record-manifest-id: [* uint ]
+    QCBOREncode_OpenArray(cbor_encoder);
+
+    // TODO: encode dependency tree
+    QCBOREncode_CloseArray(cbor_encoder);
+
+    // suit-record-manifest-section: int
+    QCBOREncode_AddInt64(cbor_encoder, manifest_key);
+
+    // suit-record-section-offset : uint
+    QCBOREncode_AddUInt64(cbor_encoder, section_offset);
+
+    // suit-record-component-index : uint
+    // NOTE: none of SUIT_Component_Identifier is processed here
+    QCBOREncode_AddUInt64(cbor_encoder, 0);
+
+    // suit-record-properties : {*$$SUIT_Parameters}
+    // NOTE: none of command sequence are processed yet
+    QCBOREncode_OpenMap(cbor_encoder);
+    QCBOREncode_CloseMap(cbor_encoder);
+
+    QCBOREncode_CloseArray(cbor_encoder);
+}
+
+
 void suit_encode_append_suit_report_result(
         QCBOREncodeContext *cbor_encoder,
         suit_err_t result,
@@ -1439,32 +1593,9 @@ void suit_encode_append_suit_report_result(
                                        SUIT_REPORT_REASON_OK);
         }
 
-        // suit-report-result-record => [ start
-        QCBOREncode_OpenArrayInMapN(cbor_encoder, SUIT_REPORT_RESULT_RECORD);
-        {
-            // suit-record-manifest-id: [* uint ]
-            QCBOREncode_OpenArray(cbor_encoder);
-
-            // TODO: encode dependency tree
-            QCBOREncode_CloseArray(cbor_encoder);
-
-            // suit-record-manifest-section: int
-            QCBOREncode_AddInt64(cbor_encoder, manifest_key);
-
-            // suit-record-section-offset : uint
-            QCBOREncode_AddUInt64(cbor_encoder, section_offset);
-
-            // suit-record-component-index : uint
-            // NOTE: none of SUIT_Component_Identifier is processed here
-            QCBOREncode_AddUInt64(cbor_encoder, 0);
-
-            // suit-record-properties : {*$$SUIT_Parameters}
-            // NOTE: none of command sequence are processed yet
-            QCBOREncode_OpenMap(cbor_encoder);
-            QCBOREncode_CloseMap(cbor_encoder);
-        }
-        QCBOREncode_CloseArray(cbor_encoder);
-    } // ] suit-report-result-record end
+        // suit-report-result-record => SUIT_Record
+        suit_encode_append_suit_record(cbor_encoder, SUIT_REPORT_RESULT_RECORD, manifest_key, section_offset, component_index);
+    }
     QCBOREncode_CloseArray(cbor_encoder);
     // } suit-report-result end
 }

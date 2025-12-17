@@ -1276,6 +1276,7 @@ typedef struct suit_inputs {
 
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     suit_report_inputs_t report_inputs;
+    uint8_t current_index;
     UsefulBufC suit_report;
 #endif
 

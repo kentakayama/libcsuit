@@ -722,17 +722,19 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                                   suit_parameter_args_t parameters[],
                                   const suit_index_t *suit_index,
                                   suit_rep_policy_t report,
-                                  const suit_inputs_t *suit_inputs)
+                                  suit_inputs_t *suit_inputs)
 {
     suit_err_t result = SUIT_SUCCESS;
 
     for (uint8_t i = 0; i < suit_index->len; i++) {
         uint8_t tmp_index = suit_index->index[i];
 
+        bool callback_required = true;
         suit_condition_args_t args = {0};
         const suit_component_identifier_t *dst = suit_index_to_component_identifier(extracted, tmp_index);
         if (dst == NULL) {
-            return SUIT_ERR_COMPONENT_NOT_FOUND;
+            result = SUIT_ERR_COMPONENT_NOT_FOUND;
+            goto report;
         }
         args.dst = *dst;
         args.condition = condition;
@@ -744,7 +746,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.u64 = parameters[tmp_index].component_slot;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_COMPONENT_SLOT */
@@ -755,7 +758,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.u64 = parameters[tmp_index].use_before;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_USE_BEFORE */
@@ -766,7 +770,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.u64 = parameters[tmp_index].minimum_battery;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_MINIMUM_BATTERY */
@@ -777,7 +782,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.i64 = parameters[tmp_index].update_priority;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_UPDATE_AUTHORIZED */
@@ -788,7 +794,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.str = parameters[tmp_index].vendor_id;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 
@@ -798,7 +805,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.str = parameters[tmp_index].class_id;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_CLASS_IDENTIFIER */
@@ -809,7 +817,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.str = parameters[tmp_index].device_id;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_DEVICE_IDENTIFIER */
@@ -820,7 +829,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.str = parameters[tmp_index].content;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_CHECK_CONTENT */
@@ -840,7 +850,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.image_digest = parameters[tmp_index].image_digest;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 
@@ -851,27 +862,31 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
                 args.expected.version_match = parameters[tmp_index].version_match;
             }
             else {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             break;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_VERSION */
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_DEPENDENCY_INTEGRITY)
         case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+            callback_required = false;
             result = suit_index_is_dependency(extracted, tmp_index);
             if (result != SUIT_SUCCESS) {
-                return result;
+                goto report;
             }
 
             suit_inputs_t tmp_inputs = *suit_inputs;
             if (!(parameters[tmp_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST)) {
-                return SUIT_ERR_PARAMETER_NOT_FOUND;
+                result = SUIT_ERR_PARAMETER_NOT_FOUND;
+                goto report;
             }
             tmp_inputs.expected_manifest_digest = parameters[tmp_index].image_digest;
 
             suit_payload_t *payload = suit_index_to_payload(extracted, tmp_index);
             if (payload == NULL) {
-                return SUIT_ERR_COMPONENT_NOT_FOUND;
+                result = SUIT_ERR_COMPONENT_NOT_FOUND;
+                goto report;
             }
             tmp_inputs.manifest = payload->bytes;
 
@@ -880,12 +895,8 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
             tmp_inputs.dependency_depth++;
 
             result = suit_process_envelope(&tmp_inputs);
-            if (result != SUIT_SUCCESS) {
-                return result;
-            }
+            break;
 
-            // callback is not needed
-            continue;
 #endif /* !LIBCSUIT_DISABLE_CONDITION_DEPENDENCY_INTEGRITY */
 
         case SUIT_CONDITION_ABORT:
@@ -900,17 +911,40 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
 
         case SUIT_CONDITION_INVALID:
         default:
-            return SUIT_ERR_NOT_IMPLEMENTED;
-        }
-        if (result != SUIT_SUCCESS) {
-            /* already handled without callback */
-            return result;
+            result = SUIT_ERR_NOT_IMPLEMENTED;
         }
 
-        args.report = report;
-        result = suit_condition_callback(args);
-        if (result != SUIT_SUCCESS) {
-            return result;
+        if (callback_required) {
+            args.report = report;
+            result = suit_condition_callback(args);
+        }
+
+report:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+        if (suit_inputs->current_index != tmp_index) {
+            // need to close the system-property-claims
+            QCBOREncode_CloseMap(&suit_inputs->report_inputs.cbor_encoder);
+
+            // open the map and start encoding system-property-claims for new component
+            QCBOREncode_OpenMap(&suit_inputs->report_inputs.cbor_encoder);
+            suit_component_identifier_t *component = suit_index_to_component_identifier(extracted, tmp_index);
+            //   system-component-id
+            QCBOREncode_AddUInt64(&suit_inputs->report_inputs.cbor_encoder, 0);
+            //   => SUIT_Component_Identifier,
+            suit_encode_append_component_identifier(component, 0, &suit_inputs->report_inputs.cbor_encoder);
+            suit_inputs->current_index = tmp_index;
+        }
+        suit_encode_append_parameter(
+            &suit_inputs->report_inputs.cbor_encoder,
+            result,
+            report,
+            condition,
+            tmp_index,
+            parameters
+        );
+#endif
+        if (result != SUIT_SUCCESS && parameters[tmp_index].soft_failure != SUIT_PARAMETER_TRUE) {
+            break;
         }
     }
     return result;
@@ -1417,6 +1451,21 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
                                              suit_inputs_t *suit_inputs,
                                              const bool may_soft_failure)
 {
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+    // suit-report-records => [
+    QCBOREncode_OpenArrayInMapN(&suit_inputs->report_inputs.cbor_encoder, SUIT_REPORT_RECORDS);
+
+    suit_inputs->current_index = 0;
+    // encode system-property-claims for the index=0 SUIT_Component_Identifier
+    // {
+    QCBOREncode_OpenMap(&suit_inputs->report_inputs.cbor_encoder);
+    suit_component_identifier_t *component = suit_index_to_component_identifier(extracted, 0);
+    //   system-component-id
+    QCBOREncode_AddUInt64(&suit_inputs->report_inputs.cbor_encoder, 0);
+    //   => SUIT_Component_Identifier,
+    suit_encode_append_component_identifier(component, 0, &suit_inputs->report_inputs.cbor_encoder);
+    // NOTE: the SUIT_Parameters will be encoded
+#endif
     suit_err_t result = SUIT_SUCCESS;
     suit_con_dir_key_t condition_directive_key = SUIT_CONDITION_INVALID;
     suit_rep_policy_t report_policy;
@@ -1447,6 +1496,10 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
 
         switch (condition_directive_key) {
         case SUIT_DIRECTIVE_SET_COMPONENT_INDEX:
+// #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+//             // need too close the system property claim
+//             QCBOREncode_CloseMap(&suit_inputs->report_inputs.cbor_encoder);
+// #endif
             result = suit_set_index(&context, extracted, suit_index);
             break;
 
@@ -1610,7 +1663,9 @@ suit_err_t suit_process_command_sequence_buf(suit_extracted_t *extracted,
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
         }
+
         if (result != SUIT_SUCCESS) {
+            // XXX: how do we handle the soft-failure is True?
             goto error;
         }
         error = QCBORDecode_GetError(&context);
@@ -1877,7 +1932,7 @@ suit_err_t suit_process_digest(QCBORDecodeContext *context,
 }
 
 suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
-                                               const suit_inputs_t *suit_inputs,
+                                               suit_inputs_t *suit_inputs,
                                                suit_digest_t *digest)
 {
     QCBORItem item;
@@ -2418,7 +2473,7 @@ suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs)
     /* before processing the manifest
      * initialize the SUIT_Report encoder if a buffer is allocated for it */
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
-    if (!UsefulBuf_IsNULLOrEmpty(suit_inputs->report_inputs.buf)) {
+    if (UsefulBuf_IsNULLOrEmpty(suit_inputs->report_inputs.buf)) {
         return SUIT_ERR_NO_MEMORY;
     }
     QCBOREncode_Init(&suit_inputs->report_inputs.cbor_encoder, suit_inputs->report_inputs.buf);
