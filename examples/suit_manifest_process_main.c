@@ -28,6 +28,9 @@
 #include "trust_anchor_a128_cose_key_secret.h"
 #include "device_es256_cose_key_private.h"
 
+#define BUFFER_SIZE (8 * 1024 * 1024)
+#define REPORT_SIZE (1024)
+
 typedef struct {
     char *url;
     char *filename;
@@ -557,12 +560,12 @@ int main(int argc, char *argv[]) {
         device_es256_cose_key_private,
     };
 
-    suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
+    suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + BUFFER_SIZE);
     if (suit_inputs == NULL) {
         printf("main : Failed to allocate memory for suit_inputs\n");
         return EXIT_FAILURE;
     }
-    suit_inputs->left_len = SUIT_MAX_DATA_SIZE;
+    suit_inputs->left_len = BUFFER_SIZE;
     suit_inputs->ptr = suit_inputs->buf;
 
     printf("\nmain : Read public keys.\n");
@@ -625,12 +628,17 @@ int main(int argc, char *argv[]) {
     // Read manifest file.
     printf("\nmain : Read Manifest file.\n");
     suit_inputs->manifest.ptr = suit_inputs->buf;
-    suit_inputs->manifest.len = read_from_file(argv[optind], suit_inputs->buf, SUIT_MAX_DATA_SIZE);
+    suit_inputs->manifest.len = read_from_file(argv[optind], suit_inputs->buf, BUFFER_SIZE);
     if (suit_inputs->manifest.len <= 0) {
         printf("main : Failed to read Manifest file. (%s)\n", argv[optind]);
         return EXIT_FAILURE;
     }
     suit_inputs->left_len -= suit_inputs->manifest.len;
+
+    // Allocate SUIT Report buffer
+    suit_inputs->report_inputs.buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len);
+    suit_inputs->report_inputs.buf.len = REPORT_SIZE;
+    suit_inputs->left_len -= REPORT_SIZE;
 
     // Process manifest file.
     printf("\nmain : Process Manifest file.\n");
@@ -641,6 +649,9 @@ int main(int argc, char *argv[]) {
         printf("main : Failed to install and invoke a Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
+
+    // Print SUIT Report
+    suit_print_hex_in_max(suit_inputs->suit_report.ptr, suit_inputs->suit_report.len, suit_inputs->suit_report.len);
 
     free(suit_inputs);
 
