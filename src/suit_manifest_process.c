@@ -702,7 +702,7 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
     for (uint8_t i = 0; i < suit_index->len; i++) {
         processor_context->component_index = suit_index->index[i];
         // $$SUIT_Parameter will be set by the condition callbacks
-        processor_context->parameter_key = SUIT_PARAMETER_INVALID;
+        processor_context->parameter_keys[0] = SUIT_PARAMETER_INVALID;
         processor_context->parameter_value = (suit_union_parameter_t){0};
 
         bool callback_required = true;
@@ -921,121 +921,97 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
             result = suit_condition_callback(args, &ret);
             processor_context->reason = ret.reason;
             // NOTE: parameter key may updated by the caller
-            if (ret.parameter_key != SUIT_PARAMETER_INVALID) {
-                processor_context->parameter_key = ret.parameter_key;
-                switch (ret.parameter_key) {
+            if (ret.parameter_keys[0] != SUIT_PARAMETER_INVALID) {
+                processor_context->parameter_keys[0] = ret.parameter_keys[0];
+                switch (ret.parameter_keys[0]) {
                 /* int */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY)
                 case SUIT_PARAMETER_UPDATE_PRIORITY:
                     processor_context->parameter_value.i64 = parameters[processor_context->component_index].update_priority;
                     break;
-#endif /* LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY */
-
                 /* uint */
                 case SUIT_PARAMETER_IMAGE_SIZE:
                     processor_context->parameter_value.u64 = parameters[processor_context->component_index].image_size;
+                    if (ret.parameter_keys[1] == SUIT_PARAMETER_IMAGE_DIGEST) {
+                        processor_context->parameter_keys[1] = SUIT_PARAMETER_IMAGE_DIGEST;
+                        processor_context->parameter_value.str = parameters[processor_context->component_index].image_digest_buf;
+                    }
                     break;
-
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_SLOT)
                 case SUIT_PARAMETER_COMPONENT_SLOT:
                     processor_context->parameter_value.u64 = parameters[processor_context->component_index].component_slot;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_SOURCE_COMPONENT)
                 case SUIT_PARAMETER_SOURCE_COMPONENT:
                     processor_context->parameter_value.u64 = parameters[processor_context->component_index].source_component;
+                    if (ret.parameter_keys[1] == SUIT_PARAMETER_ENCRYPTION_INFO) {
+                        processor_context->parameter_keys[1] = SUIT_PARAMETER_ENCRYPTION_INFO;
+                        processor_context->parameter_value.str = parameters[processor_context->component_index].encryption_info;
+                    }
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_USE_BEFORE)
                 case SUIT_PARAMETER_USE_BEFORE:
                     processor_context->parameter_value.u64 = parameters[processor_context->component_index].use_before;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_MINIMUM_BATTERY)
                 case SUIT_PARAMETER_MINIMUM_BATTERY:
-#endif
                     processor_context->parameter_value.u64 = parameters[processor_context->component_index].minimum_battery;
                     break;
-
                 /* tstr */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_URI)
                 case SUIT_PARAMETER_URI:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].uri;
                     break;
-#endif /* !LIBCSUIT_DISABLE_PARAMETER_URI */
-
                 /* bstr */
                 case SUIT_PARAMETER_VENDOR_IDENTIFIER:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].vendor_id;
                     break;
-
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_CLASS_IDENTIFIER)
                 case SUIT_PARAMETER_CLASS_IDENTIFIER:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].class_id;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_DEVICE_IDENTIFIER)
                 case SUIT_PARAMETER_DEVICE_IDENTIFIER:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].device_id;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_CONTENT)
                 case SUIT_PARAMETER_CONTENT:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].content;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_INVOKE_ARGS)
                 case SUIT_PARAMETER_INVOKE_ARGS:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].invoke_args;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
                 case SUIT_PARAMETER_FETCH_ARGS:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].fetch_args;
                     break;
-#endif
 
                 /* draft-ietf-suit-firmware-encryption */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
                 case SUIT_PARAMETER_ENCRYPTION_INFO:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].encryption_info;
+                    if (ret.parameter_keys[1] == SUIT_PARAMETER_SOURCE_COMPONENT) {
+                        processor_context->parameter_keys[1] = SUIT_PARAMETER_SOURCE_COMPONENT;
+                        processor_context->parameter_value.u64 = parameters[processor_context->component_index].source_component;
+                    }
                     break;
-#endif
 
                 /* draft-ietf-suit-update-management */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
                 /* bstr .cbor SUIT_Parameter_Version_Match */
                 case SUIT_PARAMETER_VERSION:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].version_match_buf;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
                 /* bstr .cbor SUIT_Wait_Event */
                 case SUIT_PARAMETER_WAIT_INFO:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].wait_info_buf;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_INDEX)
                 /* bstr .cbor SUIT_Component_Metadata */
                 case SUIT_PARAMETER_COMPONENT_METADATA:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].component_metadata_buf;
                     break;
-#endif
 
                 /* bool */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER)
                 case SUIT_PARAMETER_STRICT_ORDER:
                     processor_context->parameter_value.b = parameters[processor_context->component_index].strict_order;
                     break;
-#endif
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE)
                 case SUIT_PARAMETER_SOFT_FAILURE:
                     processor_context->parameter_value.b = parameters[processor_context->component_index].soft_failure;
                     break;
-#endif
-                /* SUIT_Digest */
                 case SUIT_PARAMETER_IMAGE_DIGEST:
                     processor_context->parameter_value.str = parameters[processor_context->component_index].image_digest_buf;
+                    if (ret.parameter_keys[1] == SUIT_PARAMETER_IMAGE_SIZE) {
+                        processor_context->parameter_keys[1] = SUIT_PARAMETER_IMAGE_SIZE;
+                        processor_context->parameter_value.u64 = parameters[processor_context->component_index].image_size;
+                    }
                     break;
                 case SUIT_PARAMETER_INVALID:
                     break;
@@ -1170,12 +1146,12 @@ suit_err_t suit_process_copy_swap(suit_processor_context_t *processor_context,
         suit_err_t result = suit_store_callback(store, &ret);
         processor_context->reason = ret.reason;
         if (ret.on_src) {
-            processor_context->parameter_key = SUIT_PARAMETER_SOURCE_COMPONENT;
+            processor_context->parameter_keys[0] = SUIT_PARAMETER_SOURCE_COMPONENT;
             processor_context->parameter_value.u64 = parameters[processor_context->component_index].source_component;
         }
         if (result != SUIT_SUCCESS) {
             if (result == SUIT_ERR_FAILED_TO_DECRYPT) {
-                processor_context->parameter_key = SUIT_PARAMETER_ENCRYPTION_INFO;
+                processor_context->parameter_keys[0] = SUIT_PARAMETER_ENCRYPTION_INFO;
                 processor_context->parameter_value.str = store.encryption_info;
             }
             return result;
@@ -1321,7 +1297,7 @@ suit_err_t suit_process_try_each(suit_processor_context_t *processor_context,
                 processor_context->section_offset,
                 processor_context->condition_or_directive,
                 processor_context->component_index,
-                processor_context->parameter_key,
+                processor_context->parameter_keys,
                 &processor_context->parameter_value
             );
         }
@@ -1806,7 +1782,7 @@ report:
                         processor_context->reporting_engine,
                         processor_context->component_index,
                         processor_context->component,
-                        processor_context->parameter_key,
+                        processor_context->parameter_keys,
                         &processor_context->parameter_value
                     );
                 }
@@ -1820,7 +1796,7 @@ report:
                         processor_context->section_offset,
                         processor_context->condition_or_directive,
                         processor_context->component_index,
-                        processor_context->parameter_key,
+                        processor_context->parameter_keys,
                         &processor_context->parameter_value
                     );
                 }
@@ -2917,7 +2893,7 @@ report:
             processor_context->section_offset,
             processor_context->condition_or_directive,
             processor_context->component_index,
-            processor_context->parameter_key,
+            processor_context->parameter_keys,
             &processor_context->parameter_value
         );
     }

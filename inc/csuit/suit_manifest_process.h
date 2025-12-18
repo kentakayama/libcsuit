@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#define LIBCSUIT_MAX_REPORT_PRAMETER_NUM 2
+
 typedef struct suit_parameter_args {
     uint64_t                    exists;
 
@@ -293,7 +295,8 @@ typedef struct suit_callback_ret {
     size_t buf_len;
 
     suit_report_reason_t reason;
-    suit_parameter_key_t parameter_key;
+    // currently, up to two parameters are consumed by one callback    
+    suit_parameter_key_t parameter_keys[LIBCSUIT_MAX_REPORT_PRAMETER_NUM];
     bool on_src;
 } suit_callback_ret_t;
 
@@ -350,7 +353,8 @@ typedef struct suit_processor_context {
     suit_con_dir_key_t condition_or_directive;
     uint8_t component_index;
     const suit_component_identifier_t *component;
-    suit_parameter_key_t parameter_key;
+    // currently, up to two parameters are consumed by one callback
+    suit_parameter_key_t parameter_keys[LIBCSUIT_MAX_REPORT_PRAMETER_NUM];
     suit_union_parameter_t parameter_value;
 
     size_t left_len;

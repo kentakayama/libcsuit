@@ -250,6 +250,7 @@ suit_err_t suit_condition_image_match(const suit_component_identifier_t *dst,
         buf.len = read_from_file(filename, buf.ptr, SUIT_MAX_DATA_SIZE);
     }
     else {
+        ret->parameter_keys[0] = SUIT_PARAMETER_IMAGE_SIZE;
         buf.ptr = malloc(image_size + 1);
         if (buf.ptr == NULL) {
             result = SUIT_ERR_NO_MEMORY;
@@ -260,16 +261,14 @@ suit_err_t suit_condition_image_match(const suit_component_identifier_t *dst,
         if (buf.len != image_size) {
             result = SUIT_ERR_CONDITION_MISMATCH;
             ret->reason = SUIT_REPORT_REASON_CONDITION_FAILED;
-            ret->parameter_key = SUIT_PARAMETER_IMAGE_SIZE;
             goto out;
         }
     }
-
+    ret->parameter_keys[1] = SUIT_PARAMETER_IMAGE_DIGEST;
     result = suit_verify_digest(UsefulBuf_Const(buf), image_digest);
     if (result == SUIT_ERR_FAILED_TO_VERIFY) {
         result = SUIT_ERR_CONDITION_MISMATCH;
         ret->reason = SUIT_REPORT_REASON_CONDITION_FAILED;
-        ret->parameter_key = SUIT_PARAMETER_IMAGE_DIGEST;
     }
 out:
     free(buf.ptr);
@@ -303,10 +302,8 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
         result = suit_decode_digest(condition_args.expected.str, &digest);
         if (result != SUIT_SUCCESS) {
             condition_ret->reason = SUIT_REPORT_REASON_CBOR_PARSE;
-            condition_ret->parameter_key = SUIT_PARAMETER_IMAGE_DIGEST;
         }
         result = suit_condition_image_match(&condition_args.dst, &digest, condition_args.expected.u64, match, condition_ret);
-
         break;
 
     case SUIT_CONDITION_COMPONENT_SLOT:

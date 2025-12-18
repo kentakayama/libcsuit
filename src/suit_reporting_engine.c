@@ -102,7 +102,7 @@ void suit_report_append_parameter(
 #endif
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER) || \
 !defined(LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE)
-        QCBOREncode_AddBoolToMapN(cbor_encoder, parameter_key, parameter_value->b);
+        QCBOREncode_AddBoolToMapN(cbor_encoder, parameter_key, parameter_value->b == SUIT_PARAMETER_TRUE);
         break;
 #endif
 
@@ -119,7 +119,7 @@ void suit_encode_append_suit_record(
     size_t section_offset,
     suit_con_dir_key_t condition_or_directive,
     uint64_t component_index,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     if (label != 0) {
@@ -128,32 +128,33 @@ void suit_encode_append_suit_record(
     else {
         QCBOREncode_OpenArray(cbor_encoder);
     }
+    // SUIT_Record [ start
+    {
+        // suit-record-manifest-id: [* uint ]
+        QCBOREncode_OpenArray(cbor_encoder);
+        for (size_t i = 0; i < dependency_tree.len; i++) {
+            QCBOREncode_AddUInt64(cbor_encoder, dependency_tree.manifest_index[i]);
+        }
+        QCBOREncode_CloseArray(cbor_encoder);
 
-    // suit-record-manifest-id: [* uint ]
-    QCBOREncode_OpenArray(cbor_encoder);
-    for (size_t i = 0; i < dependency_tree.len; i++) {
-        QCBOREncode_AddUInt64(cbor_encoder, dependency_tree.manifest_index[i]);
+        // suit-record-manifest-section: int
+        QCBOREncode_AddInt64(cbor_encoder, manifest_key);
+
+        // suit-record-section-offset : uint
+        QCBOREncode_AddUInt64(cbor_encoder, section_offset);
+
+        // suit-record-component-index : uint
+        // NOTE: none of SUIT_Component_Identifier is processed here
+        QCBOREncode_AddUInt64(cbor_encoder, 0);
+
+        // suit-record-properties : {*$$SUIT_Parameters}
+        // TODO: 
+        QCBOREncode_OpenMap(cbor_encoder);
+        for (size_t i = 0; i < LIBCSUIT_MAX_REPORT_PRAMETER_NUM; i++) {
+            suit_report_append_parameter(cbor_encoder, parameter_keys[i], parameter_value);
+        }
+        QCBOREncode_CloseMap(cbor_encoder);
     }
-    QCBOREncode_CloseArray(cbor_encoder);
-
-    // suit-record-manifest-section: int
-    QCBOREncode_AddInt64(cbor_encoder, manifest_key);
-
-    // suit-record-section-offset : uint
-    QCBOREncode_AddUInt64(cbor_encoder, section_offset);
-
-    // suit-record-component-index : uint
-    // NOTE: none of SUIT_Component_Identifier is processed here
-    QCBOREncode_AddUInt64(cbor_encoder, 0);
-
-    // suit-record-properties : {*$$SUIT_Parameters}
-    // TODO: 
-    QCBOREncode_OpenMap(cbor_encoder);
-    if (parameter_value != NULL) {
-        suit_report_append_parameter(cbor_encoder, parameter_key, parameter_value);
-    }
-    QCBOREncode_CloseMap(cbor_encoder);
-
     QCBOREncode_CloseArray(cbor_encoder);
 }
 
@@ -246,7 +247,7 @@ suit_err_t suit_report_result(
     size_t section_offset,
     suit_con_dir_key_t condition_or_directive,
     uint64_t component_index,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     if (final_state == SUIT_ERR_ABORT) {
@@ -279,7 +280,7 @@ suit_err_t suit_report_result(
             section_offset,
             condition_or_directive,
             component_index,
-            parameter_key,
+            parameter_keys,
             parameter_value
         );
 
@@ -305,7 +306,7 @@ suit_err_t suit_report_finalize(
     size_t section_offset,
     suit_con_dir_key_t condition_or_directive,
     uint64_t component_index,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     // 1. stop encoding suit-report-records
@@ -326,7 +327,7 @@ suit_err_t suit_report_finalize(
         section_offset,
         condition_or_directive,
         component_index,
-        parameter_key,
+        parameter_keys,
         parameter_value
     );
 
@@ -370,7 +371,7 @@ suit_err_t suit_report_extend_record(
     size_t section_offset,
     suit_con_dir_key_t condition_or_directive,
     uint8_t component_index,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     switch (report_context->state) {
@@ -397,7 +398,7 @@ suit_err_t suit_report_extend_record(
         section_offset,
         condition_or_directive,
         component_index,
-        parameter_key,
+        parameter_keys,
         parameter_value
     );
     return SUIT_SUCCESS;
@@ -407,7 +408,7 @@ suit_err_t suit_report_extend_system_property_claims(
     suit_report_context_t *report_context,
     uint8_t component_index,
     const suit_component_identifier_t *component,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     if (report_context->state == SUIT_REPORTING_ENGINE_IN_SYSTEM_PROPERTY_CLAIMS
@@ -434,7 +435,10 @@ suit_err_t suit_report_extend_system_property_claims(
     }
 
     // TODO: append the parameter
-
+    for (size_t i = 0; i < LIBCSUIT_MAX_REPORT_PRAMETER_NUM; i++) {
+        suit_report_append_parameter(&report_context->cbor_encoder, parameter_keys[i], parameter_value);
+    }
+    report_context->state = SUIT_REPORTING_ENGINE_IN_SYSTEM_PROPERTY_CLAIMS;
     return SUIT_SUCCESS;
 }
 

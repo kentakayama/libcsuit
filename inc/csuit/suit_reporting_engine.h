@@ -182,7 +182,7 @@ suit_err_t suit_report_result(
     size_t section_offset,
     suit_con_dir_key_t condition_or_directive,
     uint64_t component_index,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
 
 /*!
@@ -214,7 +214,7 @@ suit_err_t suit_report_finalize(
     size_t section_offset,
     suit_con_dir_key_t condition_or_directive,
     uint64_t component_index,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
 
 /*!
@@ -238,7 +238,7 @@ suit_err_t suit_report_extend_record(
     size_t section_offset,
     suit_con_dir_key_t condition_or_directive,
     uint8_t component_index,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
 
 /*!
@@ -256,7 +256,7 @@ suit_err_t suit_report_extend_system_property_claims(
     suit_report_context_t *report_context,
     uint8_t component_index,
     const suit_component_identifier_t *component,
-    suit_parameter_key_t parameter_key,
+    suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
 
 suit_err_t suit_report_manifest_reference_uri(
