@@ -337,11 +337,11 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context,
     if (digest->bytes.ptr == NULL) {
         return SUIT_ERR_FAILED_TO_VERIFY;
     }
-    suit_buf_t buf;
+    UsefulBufC buf;
     size_t cursor = UsefulInputBuf_Tell(&context->InBuf);
     buf.len = suit_qcbor_calc_rollback(item);
-    buf.ptr = (uint8_t *)context->InBuf.UB.ptr + (cursor - buf.len);
-    return suit_verify_digest(&buf, digest);
+    buf.ptr = (const void *)context->InBuf.UB.ptr + (cursor - buf.len);
+    return suit_verify_digest(buf, digest);
 }
 
 suit_err_t suit_use_suit_encode_buf(suit_encode_t *suit_encode,

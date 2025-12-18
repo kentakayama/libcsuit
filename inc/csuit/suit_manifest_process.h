@@ -7,19 +7,404 @@
 /*!
     \file   suit_manifest_process.h
 
-    \brief  Declarations of structures and functions
+    \brief  Declarations of structures and functions for SUIT Manifest Processor
  */
 
 #ifndef SUIT_MANIFEST_PROCESS_H
 #define SUIT_MANIFEST_PROCESS_H
 
-#include "suit_common.h"
-#include "suit_digest.h"
-#include "suit_cose.h"
+#include "qcbor/qcbor_spiffy_decode.h"
+
+#include "csuit/suit_common.h"
+#include "csuit/suit_digest.h"
+#include "csuit/suit_cose.h"
+#include "csuit/suit_reporting_engine.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct suit_parameter_args {
+    uint64_t                    exists;
+
+    UsefulBufC                  vendor_id;
+    UsefulBufC                  class_id;
+    UsefulBufC                  device_id;
+
+    UsefulBufC                  image_digest_buf;
+    uint64_t                    component_slot;
+
+    /*! default True */
+    suit_parameter_bool_t       strict_order;
+
+    /*!
+     * default True if suit-directive-try-each is invoked,
+     * default False if suit-directive-run-sequence is invoked
+     */
+    suit_parameter_bool_t       soft_failure;
+
+    uint64_t                    image_size;
+
+    UsefulBufC                  content;
+    UsefulBufC                  uri;
+
+    uint64_t                    source_component;
+
+    /*! used in suit-directive-fetch */
+    UsefulBufC                  fetch_args;
+
+    /*! used in suit-directive-invoke */
+    UsefulBufC                  invoke_args;
+
+
+    /* in draft-ietf-suit-update-management */
+    /*! used in suit-condition-use-before */
+    uint64_t                    use_before;
+    /*! used in suit-condition-minimum-battery */
+    uint64_t                    minimum_battery;
+    /*! XXX: used in suit-condition-update-authorized */
+    int64_t                     update_priority;
+    /*! used in suit-condition-version */
+    UsefulBufC                  version_match_buf;
+
+    /*! used in suit-directive-wait */
+    UsefulBufC                  wait_info_buf;
+
+    /*! used in suit-directive-fetch, suit-directive-write, ... */
+    UsefulBufC                  component_metadata_buf;
+
+    /* in draft-ietf-suit-trust-domains */
+
+
+    /* in draft-ietf-suit-firmware-encryption */
+    /*! Pointer and length to the COSE_Encrypt */
+    UsefulBufC                  encryption_info;
+} suit_parameter_args_t;
+
+typedef struct suit_union_parameter {
+    suit_parameter_key_t parameter_key;
+
+    union {
+        int64_t                     i64;
+        struct {
+            uint64_t                u64; // image-size may used with image-digest
+            UsefulBufC              str; // image-digest may used with image-size
+        };
+        /*! default True */
+        suit_parameter_bool_t       b;
+    };
+} suit_union_parameter_t;
+
+typedef union {
+    uint16_t all;
+    struct {
+        /*!
+         * \brief 1: Skip if the requested section is missing.
+         *
+         * 0: libcsuit returns \ref SUIT_ERR_MANIFEST_KEY_NOT_FOUND.
+         * NOTE: must be 0 inside process-dependency
+         * see https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02#name-suit-directive-process-depe
+         */
+        uint16_t allow_missing          : 1;
+
+        /*!
+         * 1: Request libcsuit to trigger suit_store_callback()
+         * if suit-manifest-component-id is specified.
+         */
+        uint16_t manifest_component_id  : 1;
+        /*! 1: Request libcsuit to process suit-set-version section. */
+        uint16_t set_version            : 1;
+        /*! 1: Request libcsuit to process suit-dependency-resolution section. */
+        uint16_t dependency_resolution  : 1;
+        /*! 1: Request libcsuit to process suit-payload-fetch section. */
+        uint16_t payload_fetch          : 1;
+        /*! 1: Request libcsuit to process suit-candidate-verification section. */
+        uint16_t candidate_verification : 1;
+        /*! 1: Request libcsuit to process suit-install section. */
+        uint16_t install                : 1;
+        /*! 1: Request libcsuit to process suit-uninstall section. */
+        uint16_t uninstall              : 1;
+
+        /*! 1: Request libcsuit to process suit-validate section. */
+        uint16_t validate               : 1;
+        /*! 1: Request libcsuit to process suit-load section. */
+        uint16_t load                   : 1;
+        /*! 1: Request libcsuit to process suit-invoke section. */
+        uint16_t invoke                 : 1;
+
+        /*!
+         * \brief 1: Request libcsuit to process suit-text section.
+         *
+         * This parameter is ignored now.
+         */
+        uint16_t text                   : 1;
+        /*!
+         * \brief 1: Request libcsuit to process suit-coswid section.
+         *
+         * This parameter is ignored now.
+         */
+        uint16_t coswid                 : 1;
+    };
+} suit_process_flag_t;
+
+/*!
+ * This passes enough data to construct SUIT_Report.
+ */
+typedef struct suit_report_args {
+    /* parameters for SUIT_Report */
+
+    // suit_report_records_t suit_report_records;
+    bool success;
+    // suit_report_result_t suit_report_result;
+
+    suit_envelope_key_t level0;
+    union {
+        suit_manifest_key_t manifest_key;
+    } level1;
+    union {
+        suit_con_dir_key_t condition_directive;
+        suit_common_key_t common_key;
+        suit_text_key_t text_key;
+    } level2;
+    union {
+        suit_con_dir_key_t condition_directive;
+        suit_parameter_key_t parameter;
+        suit_text_component_key_t text_component_key;
+    } level3;
+    union {
+        suit_parameter_key_t parameter;
+    } level4;
+
+    QCBORError qcbor_error;
+    suit_err_t suit_error;
+
+    suit_rep_policy_t policy;
+} suit_report_args_t;
+
+/*!
+    \brief  Parameters to request storing data as component identifier.
+    
+    Used on suit-directive-write, suit-directive-copy, suit-directive-swap,
+    suit-directive-unlink and suit-directive-fetch (only for integrated payloads).
+ */
+typedef struct suit_invoke_args {
+    suit_component_identifier_t component_identifier;
+    /* basically byte-string value, so may not '\0' terminated */
+    uint8_t args[SUIT_MAX_ARGS_LENGTH];
+    size_t args_len;
+
+    suit_rep_policy_t report_policy;
+} suit_invoke_args_t;
+
+typedef enum suit_store_key {
+    SUIT_STORE  = 0,
+    SUIT_COPY   = 1,
+    SUIT_SWAP   = 2,
+    SUIT_UNLINK = 3,
+} suit_store_key_t;
+
+/*!
+   \brief   Parameters to request storing data as component identifier.
+
+   Used on suit-directive-write, suit-directive-copy, suit-directive-swap,
+   suit-directive-unlink and suit-directive-fetch (only for integrated payloads).
+ */
+typedef struct suit_store_args {
+    suit_rep_policy_t report_policy;
+
+    /*! Destination SUIT_Component_Identifier */
+    suit_component_identifier_t dst;
+    /*! Used if \ref operation is SUIT_COPY or SUIT_SWAP */
+    suit_component_identifier_t src;
+    /*! Pointer and length to the content to be written */
+    UsefulBufC src_buf;
+
+    /*! Pointer and length to the COSE_Encrypt */
+    UsefulBufC encryption_info;
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+
+    /*! Extra arguments derived from fetch-args */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
+    UsefulBufC fetch_args;
+#endif
+
+    /*! Metadata for storing data */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+    UsefulBufC component_metadata_buf;
+#endif
+
+    /*! SUIT_STORE, SUIT_COPY, SUIT_SWAP, or SUIT_UNLINK */
+    suit_store_key_t operation;
+} suit_store_args_t;
+
+/*!
+ * \brief   Parameters to request fetching and storing data as component identifier.
+ *
+ * Used on suit-directive-fetch.
+ */
+typedef struct suit_fetch_args {
+    suit_rep_policy_t report_policy;
+
+    /*! Destination SUIT_Component_Identifier */
+    suit_component_identifier_t dst;
+    /*! Length of uri */
+    size_t uri_len;
+    /*! URI terminated with '\0' */
+    char uri[SUIT_MAX_URI_LENGTH + 1];
+
+    /*!
+     *  Pointer to allocated memory in the caller.
+     *  This could be NULL if the caller wants callee
+     *  to allocate space corresponding to the component identifier.
+     */
+    void *ptr;
+    /*!
+     *  The length of the allocated buffer.
+     */
+    size_t buf_len;
+
+    /*!
+     *  Set by suit-parameter-fetch-args.
+     */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
+    UsefulBufC args;
+#endif
+
+    /*!
+     *  Set by suit-parameter-component-metadata.
+     */
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
+    UsefulBufC component_metadata_buf;
+#endif
+
+    /* in draft-ietf-suit-firmware-encryption */
+    /*! Pointer and length to the COSE_Encrypt */
+    UsefulBufC                  encryption_info;
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+} suit_fetch_args_t;
+
+/*!
+    \brief  Return value from fetch/store/condition callback.
+ */
+typedef struct suit_callback_ret {
+    /**
+     *  The length of the fetched payload.
+     */
+    size_t buf_len;
+
+    suit_report_reason_t reason;
+    suit_parameter_key_t parameter_key;
+    bool on_src;
+} suit_callback_ret_t;
+
+/*!
+ *  \brief  Parameters to request checking condition.
+ */
+typedef struct suit_condition_args {
+    suit_rep_policy_t report_policy;
+
+    /*! Destination SUIT_Component_Identifier */
+    suit_component_identifier_t dst;
+
+    /*! suit-condition-* label */
+    suit_con_dir_key_t condition;
+
+    /*! To be expected values */
+    suit_union_parameter_t expected;
+} suit_condition_args_t;
+
+/*
+ * A context for SUIT Manifest Processor
+ */
+typedef struct suit_processor_context {
+    union {
+        uint8_t status;
+        struct {
+            uint8_t initialized: 1;
+            uint8_t manifest_loaded: 1;
+            uint8_t recipient_key_loaded: 1;
+            uint8_t processing: 1;
+            uint8_t done: 1;
+        };
+    };
+
+    /* a pointer to the SUIT Reporting Engine, can be NULL */
+    suit_report_context_t *reporting_engine;
+
+    /* sections requested to process */
+    suit_process_flag_t process_flags;
+
+    UsefulBufC manifest;
+    suit_digest_t expected_manifest_digest;
+    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
+
+    // size_t key_len;
+    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
+
+    // to be reported
+    suit_err_t final_state;
+    suit_report_reason_t reason;
+    suit_manifest_tree_t dependency_tree;
+    suit_manifest_key_t manifest_key;
+    size_t section_offset;
+    suit_con_dir_key_t condition_or_directive;
+    uint8_t component_index;
+    const suit_component_identifier_t *component;
+    suit_parameter_key_t parameter_key;
+    suit_union_parameter_t parameter_value;
+
+    size_t left_len;
+    UsefulBuf allocated;
+    uint8_t buf[];
+} suit_processor_context_t;
+
+typedef struct suit_extracted {
+#if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
+    suit_dependencies_t dependencies;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
+    suit_component_identifier_t manifest_component_id;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
+    suit_int64_array_t set_version;
+#endif
+    uint8_t components_len;
+    suit_component_with_index_t components[SUIT_MAX_INDEX_NUM];
+    suit_payloads_t payloads;
+
+    UsefulBufC manifest;
+    suit_digest_t manifest_digest;
+    UsefulBufC shared_sequence;
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
+    UsefulBufC reference_uri;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION)
+    UsefulBufC dependency_resolution;
+    suit_digest_t dependency_resolution_digest;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
+    UsefulBufC payload_fetch;
+    suit_digest_t payload_fetch_digest;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_CANDIDATE_VERIFICATION)
+    UsefulBufC candidate_verification;
+    suit_digest_t candidate_verification_digest;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
+    UsefulBufC install;
+    suit_digest_t install_digest;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
+    UsefulBufC uninstall;
+#endif
+    UsefulBufC validate;
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
+    UsefulBufC load;
+#endif
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
+    UsefulBufC invoke;
+#endif
+} suit_extracted_t;
 
 suit_err_t suit_process_digest(QCBORDecodeContext *context,
                                suit_digest_t *digest,
@@ -43,8 +428,12 @@ suit_err_t suit_process_digest(QCBORDecodeContext *context,
     \code{.unparsed}
     +-App-------------------------------+    +-libcsuit--------------------------------------+
     | main() {                          |    |                                               |
-    |   keys = init_keys();             |    |                                               |
+    |   report_key = init_signing_key();|    |                                               |
+    |   suit_report_engine_init();      |===>| suit_report_engine_init() {}                  |
+    |                                   |    |                                               |
+    |   recipient_keys = init_keys();   |    |                                               |
     |   m = get_manifest();             |    |                                               |
+    |   suit_processor_init();          |===>| suit_processor_init() {}                      |
     |   suit_process_envelope(m, keys); |===>| suit_process_envelope() {                     |
     |   }                               |    |   check_digests(keys, m);                     |
     | }                                 |    |   install(m) {                                |
@@ -76,7 +465,25 @@ suit_err_t suit_process_digest(QCBORDecodeContext *context,
     +-----------------------------------+    +-----------------------------------------------+
     \endcode
  */
-suit_err_t suit_process_envelope(suit_inputs_t *suit_inputs);
+suit_err_t suit_process_envelope(
+    suit_processor_context_t *processor_context);
+
+suit_err_t suit_processor_add_manifest(
+    suit_processor_context_t *processor_context,
+    UsefulBufC manifest,
+    suit_process_flag_t process_flags);
+
+suit_err_t suit_processor_add_recipient_key(
+    suit_processor_context_t *processor_context,
+    int cose_tag,
+    int cose_algorithm_id,
+    UsefulBufC cose_key);
+
+suit_err_t suit_processor_init(
+    suit_processor_context_t *processor_context,
+    size_t buf_size,
+    suit_report_context_t *report_context,
+    UsefulBuf *manifest);
 
 #ifdef __cplusplus
 }

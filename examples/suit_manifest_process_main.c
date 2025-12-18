@@ -50,8 +50,8 @@ ssize_t suit_prefix_filename(char *buf, size_t buf_len)
     return len;
 }
 
-suit_err_t __real_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
-suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret)
+suit_err_t __real_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_callback_ret_t *fetch_ret);
+suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_callback_ret_t *fetch_ret)
 {
     suit_err_t result = __real_suit_fetch_callback(fetch_args, fetch_ret);
     if (result != SUIT_SUCCESS) {
@@ -161,12 +161,13 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_r
                 fetch_ret->buf_len = num / 2;
                 printf("fetched from %s as %s (%ld bytes) to %s\n\n", pairs[i].binary_in_hex, pairs[i].url, fetch_ret->buf_len, filename);
             }
-
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
-            write_to_file_component_metadata(filename, fetch_args.ptr, fetch_ret->buf_len, &fetch_args.component_metadata);
-#else
-            write_to_file(filename, fetch_args.ptr, fetch_ret->buf_len);
-#endif /* LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
+            ssize_t len = write_to_file_component_metadata(filename, fetch_args.ptr, fetch_ret->buf_len, fetch_args.component_metadata_buf, fetch_ret);
+            if (len < 0) {
+                if (fetch_ret->reason == SUIT_REPORT_REASON_OK) {
+                    fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+                }
+                return SUIT_ERR_FATAL;
+            }
             break;
         }
     }
@@ -220,49 +221,65 @@ suit_err_t suit_condition_check_content(const suit_component_identifier_t *dst,
 suit_err_t suit_condition_image_match(const suit_component_identifier_t *dst,
                                       const suit_digest_t *image_digest,
                                       const uint64_t image_size,
-                                      bool condition_match)
+                                      bool condition_match,
+                                      suit_callback_ret_t *ret)
 {
+    suit_err_t result = SUIT_SUCCESS;
+    UsefulBuf buf = NULLUsefulBuf;
     char filename[SUIT_MAX_NAME_LENGTH];
     ssize_t len = suit_prefix_filename(filename, sizeof(filename));
     if (len < 0) {
-        return SUIT_ERR_NO_MEMORY;
+        result = SUIT_ERR_NO_MEMORY;
+        ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
+        goto out;
     }
     char *tmp_filename = &filename[len];
-    suit_err_t result = suit_component_identifier_to_filename(dst, SUIT_MAX_NAME_LENGTH, tmp_filename);
+    result = suit_component_identifier_to_filename(dst, SUIT_MAX_NAME_LENGTH, tmp_filename);
     if (result != SUIT_SUCCESS) {
-        return result;
+        ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
+        goto out;
     }
 
-    suit_buf_t buf;
     if (image_size == 0) {
         buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
         if (buf.ptr == NULL) {
-            return SUIT_ERR_NO_MEMORY;
+            result = SUIT_ERR_NO_MEMORY;
+            ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
+            goto out;
         }
         buf.len = read_from_file(filename, buf.ptr, SUIT_MAX_DATA_SIZE);
     }
     else {
         buf.ptr = malloc(image_size + 1);
         if (buf.ptr == NULL) {
-            return SUIT_ERR_NO_MEMORY;
+            result = SUIT_ERR_NO_MEMORY;
+            ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
+            goto out;
         }
         buf.len = read_from_file(filename, buf.ptr, image_size + 1);
         if (buf.len != image_size) {
-            return SUIT_ERR_CONDITION_MISMATCH;
+            result = SUIT_ERR_CONDITION_MISMATCH;
+            ret->reason = SUIT_REPORT_REASON_CONDITION_FAILED;
+            ret->parameter_key = SUIT_PARAMETER_IMAGE_SIZE;
+            goto out;
         }
     }
-    result = suit_verify_digest(&buf, image_digest);
-    free(buf.ptr);
+
+    result = suit_verify_digest(UsefulBuf_Const(buf), image_digest);
     if (result == SUIT_ERR_FAILED_TO_VERIFY) {
         result = SUIT_ERR_CONDITION_MISMATCH;
+        ret->reason = SUIT_REPORT_REASON_CONDITION_FAILED;
+        ret->parameter_key = SUIT_PARAMETER_IMAGE_DIGEST;
     }
+out:
+    free(buf.ptr);
     return result;
 }
 
-suit_err_t __real_suit_condition_callback(suit_condition_args_t condition_args);
-suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args)
+suit_err_t __real_suit_condition_callback(suit_condition_args_t condition_args, suit_callback_ret_t *condition_ret);
+suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, suit_callback_ret_t *condition_ret)
 {
-    suit_err_t result = __real_suit_condition_callback(condition_args);
+    suit_err_t result = __real_suit_condition_callback(condition_args, condition_ret);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -282,7 +299,14 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args)
     case SUIT_CONDITION_IMAGE_NOT_MATCH:
         match = false;
     case SUIT_CONDITION_IMAGE_MATCH:
-        result = suit_condition_image_match(&condition_args.dst, &condition_args.expected.image_digest, condition_args.expected.image_size, match);
+        suit_digest_t digest;
+        result = suit_decode_digest(condition_args.expected.str, &digest);
+        if (result != SUIT_SUCCESS) {
+            condition_ret->reason = SUIT_REPORT_REASON_CBOR_PARSE;
+            condition_ret->parameter_key = SUIT_PARAMETER_IMAGE_DIGEST;
+        }
+        result = suit_condition_image_match(&condition_args.dst, &digest, condition_args.expected.u64, match, condition_ret);
+
         break;
 
     case SUIT_CONDITION_COMPONENT_SLOT:
@@ -355,13 +379,15 @@ suit_err_t store_component(const char *dst,
                            UsefulBufC src,
                            UsefulBufC encryption_info,
                            suit_mechanism_t mechanisms[],
-                           const suit_component_metadata_t *component_metadata)
+                           UsefulBufC component_metadata_buf,
+                           suit_callback_ret_t *ret)
 {
     suit_err_t result = SUIT_SUCCESS;
     UsefulBuf decrypted_payload_buf = NULLUsefulBuf;
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
     if (!UsefulBuf_IsNULLOrEmptyC(encryption_info)) {
+        ret->on_src = true;
         decrypted_payload_buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
         decrypted_payload_buf.len = SUIT_MAX_DATA_SIZE;
         UsefulBufC tmp = NULLUsefulBufC;
@@ -373,17 +399,15 @@ suit_err_t store_component(const char *dst,
         }
         if (result != SUIT_SUCCESS || UsefulBuf_IsNULLOrEmptyC(tmp)) {
             result = SUIT_ERR_FAILED_TO_DECRYPT;
+            ret->reason = SUIT_REPORT_REASON_ALG_UNSUPPORTED;
             goto out;
         }
         src = tmp;
     }
 #endif /* LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO */
 
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
-    ssize_t len = write_to_file_component_metadata(dst, src.ptr, src.len, component_metadata);
-#else
-    ssize_t len = write_to_file(dst, src.ptr, src.len);
-#endif
+    ret->on_src = false;
+    ssize_t len = write_to_file_component_metadata(dst, src.ptr, src.len, component_metadata_buf, ret);
     if (len != src.len) {
         result = SUIT_ERR_FATAL;
         goto out;
@@ -399,94 +423,140 @@ suit_err_t copy_component(const char *dst,
                           const char *src,
                           UsefulBufC encryption_info,
                           suit_mechanism_t mechanisms[],
-                          suit_component_metadata_t *component_metadata)
+                          UsefulBufC component_metadata_buf,
+                          suit_callback_ret_t *ret)
 {
+    suit_err_t result = SUIT_SUCCESS;
     UsefulBuf buf;
+    ret->on_src = true;
     buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
     if (buf.ptr == NULL) {
-        return SUIT_ERR_NO_MEMORY;
+        result = SUIT_ERR_NO_MEMORY;
+        ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
+        goto out;
     }
     buf.len = SUIT_MAX_DATA_SIZE;
     size_t len = read_from_file(src, buf.ptr, buf.len);
     if (len >= buf.len) {
-        return SUIT_ERR_NO_MEMORY;
+        result = SUIT_ERR_NO_MEMORY;
+        ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
+        goto out;
     }
     buf.len = len;
-    suit_err_t result = store_component(dst, UsefulBuf_Const(buf), encryption_info, mechanisms, component_metadata);
+
+    ret->on_src = false;
+    result = store_component(dst, UsefulBuf_Const(buf), encryption_info, mechanisms, component_metadata_buf, ret);
+
+out:
     free(buf.ptr);
     return result;
 }
 
 suit_err_t swap_component(const char *dst,
-                          const char *src)
+                          const char *src,
+                          suit_callback_ret_t *ret)
 {
     char tmp[SUIT_MAX_NAME_LENGTH];
     size_t len = snprintf(tmp, SUIT_MAX_NAME_LENGTH, "%s.tmp", dst);
     if (len == SUIT_MAX_NAME_LENGTH) {
+        ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
         return SUIT_ERR_NO_MEMORY;
     }
-    if (rename(tmp, dst) != 0 || rename(dst, src) != 0 || rename(src, tmp)) {
+    if (rename(tmp, dst) != 0) {
+        ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+        ret->on_src = false;
+        return SUIT_ERR_FATAL;
+    }
+    if (rename(dst, src) != 0) {
+        // unbiguous
+        ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+        ret->on_src = true;
+        return SUIT_ERR_FATAL;
+    }
+    if (rename(src, tmp) != 0) {
+        ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+        ret->on_src = true;
         return SUIT_ERR_FATAL;
     }
     return SUIT_SUCCESS;
 }
 
-suit_err_t __real_suit_store_callback(suit_store_args_t store_args);
-suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args)
+suit_err_t __real_suit_store_callback(suit_store_args_t store_args, suit_callback_ret_t *fetch_ret);
+suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args, suit_callback_ret_t *fetch_ret)
 {
-    suit_err_t result = __real_suit_store_callback(store_args);
+    suit_err_t result = __real_suit_store_callback(store_args, fetch_ret);
     if (result != SUIT_SUCCESS) {
-        return result;
+        goto out;
     }
 
     char src[SUIT_MAX_NAME_LENGTH];
     char dst[SUIT_MAX_NAME_LENGTH];
+    fetch_ret->on_src = false;
     ssize_t len = suit_prefix_filename(dst, sizeof(dst));
     if (len < 0) {
-        return SUIT_ERR_NO_MEMORY;
+        result = SUIT_ERR_NO_MEMORY;
+        fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+        goto out;
     }
     char *tmp_filename = &dst[len];
     result = suit_component_identifier_to_filename(&store_args.dst, SUIT_MAX_NAME_LENGTH, tmp_filename);
     if (result != SUIT_SUCCESS) {
-        return result;
+        fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+        goto out;
     }
+
     switch (store_args.operation) {
     case SUIT_STORE:
-        result = store_component(dst, store_args.src_buf, store_args.encryption_info, store_args.mechanisms, &store_args.component_metadata);
+        fetch_ret->on_src = false;
+        result = store_component(dst, store_args.src_buf, store_args.encryption_info, store_args.mechanisms, store_args.component_metadata_buf, fetch_ret);
         break;
     case SUIT_COPY:
+        fetch_ret->on_src = true;
         len = suit_prefix_filename(src, sizeof(src));
         if (len < 0) {
-            return SUIT_ERR_NO_MEMORY;
+            result = SUIT_ERR_NO_MEMORY;
+            fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+            break;
         }
         tmp_filename = &src[len];
         result = suit_component_identifier_to_filename(&store_args.src, SUIT_MAX_NAME_LENGTH, tmp_filename);
-        if (result == SUIT_SUCCESS) {
-            result = copy_component(dst, src, store_args.encryption_info, store_args.mechanisms, &store_args.component_metadata);
+        if (result != SUIT_SUCCESS) {
+            fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
         }
+        result = copy_component(dst, src, store_args.encryption_info, store_args.mechanisms, store_args.component_metadata_buf, fetch_ret);
         break;
     case SUIT_SWAP:
+        fetch_ret->on_src = true;
         len = suit_prefix_filename(src, sizeof(src));
         if (len < 0) {
-            return SUIT_ERR_NO_MEMORY;
+            result = SUIT_ERR_NO_MEMORY;
+            fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+            break;
         }
         tmp_filename = &src[len];
         result = suit_component_identifier_to_filename(&store_args.src, SUIT_MAX_NAME_LENGTH, tmp_filename);
         if (result == SUIT_SUCCESS) {
-            result = swap_component(dst, src);
+            result = swap_component(dst, src, fetch_ret);
             //result = (renameat2(AT_FDCWD, dst, AT_FDCWD, src, RENAME_EXCHANGE) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
         }
         break;
     case SUIT_UNLINK:
+        fetch_ret->on_src = false;
         result = (unlink(dst) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
+        if (result != SUIT_SUCCESS) {
+            fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+        }
         break;
     }
     if (result != SUIT_SUCCESS) {
-        printf("callback : error = %s(%d)\n", suit_err_to_str(result), result);
+        printf("callback : error = %s(%d), reason = %d\n", suit_err_to_str(result), result, fetch_ret->reason);
     }
     else {
         printf("callback : %s SUCCESS\n\n", suit_store_key_to_str(store_args.operation));
     }
+
+out:
+    fetch_ret->reason = suit_report_reason_from_suit_err(result);
     return result;
 }
 
@@ -497,6 +567,11 @@ void display_help(const char *argv0, bool on_error)
 }
 
 int main(int argc, char *argv[]) {
+    int exit_code = EXIT_SUCCESS;
+    suit_report_context_t *reporting_engine = NULL;
+    suit_processor_context_t *processor_context = NULL;
+    suit_err_t suit_err = 0;
+
     int opt;
     int pair_count = 0;
 
@@ -539,9 +614,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    suit_err_t result = 0;
-
-    int num_key = 0;
     #define NUM_PUBLIC_KEYS_FOR_ECDSA       2
     UsefulBufC public_keys_for_ecdsa[NUM_PUBLIC_KEYS_FOR_ECDSA] = {
         trust_anchor_prime256v1_cose_key_public,
@@ -560,100 +632,103 @@ int main(int argc, char *argv[]) {
         device_es256_cose_key_private,
     };
 
-    suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + BUFFER_SIZE);
-    if (suit_inputs == NULL) {
-        printf("main : Failed to allocate memory for suit_inputs\n");
-        return EXIT_FAILURE;
+    reporting_engine = malloc(sizeof(suit_report_context_t) + REPORT_SIZE);
+    if (reporting_engine == NULL) {
+        printf("main : Failed to allocate memory for suit_reporting_engine\n");
+        exit_code = EXIT_FAILURE;
+        goto out;
     }
-    suit_inputs->left_len = BUFFER_SIZE;
-    suit_inputs->ptr = suit_inputs->buf;
+    processor_context = malloc(sizeof(suit_processor_context_t) + BUFFER_SIZE);
+    if (processor_context == NULL) {
+        printf("main : Failed to allocate memory for suit_processor_context\n");
+        exit_code = EXIT_FAILURE;
+        goto out;
+    }
+    suit_mechanism_t protection_mechanism;
+    protection_mechanism.cose_tag = 0; // raw SUIT_Report
+    UsefulBufC nonce = NULLUsefulBufC;
+    suit_report_engine_init(reporting_engine, REPORT_SIZE, nonce, &protection_mechanism);
+
+    UsefulBuf manifest_buf;
+    suit_processor_init(processor_context, BUFFER_SIZE, reporting_engine, &manifest_buf);
+
+    // Read manifest file.
+    printf("\nmain : Read Manifest file.\n");
+    
+    manifest_buf.len = read_from_file(argv[optind], manifest_buf.ptr, manifest_buf.len);
+    if (manifest_buf.len <= 0) {
+        printf("main : Failed to read Manifest file. (%s)\n", argv[optind]);
+        exit_code = EXIT_FAILURE;
+        goto out;
+    }
+    suit_process_flag_t process_flags;
+    process_flags.all = UINT16_MAX;
+    process_flags.uninstall = 0;
+
+    suit_err = suit_processor_add_manifest(processor_context, UsefulBuf_Const(manifest_buf), process_flags);
+    if (suit_err != SUIT_SUCCESS) {
+        exit_code = EXIT_FAILURE;
+        goto out;
+    }
 
     printf("\nmain : Read public keys.\n");
     for (int i = 0; i < NUM_PUBLIC_KEYS_FOR_ECDSA; i++) {
-        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
-        result = suit_set_suit_key_from_cose_key(public_keys_for_ecdsa[i], &suit_inputs->mechanisms[num_key].key);
-        if (result != SUIT_SUCCESS) {
-            printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
-            return EXIT_FAILURE;
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ES256, public_keys_for_ecdsa[i]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
         }
-        suit_inputs->mechanisms[num_key].use = true;
-        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_SIGN1;
-        num_key++;
     }
 
 #ifndef LIBCSUIT_DISABLE_MAC
     printf("\nmain : Read secret keys.\n");
     for (int i = 0; i < NUM_SECRET_KEYS_FOR_MAC; i++) {
-        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_HMAC256;
-        result = suit_set_suit_key_from_cose_key(secret_keys_for_mac[i], &suit_inputs->mechanisms[num_key].key);
-        if (result != SUIT_SUCCESS) {
-            printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(result), result);
-            return EXIT_FAILURE;
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_MAC0, T_COSE_ALGORITHM_HMAC256, secret_keys_for_mac[i]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
         }
-        suit_inputs->mechanisms[num_key].use = true;
-        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_MAC0;
-        num_key++;
     }
 #endif /* LIBCSUIT_DISABLE_MAC */
 
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys for AES-KW.\n");
     for (size_t i = 0; i < NUM_SECRET_KEYS_FOR_AESKW; i++) {
-        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
-        result = suit_set_suit_key_from_cose_key(secret_keys_for_aeskw[i], &suit_inputs->mechanisms[num_key].key);
-        if (result != SUIT_SUCCESS) {
-            printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(result), result);
-            return EXIT_FAILURE;
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_ENCRYPT, T_COSE_ALGORITHM_A128KW, secret_keys_for_aeskw[i]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
         }
-        suit_inputs->mechanisms[num_key].use = true;
-        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_ENCRYPT;
-        num_key++;
     }
     printf("\nmain : Load private keys for ES-ECDH.\n");
     for (size_t i = 0; i < NUM_PRIVATE_KEYS_FOR_ESDH; i++) {
-        suit_inputs->mechanisms[num_key].key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
-        result = suit_set_suit_key_from_cose_key(private_keys_for_esdh[i], &suit_inputs->mechanisms[num_key].key);
-        if (result != SUIT_SUCCESS) {
-            printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(result), result);
-            return EXIT_FAILURE;
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_ENCRYPT, T_COSE_ALGORITHM_ECDH_ES_A128KW, private_keys_for_esdh[i]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
         }
-        suit_inputs->mechanisms[num_key].use = true;
-        suit_inputs->mechanisms[num_key].cose_tag = CBOR_TAG_COSE_ENCRYPT;
-        num_key++;
     }
 #endif
 
-    suit_inputs->key_len = num_key;
-
-    // Read manifest file.
-    printf("\nmain : Read Manifest file.\n");
-    suit_inputs->manifest.ptr = suit_inputs->buf;
-    suit_inputs->manifest.len = read_from_file(argv[optind], suit_inputs->buf, BUFFER_SIZE);
-    if (suit_inputs->manifest.len <= 0) {
-        printf("main : Failed to read Manifest file. (%s)\n", argv[optind]);
-        return EXIT_FAILURE;
-    }
-    suit_inputs->left_len -= suit_inputs->manifest.len;
-
-    // Allocate SUIT Report buffer
-    suit_inputs->report_inputs.buf.ptr = suit_inputs->ptr + (SUIT_MAX_DATA_SIZE - suit_inputs->left_len);
-    suit_inputs->report_inputs.buf.len = REPORT_SIZE;
-    suit_inputs->left_len -= REPORT_SIZE;
-
     // Process manifest file.
     printf("\nmain : Process Manifest file.\n");
-    suit_inputs->process_flags.all = UINT16_MAX;
-    suit_inputs->process_flags.uninstall = 0;
-    result = suit_process_envelope(suit_inputs);
-    if (result != SUIT_SUCCESS) {
-        printf("main : Failed to install and invoke a Manifest file. %s(%d)\n", suit_err_to_str(result), result);
-        return EXIT_FAILURE;
+    suit_err = suit_process_envelope(processor_context);
+    if (suit_err != SUIT_SUCCESS) {
+        printf("main : Failed to install and invoke a Manifest file. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+        exit_code = EXIT_FAILURE;
+        goto out;
     }
 
     // Print SUIT Report
-    suit_print_hex_in_max(suit_inputs->suit_report.ptr, suit_inputs->suit_report.len, suit_inputs->suit_report.len);
+    suit_print_hex_in_max(reporting_engine->suit_report.ptr, reporting_engine->suit_report.len, reporting_engine->suit_report.len);
 
-    free(suit_inputs);
+out:
+    free(processor_context);
+    free(reporting_engine);
 
-    return EXIT_SUCCESS;
+    return exit_code;
 }

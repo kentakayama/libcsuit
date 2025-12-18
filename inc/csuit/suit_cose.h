@@ -19,6 +19,16 @@
 
 #include "csuit/suit_common.h"
 #include "qcbor/qcbor_decode.h"
+#include "qcbor/qcbor_spiffy_decode.h"
+
+#if defined(LIBCSUIT_USE_T_COSE_1)
+#include "t_cose/t_cose_common.h"
+#else
+#include "t_cose/t_cose_sign_sign.h"
+#include "t_cose/t_cose_signature_sign_main.h"
+#include "t_cose/t_cose_key.h"
+#endif /* LIBCSUIT_USE_T_COSE_1 */
+
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/t_cose_sign1_sign.h"
 
@@ -54,6 +64,24 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct suit_key {
+    const unsigned char *private_key;
+    size_t private_key_len;
+    const unsigned char *public_key;
+    size_t public_key_len;
+    int cose_algorithm_id;
+    struct t_cose_key cose_key;
+} suit_key_t;
+
+typedef struct suit_mechanism {
+    cbor_tag_key_t cose_tag; // COSE_Sign1, COSE_Sign, COSE_Encrypt0, COSE_Encrypt, etc.
+    suit_key_t key;
+    UsefulBufC kid;
+    suit_key_t rkey; // receiver's key, e.g. ECDH
+    UsefulBufC rkid;
+    bool use;
+} suit_mechanism_t;
 
 #define SUIT_COSE_CNF                   (8)
 #define SUIT_COSE_COSE_KEY              (1)

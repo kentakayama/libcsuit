@@ -70,36 +70,36 @@ int main(void)
         trust_anchor_prime256v1_cose_key_public
     };
 
-    suit_inputs_t *suit_inputs = calloc(1, sizeof(suit_inputs_t) + SUIT_MAX_DATA_SIZE);
-    if (suit_inputs == NULL) {
+    suit_processor_context_t *suit_processor_context = calloc(1, sizeof(suit_processor_context_t) + SUIT_MAX_DATA_SIZE);
+    if (suit_processor_context == NULL) {
         return EXIT_FAILURE;
     }
-    suit_inputs->left_len = MAX_DATA_SIZE;
-    suit_inputs->ptr = suit_inputs->buf;
-    suit_inputs->key_len = NUM_PUBLIC_KEYS;
+    suit_processor_context->left_len = MAX_DATA_SIZE;
+    suit_processor_context->ptr = suit_processor_context->buf;
+    suit_processor_context->key_len = NUM_PUBLIC_KEYS;
 
     for (i = 0; i < NUM_PUBLIC_KEYS; i++) {
-        suit_inputs->mechanisms[i].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
-        result = suit_set_suit_key_from_cose_key(public_keys[i], &suit_inputs->mechanisms[i].key);
+        suit_processor_context->mechanisms[i].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+        result = suit_set_suit_key_from_cose_key(public_keys[i], &suit_processor_context->mechanisms[i].key);
         if (result != SUIT_SUCCESS) {
             return EXIT_FAILURE;
         }
-        suit_inputs->mechanisms[i].use = true;
-        suit_inputs->mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
+        suit_processor_context->mechanisms[i].use = true;
+        suit_processor_context->mechanisms[i].cose_tag = CBOR_TAG_COSE_SIGN1;
     }
 
     // Read manifest file.
-    suit_inputs->manifest.ptr = manifest_buf;
-    suit_inputs->manifest.len = sizeof(manifest_buf);
+    suit_processor_context->manifest.ptr = manifest_buf;
+    suit_processor_context->manifest.len = sizeof(manifest_buf);
 
     // Process manifest file.
-    suit_inputs->process_flags.all = UINT16_MAX;
-    result = suit_process_envelope(suit_inputs);
+    suit_processor_context->process_flags.all = UINT16_MAX;
+    result = suit_process_envelope(suit_processor_context);
     if (result != SUIT_SUCCESS) {
         return result;
     }
 
-    free(suit_inputs);
+    free(suit_processor_context);
 
     return EXIT_SUCCESS;
 }

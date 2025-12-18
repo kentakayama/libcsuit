@@ -12,18 +12,10 @@
 #ifndef SUIT_COMMON_H
 #define SUIT_COMMON_H
 
+#include "stdbool.h"
 #include "csuit/config.h"
-
-#include "qcbor/qcbor.h"
-#include "qcbor/qcbor_spiffy_decode.h"
-
-#if defined(LIBCSUIT_USE_T_COSE_1)
-#include "t_cose/t_cose_common.h"
-#else
-#include "t_cose/t_cose_sign_sign.h"
-#include "t_cose/t_cose_signature_sign_main.h"
-#include "t_cose/t_cose_key.h"
-#endif /* LIBCSUIT_USE_T_COSE_1 */
+#include "qcbor/UsefulBuf.h"
+#include "qcbor/qcbor_decode.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,6 +31,7 @@ extern size_t LIBCSUIT_SUPPORTED_VERSIONS_LEN;
  */
 typedef enum {
     SUIT_SUCCESS = 0,                   /*! success */
+    SUIT_ERR_NOT_INITIALIZED,           /*! the processor context is not initialized */
 
     SUIT_ERR_FATAL,                     /*! unknown error, e.g. occurred out of SUIT */
 
@@ -147,25 +140,6 @@ typedef enum cbor_tag_key {
     \return     This returns one of the error codes defined by \ref cose_tag_key_t.
  */
 cbor_tag_key_t suit_judge_cose_tag_from_buf(const UsefulBufC signed_cose);
-
-typedef struct suit_key {
-    const unsigned char *private_key;
-    size_t private_key_len;
-    const unsigned char *public_key;
-    size_t public_key_len;
-    int cose_algorithm_id;
-    struct t_cose_key cose_key;
-} suit_key_t;
-
-typedef struct suit_mechanism {
-    cbor_tag_key_t cose_tag; // COSE_Sign1, COSE_Sign, COSE_Encrypt0, COSE_Encrypt, etc.
-    suit_key_t key;
-    UsefulBufC kid;
-    suit_key_t rkey; // receiver's key, e.g. ECDH
-    UsefulBufC rkid;
-    bool use;
-} suit_mechanism_t;
-
 
 typedef enum suit_envelope_key {
     SUIT_INTEGRATED_PAYLOAD             = -1,
@@ -428,26 +402,18 @@ typedef enum suit_parameter_bool {
     SUIT_PARAMETER_FALSE            = 2,
 } suit_parameter_bool_t;
 
-/*
- * bstr
- */
-typedef struct suit_buf {
-    size_t                          len;
-    uint8_t                         *ptr;
-} suit_buf_t;
-
 // COSE_Encrypt_Tagged/COSE_Encrypt0_Tagged
-typedef struct suit_encryption_info {
-    suit_buf_t cose_encrypt_payload;
-    //? TODO
-} suit_encryption_info_t;
+// typedef struct suit_encryption_info {
+//     UsefulBufC cose_encrypt_payload;
+//     //? TODO
+// } suit_encryption_info_t;
 
 /*
  * SUIT_Digest
  */
 typedef struct suit_digest {
     suit_algorithm_id_t             algorithm_id;
-    suit_buf_t                      bytes;
+    UsefulBufC                      bytes;
     // TODO :                       suit-digest-parameters
 } suit_digest_t;
 
@@ -456,7 +422,7 @@ typedef struct suit_digest {
  */
 typedef struct suit_component_identifier {
     size_t                          len;
-    suit_buf_t                      identifier[SUIT_MAX_ARRAY_LENGTH];
+    UsefulBufC                      identifier[SUIT_MAX_ARRAY_LENGTH];
 } suit_component_identifier_t;
 
 typedef struct suit_component_with_index {
@@ -553,7 +519,7 @@ typedef enum {
 typedef struct suit_actor_id {
     suit_actor_type_t type;
     union {
-        suit_buf_t actor_id_str;
+        UsefulBufC actor_id_str;
         int64_t actor_id_i64;
     };
 } suit_actor_id_t;
@@ -596,7 +562,7 @@ typedef struct suit_parameters {
         /* only basic types are extracted here.
          * bstr .cbor XXX are stored into string.
          */
-        suit_buf_t                  string;
+        UsefulBufC                  string;
         int64_t                     int64;
         uint64_t                    uint64;
         bool                        boolean;
@@ -633,7 +599,7 @@ typedef struct suit_copy_params {
 typedef struct suit_command_sequence_item {
     int64_t                         label;
     union {
-        suit_buf_t                  string;
+        UsefulBufC                  string;
         int64_t                     int64;
         uint64_t                    uint64;
         bool                        isNull;
@@ -665,13 +631,13 @@ typedef struct suit_sev_command_sequence {
  * SUIT_Text_Component
  */
 typedef struct suit_text_component {
-    suit_buf_t  vendor_name;
-    suit_buf_t  model_name;
-    suit_buf_t  vendor_domain;
-    suit_buf_t  model_info;
-    suit_buf_t  component_description;
-    suit_buf_t  component_version;
-    suit_buf_t  version_required;
+    UsefulBufC  vendor_name;
+    UsefulBufC  model_name;
+    UsefulBufC  vendor_domain;
+    UsefulBufC  model_info;
+    UsefulBufC  component_description;
+    UsefulBufC  component_version;
+    UsefulBufC  version_required;
     // TODO :   $$suit-text-component-key-extensions
 } suit_text_component_t;
 
@@ -684,13 +650,13 @@ typedef struct suit_text_component_pair {
  * SUIT_Text_LMap
  */
 typedef struct suit_text_lmap {
-    suit_buf_t                  tag38_ltag;
+    UsefulBufC                  tag38_ltag;
     size_t                      component_len;
     suit_text_component_pair_t  component[SUIT_MAX_ARRAY_LENGTH];
-    suit_buf_t                  manifest_description;
-    suit_buf_t                  update_description;
-    suit_buf_t                  manifest_json_source;
-    suit_buf_t                  manifest_yaml_source;
+    UsefulBufC                  manifest_description;
+    UsefulBufC                  update_description;
+    UsefulBufC                  manifest_json_source;
+    UsefulBufC                  manifest_yaml_source;
     // TODO :                   $$suit-text-key-extensions
 } suit_text_lmap_t;
 
@@ -708,7 +674,7 @@ typedef struct suit_text_map {
 typedef struct suit_authentication_wrapper {
     suit_digest_t                   digest;
     size_t                          signatures_len;
-    suit_buf_t                      signatures[SUIT_MAX_ARRAY_LENGTH];
+    UsefulBufC                      signatures[SUIT_MAX_ARRAY_LENGTH];
 } suit_authentication_wrapper_t;
 
 /*
@@ -725,7 +691,7 @@ typedef struct suit_severable_manifest_members {
     uint8_t                         install_status;
     suit_text_map_t                 text;
     uint8_t                         text_status;
-    suit_buf_t                      coswid;
+    UsefulBufC                      coswid;
     uint8_t                         coswid_status;
     // TODO :                       $$SUIT_severable-members-extension
 } suit_severable_manifest_members_t;
@@ -783,7 +749,7 @@ typedef struct suit_manifest {
     uint64_t                            version;
     uint64_t                            sequence_number;
     suit_common_t                       common;
-    suit_buf_t                          reference_uri;
+    UsefulBufC                          reference_uri;
     suit_component_identifier_t         manifest_component_id;
     suit_severable_manifest_members_t   sev_man_mem;
     suit_severable_members_digests_t    sev_mem_dig;
@@ -848,273 +814,6 @@ typedef union suit_rep_policy {
     };
 } suit_rep_policy_t;
 
-/* draft-ietf-suit-report */
-
-typedef enum suit_report_key {
-    SUIT_REPORT_INVALID             = 0,
-    SUIT_REPORT_NONCE               = 2,
-    SUIT_REPORT_RECORDS             = 3,
-    SUIT_REPORT_RESULT              = 4,
-    SUIT_REPORT_RESULT_CODE         = 5,
-    SUIT_REPORT_RESULT_RECORD       = 6,
-    SUIT_REPORT_RESULT_REASON       = 7,
-    SUIT_REPORT_CAPABILITY_REPORT   = 8,
-    SUIT_REPORT_REFERENCE           = 99,
-} suit_report_key_t;
-
-typedef enum suit_report_record_key {
-    SUIT_REPORT_MANIFEST_ID         = 0,
-    SUIT_REPORT_MANIFEST_SECTION    = 1,
-    SUIT_REPORT_SECTION_OFFSET      = 2,
-    SUIT_REPORT_COMPONENT_INDEX     = 3,
-    SUIT_REPORT_RECORD_PROPERTIES   = 4,
-} suit_report_record_key_t;
-
-typedef enum suit_report_reason {
-    SUIT_REPORT_REASON_OK                       = 0,
-    SUIT_REPORT_REASON_CBOR_PARSE /* FAILURE */ = 1,
-    SUIT_REPORT_REASON_COSE_UNSUPPORTED         = 2,
-    SUIT_REPORT_REASON_ALG_UNSUPPORTED          = 3,
-    SUIT_REPORT_REASON_UNAUTHORIZED             = 4,
-    SUIT_REPORT_REASON_COMMAND_UNSUPPORTED      = 5,
-    SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED    = 6,
-    SUIT_REPORT_REASON_COMPONENT_UNAUTHORIZED   = 7,
-    SUIT_REPORT_REASON_PARAMETER_UNSUPPORTED    = 8,
-    SUIT_REPORT_REASON_SEVERING_UNSUPPORTED     = 9,
-    SUIT_REPORT_REASON_CONDITION_FAILED         = 10,
-    SUIT_REPORT_REASON_OPERATION_FAILED         = 11,
-    SUIT_REPORT_REASON_INVOKE_PENDING           = 12,
-} suit_report_reason_t;
-
-typedef enum suit_report_capability_report_key {
-    SUIT_REPORT_CAPABILITY_INVALID          = 0,
-    SUIT_REPORT_CAPABILITY_COMPONENT        = 1,
-    SUIT_REPORT_CAPABILITY_COMMAND          = 2,
-    SUIT_REPORT_CAPABILITY_PARAMETERS       = 3,
-    SUIT_REPORT_CAPABILITY_CRYPT_ALGO       = 4,
-    SUIT_REPORT_CAPABILITY_ENVELOPE         = 5,
-    SUIT_REPORT_CAPABILITY_MANIFEST         = 6,
-    SUIT_REPORT_CAPABILITY_COMMON           = 7,
-    SUIT_REPORT_CAPABILITY_TEXT             = 8,
-    SUIT_REPORT_CAPABILITY_TEXT_COMPONENT   = 9,
-    SUIT_REPORT_CAPABILITY_DEPENDENCY       = 10,
-} suit_report_capability_report_key_t;
-
-typedef struct suit_reference {
-    UsefulBufC      manifest_uri;
-    suit_digest_t   manifest_digest;
-} suit_reference_t;
-
-typedef struct suit_record {
-    suit_component_identifier_t     manifest_id;
-    int64_t                         manifest_section;
-    uint64_t                        section_offset;
-    uint64_t                        component_index;
-    suit_parameters_list_t          parameters;
-} suit_record_t;
-
-typedef struct suit_report_recoreds {
-    size_t          len;
-    suit_record_t   suit_records[SUIT_MAX_ARRAY_LENGTH];
-} suit_report_records_t;
-
-typedef struct suit_report_result {
-    int64_t         result_code;
-    suit_record_t   result_record;
-} suit_report_result_t;
-
-typedef struct suit_report_inputs {
-    // Allocated buffer and CBOR encoding context for SUIT_Report.
-    // `buf` should be initialized by caller with enough memory.
-    // If buf is not set, the SUIT Manifest Processor will not produce SUIT_Report.
-    UsefulBuf buf;
-
-    // COSE operations are conducted if the protection_mechanism.key.cose_algorithm_id is not 0.
-    // NOTE: Currently only CBOR_TAG_COSE_SIGN1 is supported.
-    suit_mechanism_t    protection_mechanism;
-    QCBOREncodeContext  cbor_encoder;
-    union {
-        struct {
-            enum t_cose_err_t                   t_cose_error;
-            struct t_cose_sign_sign_ctx         sign_ctx;
-            struct t_cose_signature_sign_main   signer;
-        };
-    };
-
-    // input value from outside the SUIT Manifest Processor
-    UsefulBufC nonce;
-} suit_report_inputs_t;
-
-/*!
- * This passes enough data to construct SUIT_Report.
- */
-typedef struct suit_report_args {
-    /* parameters for SUIT_Report */
-
-    suit_report_records_t suit_report_records;
-    bool success;
-    suit_report_result_t suit_report_result;
-
-    suit_envelope_key_t level0;
-    union {
-        suit_manifest_key_t manifest_key;
-    } level1;
-    union {
-        suit_con_dir_key_t condition_directive;
-        suit_common_key_t common_key;
-        suit_text_key_t text_key;
-    } level2;
-    union {
-        suit_con_dir_key_t condition_directive;
-        suit_parameter_key_t parameter;
-        suit_text_component_key_t text_component_key;
-    } level3;
-    union {
-        suit_parameter_key_t parameter;
-    } level4;
-
-    QCBORError qcbor_error;
-    suit_err_t suit_error;
-
-    suit_rep_policy_t policy;
-} suit_report_args_t;
-
-/*!
- * This passes enough data to invoke a component.
- */
-typedef struct suit_invoke_args {
-    suit_component_identifier_t component_identifier;
-    /* basically byte-string value, so may not '\0' terminated */
-    uint8_t args[SUIT_MAX_ARGS_LENGTH];
-    size_t args_len;
-
-    suit_rep_policy_t report;
-} suit_invoke_args_t;
-
-typedef enum suit_store_key {
-    SUIT_STORE  = 0,
-    SUIT_COPY   = 1,
-    SUIT_SWAP   = 2,
-    SUIT_UNLINK = 3,
-} suit_store_key_t;
-
-/*!
- * \brief   Parameters to request storing data as component identifier.
- *
- * Used on suit-directive-write, suit-directive-copy, suit-directive-swap,
- * suit-directive-unlink and suit-directive-fetch (only for integrated payloads).
- */
-typedef struct suit_store_args {
-    suit_rep_policy_t report;
-
-    /*! Destination SUIT_Component_Identifier */
-    suit_component_identifier_t dst;
-    /*! Used if \ref operation is SUIT_COPY or SUIT_SWAP */
-    suit_component_identifier_t src;
-    /*! Pointer and length to the content to be written */
-    UsefulBufC src_buf;
-
-    /*! Pointer and length to the COSE_Encrypt */
-    UsefulBufC encryption_info;
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
-
-    /*! Extra arguments derived from fetch-args */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
-    UsefulBufC fetch_args;
-#endif
-
-    /*! Metadata for storing data */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
-    suit_component_metadata_t component_metadata;
-#endif
-
-    /*! SUIT_STORE, SUIT_COPY, SUIT_SWAP, or SUIT_UNLINK */
-    suit_store_key_t operation;
-} suit_store_args_t;
-
-/*!
- * \brief   Parameters to request fetching and storing data as component identifier.
- *
- * Used on suit-directive-fetch.
- */
-typedef struct suit_fetch_args {
-    suit_rep_policy_t report;
-
-    /*! Destination SUIT_Component_Identifier */
-    suit_component_identifier_t dst;
-    /*! Length of uri */
-    size_t uri_len;
-    /*! URI terminated with '\0' */
-    char uri[SUIT_MAX_URI_LENGTH + 1];
-
-    /*!
-     *  Pointer to allocated memory in the caller.
-     *  This could be NULL if the caller wants callee
-     *  to allocate space corresponding to the component identifier.
-     */
-    void *ptr;
-    /*!
-     *  The length of the allocated buffer.
-     */
-    size_t buf_len;
-
-    /*!
-     *  Set by suit-parameter-fetch-args.
-     */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
-    UsefulBufC args;
-#endif
-
-    /*!
-     *  Set by suit-parameter-component-metadata.
-     */
-#if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
-    suit_component_metadata_t component_metadata;
-#endif
-
-    /* in draft-ietf-suit-firmware-encryption */
-    /*! Pointer and length to the COSE_Encrypt */
-    UsefulBufC                  encryption_info;
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
-} suit_fetch_args_t;
-
-/*!
- *  \brief  Returned value from fetch callback.
- *
- *  Used by suit_fetch_callback().
- */
-typedef struct suit_fetch_ret {
-    /**
-     *  The length of the fetched payload.
-     */
-    size_t buf_len;
-} suit_fetch_ret_t;
-
-/*!
- *  \brief  Parameters to request checking condition.
- */
-typedef struct suit_condition_args {
-    suit_rep_policy_t report;
-
-    /*! Destination SUIT_Component_Identifier */
-    suit_component_identifier_t dst;
-
-    /*! suit-condition-* label */
-    suit_con_dir_key_t condition;
-
-    /*! To be expected values */
-    union {
-        int64_t         i64;
-        uint64_t        u64;
-        UsefulBufC      str;
-        struct {
-            uint64_t        image_size;
-            suit_digest_t   image_digest;
-        };
-        suit_version_match_t version_match;
-    } expected;
-} suit_condition_args_t;
-
 /*!
  *  \brief  Parameter for SUIT_Wait_Event_Argument_Other_Device_Version.
  */
@@ -1145,196 +844,14 @@ typedef struct suit_wait_event {
  *  Used by suit_wait_callback().
  */
 typedef struct suit_wait_args {
-    suit_rep_policy_t report;
+    suit_rep_policy_t report_policy;
 
     /*! Destination SUIT_Component_Identifier */
     suit_component_identifier_t dst;
 
     /*! SUIT_Wait_Event */
-    suit_wait_event_t wait_info;
+    UsefulBufC wait_info_buf;
 } suit_wait_args_t;
-
-typedef struct suit_parameter_args {
-    uint64_t                    exists;
-
-    UsefulBufC                  vendor_id;
-    UsefulBufC                  class_id;
-    UsefulBufC                  device_id;
-
-    suit_digest_t               image_digest;
-    uint64_t                    component_slot;
-
-    /*! default True */
-    suit_parameter_bool_t       strict_order;
-
-    /*!
-     * default True if suit-directive-try-each is invoked,
-     * default False if suit-directive-run-sequence is invoked
-     */
-    suit_parameter_bool_t       soft_failure;
-
-    uint64_t                    image_size;
-
-    UsefulBufC                  content;
-    UsefulBufC                  uri;
-
-    uint64_t                    source_component;
-
-    /*! used in suit-directive-fetch */
-    UsefulBufC                  fetch_args;
-
-    /*! used in suit-directive-invoke */
-    UsefulBufC                  invoke_args;
-
-
-    /* in draft-ietf-suit-update-management */
-    /*! used in suit-condition-use-before */
-    uint64_t                    use_before;
-    /*! used in suit-condition-minimum-battery */
-    uint64_t                    minimum_battery;
-    /*! XXX: used in suit-condition-update-authorized */
-    int64_t                     update_priority;
-    /*! used in suit-condition-version */
-    suit_version_match_t        version_match;
-
-    /*! used in suit-directive-wait */
-    suit_wait_event_t           wait_info;
-
-    /*! used in suit-directive-fetch, suit-directive-write, ... */
-    suit_component_metadata_t   component_metadata;
-
-    /* in draft-ietf-suit-trust-domains */
-
-
-    /* in draft-ietf-suit-firmware-encryption */
-    /*! Pointer and length to the COSE_Encrypt */
-    UsefulBufC                  encryption_info;
-} suit_parameter_args_t;
-
-typedef union {
-    uint16_t all;
-    struct {
-        /*!
-         * \brief 1: Skip if the requested section is missing.
-         *
-         * 0: libcsuit returns \ref SUIT_ERR_MANIFEST_KEY_NOT_FOUND.
-         * NOTE: must be 0 inside process-dependency
-         * see https://datatracker.ietf.org/doc/html/draft-ietf-suit-trust-domains-02#name-suit-directive-process-depe
-         */
-        uint16_t allow_missing          : 1;
-
-        /*!
-         * 1: Request libcsuit to trigger suit_store_callback()
-         * if suit-manifest-component-id is specified.
-         */
-        uint16_t manifest_component_id  : 1;
-        /*! 1: Request libcsuit to process suit-set-version section. */
-        uint16_t set_version            : 1;
-        /*! 1: Request libcsuit to process suit-dependency-resolution section. */
-        uint16_t dependency_resolution  : 1;
-        /*! 1: Request libcsuit to process suit-payload-fetch section. */
-        uint16_t payload_fetch          : 1;
-        /*! 1: Request libcsuit to process suit-candidate-verification section. */
-        uint16_t candidate_verification : 1;
-        /*! 1: Request libcsuit to process suit-install section. */
-        uint16_t install                : 1;
-        /*! 1: Request libcsuit to process suit-uninstall section. */
-        uint16_t uninstall              : 1;
-
-        /*! 1: Request libcsuit to process suit-validate section. */
-        uint16_t validate               : 1;
-        /*! 1: Request libcsuit to process suit-load section. */
-        uint16_t load                   : 1;
-        /*! 1: Request libcsuit to process suit-invoke section. */
-        uint16_t invoke                 : 1;
-
-        /*!
-         * \brief 1: Request libcsuit to process suit-text section.
-         *
-         * This parameter is ignored now.
-         */
-        uint16_t text                   : 1;
-        /*!
-         * \brief 1: Request libcsuit to process suit-coswid section.
-         *
-         * This parameter is ignored now.
-         */
-        uint16_t coswid                 : 1;
-    };
-} suit_process_flag_t;
-
-typedef struct suit_inputs {
-    /* sections requested to process */
-    suit_process_flag_t process_flags;
-
-    UsefulBufC manifest;
-    suit_digest_t expected_manifest_digest;
-    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
-
-    size_t key_len;
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
-
-#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
-    suit_report_inputs_t report_inputs;
-    uint8_t current_index;
-    UsefulBufC suit_report;
-#endif
-
-    uint8_t dependency_depth;
-
-    size_t left_len;
-    uint8_t *ptr;
-    uint8_t buf[];
-} suit_inputs_t;
-
-typedef struct suit_extracted {
-#if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
-    suit_dependencies_t dependencies;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
-    suit_component_identifier_t manifest_component_id;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
-    suit_int64_array_t set_version;
-#endif
-    uint8_t components_len;
-    suit_component_with_index_t components[SUIT_MAX_INDEX_NUM];
-    suit_payloads_t payloads;
-
-    UsefulBufC manifest;
-    suit_digest_t manifest_digest;
-    UsefulBufC shared_sequence;
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
-    UsefulBufC reference_uri;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION)
-    UsefulBufC dependency_resolution;
-    suit_digest_t dependency_resolution_digest;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
-    UsefulBufC payload_fetch;
-    suit_digest_t payload_fetch_digest;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_CANDIDATE_VERIFICATION)
-    UsefulBufC candidate_verification;
-    suit_digest_t candidate_verification_digest;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_INSTALL)
-    UsefulBufC install;
-    suit_digest_t install_digest;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
-    UsefulBufC uninstall;
-#endif
-    UsefulBufC validate;
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
-    UsefulBufC load;
-#endif
-#if !defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
-    UsefulBufC invoke;
-#endif
-} suit_extracted_t;
-
 
 suit_err_t suit_error_from_qcbor_error(QCBORError error);
 bool suit_qcbor_value_is_uint64(QCBORItem *item);
@@ -1362,17 +879,13 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context,
                             QCBORItem *item,
                             suit_digest_t *digest);
 size_t suit_qcbor_calc_rollback(QCBORItem *item);
-bool suit_continue(suit_decode_mode_t mode,
-                   suit_err_t result);
 
-suit_err_t suit_decode_component_identifiers_from_item(suit_decode_mode_t mode,
-                                                       QCBORDecodeContext *context,
+suit_err_t suit_decode_component_identifiers_from_item(QCBORDecodeContext *context,
                                                        QCBORItem *item,
                                                        bool next,
                                                        suit_component_identifier_t *identifier);
 
-suit_err_t suit_decode_components_from_item(suit_decode_mode_t mode,
-                                            QCBORDecodeContext *context,
+suit_err_t suit_decode_components_from_item(QCBORDecodeContext *context,
                                             QCBORItem *item,
                                             bool next,
                                             suit_component_with_index_t *components,

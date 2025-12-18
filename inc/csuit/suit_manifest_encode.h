@@ -30,6 +30,9 @@ suit_err_t suit_fix_suit_encode_buf(suit_encode_t *suit_encode,
 suit_err_t suit_encode_append_component_identifier(const suit_component_identifier_t *component_id,
                                                    uint32_t label,
                                                    QCBOREncodeContext *context);
+suit_err_t suit_encode_append_version_match(const suit_version_match_t *version_match,
+                                            const uint32_t label,
+                                            QCBOREncodeContext *context);
 suit_err_t suit_encode_append_digest(const suit_digest_t *digest,
                                      const uint32_t label,
                                      QCBOREncodeContext *context);
@@ -75,27 +78,27 @@ suit_err_t suit_encode_envelope(suit_decode_mode_t mode,
                                 uint8_t **buf,
                                 size_t *len);
 
-void suit_encode_append_parameter(
-        QCBOREncodeContext *cbor_encoder,
-        suit_err_t result,
-        suit_rep_policy_t report_policy,
-        suit_con_dir_key_t condition_directive_key,
-        uint8_t index,
-        suit_parameter_args_t parameters[]);
+// void suit_encode_append_parameter(
+//         QCBOREncodeContext *cbor_encoder,
+//         suit_err_t result,
+//         suit_rep_policy_t report_policy,
+//         suit_con_dir_key_t condition_directive_key,
+//         uint8_t index,
+//         suit_parameter_args_t parameters[]);
 
-void suit_encode_append_suit_record(
-        QCBOREncodeContext *cbor_encoder,
-        uint32_t label,
-        suit_manifest_key_t manifest_key,
-        size_t section_offset,
-        uint64_t component_index);
+// void suit_encode_append_suit_record(
+//         QCBOREncodeContext *cbor_encoder,
+//         uint32_t label,
+//         suit_manifest_key_t manifest_key,
+//         size_t section_offset,
+//         uint64_t component_index);
 
-void suit_encode_append_suit_report_result(
-        QCBOREncodeContext *cbor_encoder,
-        suit_err_t result,
-        suit_manifest_key_t manifest_key,
-        size_t section_offset,
-        uint64_t component_index);
+// void suit_encode_append_suit_report_result(
+//         QCBOREncodeContext *cbor_encoder,
+//         suit_err_t result,
+//         suit_manifest_key_t manifest_key,
+//         size_t section_offset,
+//         uint64_t component_index);
 
 #ifdef __cplusplus
 }
