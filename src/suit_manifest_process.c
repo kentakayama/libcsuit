@@ -861,18 +861,10 @@ suit_err_t suit_process_condition(suit_extracted_t *extracted,
             // OK, let's dive into the dependency manifest
             processor_context->dependency_tree.manifest_index[processor_context->dependency_tree.len] = processor_context->component_index;
             processor_context->dependency_tree.len++;
-            QCBORDecodeContext context;
-            QCBORItem item;
-            QCBORDecode_Init(&context, parameters[processor_context->component_index].image_digest_buf, QCBOR_DECODE_MODE_NORMAL);
-            result = suit_decode_digest_from_item(&context, &item, false, &processor_context->expected_manifest_digest);
+            result = suit_decode_digest(parameters[processor_context->component_index].image_digest_buf, &processor_context->expected_manifest_digest);
             if (result != SUIT_SUCCESS) {
                 processor_context->reason = SUIT_REPORT_REASON_CBOR_PARSE;
                 return result;
-            }
-            QCBORError qcbor_error = QCBORDecode_Finish(&context);
-            if (qcbor_error != QCBOR_SUCCESS) {
-                processor_context->reason = SUIT_REPORT_REASON_CBOR_PARSE;
-                return suit_error_from_qcbor_error(qcbor_error);
             }
 
             UsefulBufC manifest_backup = processor_context->manifest;
@@ -2881,19 +2873,21 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
 report:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (processor_context->reporting_engine != NULL) {
-        // processing envelope end with success, let's report success
-        suit_report_finalize(
-            processor_context->reporting_engine,
-            processor_context->final_state,
-            processor_context->reason,
-            processor_context->dependency_tree,
-            processor_context->manifest_key,
-            processor_context->section_offset,
-            processor_context->condition_or_directive,
-            processor_context->component_index,
-            processor_context->parameter_keys,
-            &processor_context->parameter_value
-        );
+        // call only if this Processor context is top of the dependency
+        if (processor_context->dependency_tree.len == 0) {
+            suit_report_finalize(
+                processor_context->reporting_engine,
+                processor_context->final_state,
+                processor_context->reason,
+                processor_context->dependency_tree,
+                processor_context->manifest_key,
+                processor_context->section_offset,
+                processor_context->condition_or_directive,
+                processor_context->component_index,
+                processor_context->parameter_keys,
+                &processor_context->parameter_value
+            );
+        }
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */
     return result;

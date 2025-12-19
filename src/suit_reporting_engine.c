@@ -413,6 +413,17 @@ suit_err_t suit_report_extend_system_property_claims(
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
+    // ignore if no valid parameter found
+    size_t i = 0;
+    for (; i < LIBCSUIT_MAX_REPORT_PRAMETER_NUM; i++) {
+        if (parameter_keys[i] != SUIT_PARAMETER_INVALID) {
+            break;
+        }
+    }
+    if (i == LIBCSUIT_MAX_REPORT_PRAMETER_NUM) {
+        return SUIT_SUCCESS;
+    }
+
     if (report_context->state == SUIT_REPORTING_ENGINE_IN_SYSTEM_PROPERTY_CLAIMS
         && report_context->current_index != component_index) {
         // need to close the system-property-claims
@@ -436,7 +447,7 @@ suit_err_t suit_report_extend_system_property_claims(
         report_context->current_index = component_index;
     }
 
-    // TODO: append the parameter
+    // append the parameter
     for (size_t i = 0; i < LIBCSUIT_MAX_REPORT_PRAMETER_NUM; i++) {
         suit_report_append_parameter(&report_context->cbor_encoder, parameter_keys[i], parameter_value);
     }
