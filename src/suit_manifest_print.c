@@ -2574,6 +2574,8 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
 suit_err_t suit_print_condition(suit_condition_args_t condition_args)
 {
     suit_err_t result = SUIT_SUCCESS;
+    suit_digest_t digest;
+    suit_version_match_t version_match;
 
     printf("condition callback : {\n");
     printf("  operation : %s\n", suit_command_sequence_key_to_str(condition_args.condition));
@@ -2616,7 +2618,6 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     /* uint64 image_size and suit-digest */
     case SUIT_CONDITION_IMAGE_MATCH:
     case SUIT_CONDITION_IMAGE_NOT_MATCH:
-        suit_digest_t digest;
         result = suit_decode_digest(condition_args.expected.str, &digest);
         if (result != SUIT_SUCCESS) {
             return SUIT_ERR_INVALID_VALUE;
@@ -2634,7 +2635,6 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
 
     /* SUIT_Parameter_Version_Match */
     case SUIT_CONDITION_VERSION:
-        suit_version_match_t version_match;
         result = suit_decode_version_match(condition_args.expected.str, &version_match);
         if (result != SUIT_SUCCESS) {
             return SUIT_ERR_INVALID_VALUE;

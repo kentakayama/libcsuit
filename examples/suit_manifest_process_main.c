@@ -285,6 +285,7 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
     }
 
     bool match = true;
+    suit_digest_t digest;
     switch (condition_args.condition) {
     /* bstr */
     case SUIT_CONDITION_VENDOR_IDENTIFIER:
@@ -299,7 +300,6 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
     case SUIT_CONDITION_IMAGE_NOT_MATCH:
         match = false;
     case SUIT_CONDITION_IMAGE_MATCH:
-        suit_digest_t digest;
         result = suit_decode_digest(condition_args.expected.str, &digest);
         if (result != SUIT_SUCCESS) {
             condition_ret->reason = SUIT_REPORT_REASON_CBOR_PARSE;
