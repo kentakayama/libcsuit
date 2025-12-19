@@ -274,8 +274,6 @@ suit_err_t suit_report_finalize(
     suit_manifest_tree_t dependency_tree,
     suit_manifest_key_t manifest_key,
     size_t section_offset,
-    suit_con_dir_key_t condition_or_directive,
-    uint64_t component_index,
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
 
@@ -286,8 +284,6 @@ suit_err_t suit_report_finalize(
     \param[in]  dependency_tree         The Component Index list indicating the which manifest is being processed in dependency
     \param[in]  manifest_key            Command Sequence id, e.g. suit-validate = 7, suit-invoke = 9, etc.
     \param[in]  section_offset          The location where the condition or the directive in the Command Sequence
-    \param[in]  condition_or_directive  The actual condition or the directive
-    \param[in]  component_index         The Component Index in processing
     \param[in]  parameter_key   With parameter_value, this represents $$SUIT_Parameter
     \param[in]  parameter_value Pointer to the reported parameter value
 
@@ -298,8 +294,6 @@ suit_err_t suit_report_extend_record(
     suit_manifest_tree_t dependency_tree,
     suit_manifest_key_t manifest_key,
     size_t section_offset,
-    suit_con_dir_key_t condition_or_directive,
-    uint8_t component_index,
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
 

@@ -1285,8 +1285,6 @@ suit_err_t suit_process_try_each(suit_processor_context_t *processor_context,
                 processor_context->dependency_tree,
                 processor_context->manifest_key,
                 processor_context->section_offset,
-                processor_context->condition_or_directive,
-                processor_context->component_index,
                 processor_context->parameter_keys,
                 &processor_context->parameter_value
             );
@@ -1784,8 +1782,6 @@ report:
                         processor_context->dependency_tree,
                         processor_context->manifest_key,
                         processor_context->section_offset,
-                        processor_context->condition_or_directive,
-                        processor_context->component_index,
                         processor_context->parameter_keys,
                         &processor_context->parameter_value
                     );
@@ -2168,7 +2164,8 @@ suit_err_t suit_extract_manifest(suit_processor_context_t *processor_context, su
     QCBORItem item;
     QCBORError error = QCBOR_SUCCESS;
 
-    processor_context->manifest_key = SUIT_AUTHENTICATION;
+    // though this is not any Command Sequence, for better SUIT Reporting
+    processor_context->manifest_key = (suit_manifest_key_t)SUIT_AUTHENTICATION;
     suit_manifest_key_t manifest_key = SUIT_MANIFEST_KEY_INVALID;
 
     QCBORDecode_Init(&context, extracted->manifest, QCBOR_DECODE_MODE_NORMAL);
@@ -2429,7 +2426,8 @@ suit_err_t suit_process_delegation(QCBORDecodeContext *context,
     suit_err_t result;
     QCBORError error = QCBOR_SUCCESS;
     QCBORItem item;
-    processor_context->manifest_key = SUIT_DELEGATION;
+    // though this is not any Command Sequence, for better SUIT Reporting
+    processor_context->manifest_key = (suit_manifest_key_t)SUIT_DELEGATION;
 
     QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
     QCBORDecode_EnterArray(context, &item);
@@ -2619,7 +2617,6 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
             /* Severed Members */
 #if !defined(LIBCSUIT_DISABLE_ENVELOPE_INSTALL)
             case SUIT_SEVERED_INSTALL:
-                processor_context->manifest_key = envelope_key;
                 if (!UsefulBuf_IsNULLOrEmptyC(extracted.install)) {
                     result = SUIT_ERR_REDUNDANT;
                     processor_context->reason = SUIT_REPORT_REASON_CBOR_PARSE;
@@ -2630,7 +2627,6 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
 #endif /* !LIBCSUIT_DISABLE_ENVELOPE_INSTALL */
 
 #if !defined(LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION)
-            processor_context->manifest_key = envelope_key;
             case SUIT_SEVERED_DEPENDENCY_RESOLUTION:
                 if (!UsefulBuf_IsNULLOrEmptyC(extracted.dependency_resolution)) {
                     result = SUIT_ERR_REDUNDANT;
@@ -2882,8 +2878,6 @@ report:
                 processor_context->dependency_tree,
                 processor_context->manifest_key,
                 processor_context->section_offset,
-                processor_context->condition_or_directive,
-                processor_context->component_index,
                 processor_context->parameter_keys,
                 &processor_context->parameter_value
             );

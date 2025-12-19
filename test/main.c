@@ -9,13 +9,12 @@
 #include "qcbor/qcbor_spiffy_decode.h"
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include "../examples/inc/trust_anchor_prime256v1_cose_key_private.h"
+#include "../examples/inc/trust_anchor_es256_cose_key_private.h"
 
 void test_csuit_rollback(void);
 void test_csuit_get_digest(void);
 void test_component_identifier_to_filename(void);
 void test_csuit_suit_encode_buf(void);
-void test_csuit_canonical_cbor(void);
 void test_csuit_without_authentication_wrapper(void);
 void test_csuit_cose_key(void);
 
@@ -30,7 +29,6 @@ int main(int argc, char *argv[])
     CU_add_test(suite, "test_component_identifier_to_filename", test_component_identifier_to_filename);
     CU_add_test(suite, "test_csuit_suit_encode_buf", test_csuit_suit_encode_buf);
     CU_add_test(suite, "test_csuit_without_authentication_wrapper", test_csuit_without_authentication_wrapper);
-    CU_add_test(suite, "test_csuit_canonical_cbor", test_csuit_canonical_cbor);
     CU_add_test(suite, "test_csuit_cose_key", test_csuit_cose_key);
     CU_basic_set_mode(CU_BRM_SILENT);
     CU_basic_run_tests();
@@ -278,58 +276,12 @@ void test_csuit_without_authentication_wrapper(void)
                                                   0x81, 0x41, 0x00      // [h'00']
     };
     suit_err_t result;
-    suit_buf_t buf;
-    buf.ptr = mini_manifest;
-    buf.len = sizeof(mini_manifest);
+    UsefulBufC buf = {.ptr = mini_manifest, .len = sizeof(mini_manifest)};
     suit_envelope_t envelope = {0};
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
 
-    result = suit_decode_envelope(SUIT_DECODE_MODE_STRICT, &buf, &envelope, mechanisms);
+    result = suit_decode_envelope(buf, &envelope, mechanisms);
     CU_ASSERT_EQUAL(result, SUIT_ERR_AUTHENTICATION_NOT_FOUND);
-
-    suit_decode_mode_t mode = SUIT_DECODE_MODE_STRICT;
-    mode.SKIP_AUTHENTICATION_FAILURE = 1;
-    envelope = (suit_envelope_t) {0};
-    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
-    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
-}
-
-void test_csuit_canonical_cbor(void)
-{
-    uint8_t mini_manifest[] = {
-        0xd8, 0x6b,                                                     // 107(
-              0xa1,                                                     // map(1){
-                    0x03,                                               // manifest 3
-                    0x4d,                                               // bytes <<
-                          0xa3,                                         // map(3){
-                                0x02,                                   // manifest-sequence-number 2
-                                0x00,                                   // 0
-                                0x01,                                   // manifest-version 1
-                                0x01,                                   // 1
-                                0x03,                                   // common
-                                0x46,                                   // bytes <<
-                                      0xa1,                             // map(1){
-                                            0x02,                       // components 2
-                                            0x81,                       // array(1)[
-                                                  0x81, 0x41, 0x00      // [h'00']
-    };
-    suit_err_t result;
-    suit_buf_t buf;
-    buf.ptr = mini_manifest;
-    buf.len = sizeof(mini_manifest);
-    suit_envelope_t envelope = {0};
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
-
-    suit_decode_mode_t mode = SUIT_DECODE_MODE_STRICT;
-    mode.SKIP_AUTHENTICATION_FAILURE = 1;
-    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
-    CU_ASSERT_EQUAL(result, SUIT_ERR_NOT_CANONICAL_CBOR);
-
-    envelope = (suit_envelope_t) {0};
-    mode.SKIP_AUTHENTICATION_FAILURE = 1;
-    mode.ALLOW_NOT_CANONICAL_CBOR = 1;
-    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
-    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
 }
 
 void test_csuit_cose_key(void)
@@ -338,9 +290,11 @@ void test_csuit_cose_key(void)
     suit_mechanism_t mechanism;
 
     uint8_t cose_key_buf[] = {
-        0xA5,                                 //# map(5)
+        0xA6,                                 //# map(6)
            0x01,                              //# unsigned(1) / 1 = kty /
            0x02,                              //# unsigned(2) / 2 = EC2 /
+           0x03,                              //# unsigned(3) / 3 = alg /
+           0x26,                              //# netative(6) / -7 = ES256 /
            0x20,                              //# negative(0) / -1 = crv /
            0x01,                              //# unsigned(1) / 1 = P-256 /
            0x21,                              //# negative(1) / -2 = x /
@@ -366,7 +320,6 @@ void test_csuit_cose_key(void)
         .ptr = cose_key_buf,
         .len = sizeof(cose_key_buf)
     };
-    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
     result = suit_set_suit_key_from_cose_key(cose_key, &mechanism.key);
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
     CU_ASSERT_EQUAL(mechanism.key.private_key_len, 32);
@@ -377,9 +330,11 @@ void test_csuit_cose_key(void)
            0x08,                                    //# unsigned(8) / 8 = cnf /
            0xA1,                                    //# map(1)
               0x01,                                 //# unsigned(1) / 1 = COSE_Key /
-              0xA4,                                 //# map(4)
+              0xA5,                                 //# map(5)
                  0x01,                              //# unsigned(1) / 1 = kty /
                  0x02,                              //# unsigned(2) / 2 = EC2 /
+                 0x03,                              //# unsigned(3) / 3 = alg /
+                 0x26,                              //# netative(6) / -7 = ES256 /
                  0x20,                              //# negative(0) / -1 = crv /
                  0x01,                              //# unsigned(1) / 1 = P-256 /
                  0x21,                              //# negative(1) / -2 = x /
@@ -400,7 +355,6 @@ void test_csuit_cose_key(void)
         .len = sizeof(cwt_payload_buf)
     };
 
-    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
     result = suit_set_suit_key_from_cwt_payload(cwt_payload, &mechanism.key);
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
     CU_ASSERT_EQUAL(mechanism.key.private_key_len, 0);

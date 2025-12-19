@@ -290,6 +290,7 @@ suit_err_t suit_decode_actor_id_from_item(QCBORDecodeContext *context,
             if (item->val.uint64 >= INT64_MAX) {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
+            // fall through
         case QCBOR_TYPE_INT64:
             actor_id->type = SUIT_ACTOR_TYPE_INT;
             actor_id->actor_id_i64 = item->val.int64;
@@ -1310,26 +1311,26 @@ suit_err_t suit_decode_text_component_from_item(QCBORDecodeContext *context,
         }
         switch (item->val.uint64) {
         case SUIT_TEXT_VENDOR_NAME:
-            QCBORDecode_GetByteString(context, &text_component->vendor_name);
+            QCBORDecode_GetTextString(context, &text_component->vendor_name);
             break;
         case SUIT_TEXT_MODEL_NAME:
-            QCBORDecode_GetByteString(context, &text_component->model_name);
+            QCBORDecode_GetTextString(context, &text_component->model_name);
             break;
         case SUIT_TEXT_VENDOR_DOMAIN:
-            QCBORDecode_GetByteString(context, &text_component->vendor_domain);
+            QCBORDecode_GetTextString(context, &text_component->vendor_domain);
             break;
         case SUIT_TEXT_MODEL_INFO:
-            QCBORDecode_GetByteString(context, &text_component->model_info);
+            QCBORDecode_GetTextString(context, &text_component->model_info);
             break;
         case SUIT_TEXT_COMPONENT_DESCRIPTION:
-            QCBORDecode_GetByteString(context, &text_component->component_description);
+            QCBORDecode_GetTextString(context, &text_component->component_description);
             break;
         case SUIT_TEXT_COMPONENT_VERSION:
-            QCBORDecode_GetByteString(context, &text_component->component_version);
+            QCBORDecode_GetTextString(context, &text_component->component_version);
             break;
         /* in draft-ietf-suit-update-management */
         case SUIT_TEXT_VERSION_REQUIRED:
-            QCBORDecode_GetByteString(context, &text_component->version_required);
+            QCBORDecode_GetTextString(context, &text_component->version_required);
             break;
         default:
             return SUIT_ERR_NOT_IMPLEMENTED;
@@ -1783,6 +1784,7 @@ suit_err_t suit_decode_authentication_wrapper_from_item(QCBORDecodeContext *cont
     if (result != SUIT_SUCCESS) {
         return result;
     }
+    UsefulBufC digest_bytes = item->val.string;
     result = suit_decode_digest(item->val.string, &wrapper->digest);
     if (result != SUIT_SUCCESS) {
         return result;
@@ -1794,8 +1796,9 @@ suit_err_t suit_decode_authentication_wrapper_from_item(QCBORDecodeContext *cont
             suit_qcbor_skip_any(context, item);
             continue;
         }
+        wrapper->signatures[i] = item->val.string;
         for (int32_t j = 0; j < SUIT_MAX_KEY_NUM; j++) {
-            result = suit_decode_authentication_block(wrapper->signatures[i], wrapper->digest.bytes, &mechanisms[j].key);
+            result = suit_decode_authentication_block(wrapper->signatures[i], digest_bytes, &mechanisms[j].key);
             if (result == SUIT_SUCCESS) {
                 verified = true;
                 mechanisms[j].use = true;
@@ -1932,7 +1935,7 @@ suit_err_t suit_decode_envelope_from_item(QCBORDecodeContext *context,
         return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     size_t map_count = item->val.uCount;
-    bool is_authentication_set = true;
+    bool is_authentication_set = false;
     bool is_manifest_set = false;
     int64_t label = INT64_MIN;
     for (size_t i = 0; i < map_count; i++) {

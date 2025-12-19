@@ -40,7 +40,6 @@ suit_err_t suit_encode_append_digest(const suit_digest_t *digest,
 /*!
     \brief  Encode SUIT binary
 
-    \param[in]      mode        Controls parsing behavior, e.g. #SUIT_DECODE_MODE_STRICT.
     \param[in]      envelope    Input struct of libcsuit, correspond to the SUIT_Envelope.
     \param[in]      signing_key The private key (or key pair) to generate COSE_Sign1 signature.
     \param[out]     buf         The pointer of output buffer of the binary.
@@ -72,8 +71,7 @@ suit_err_t suit_encode_append_digest(const suit_digest_t *digest,
     }
     \endcode
  */
-suit_err_t suit_encode_envelope(suit_decode_mode_t mode,
-                                const suit_envelope_t *envelope,
+suit_err_t suit_encode_envelope(const suit_envelope_t *envelope,
                                 const suit_mechanism_t *mechanism,
                                 uint8_t **buf,
                                 size_t *len);

@@ -117,8 +117,6 @@ void suit_encode_append_suit_record(
     suit_manifest_tree_t dependency_tree,
     suit_manifest_key_t manifest_key,
     size_t section_offset,
-    suit_con_dir_key_t condition_or_directive,
-    uint64_t component_index,
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
@@ -247,8 +245,6 @@ suit_err_t suit_report_result(
     suit_manifest_tree_t dependency_tree,
     suit_manifest_key_t manifest_key,
     size_t section_offset,
-    suit_con_dir_key_t condition_or_directive,
-    uint64_t component_index,
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
@@ -280,8 +276,6 @@ suit_err_t suit_report_result(
             dependency_tree,
             manifest_key,
             section_offset,
-            condition_or_directive,
-            component_index,
             parameter_keys,
             parameter_value
         );
@@ -306,8 +300,6 @@ suit_err_t suit_report_finalize(
     suit_manifest_tree_t dependency_tree,
     suit_manifest_key_t manifest_key,
     size_t section_offset,
-    suit_con_dir_key_t condition_or_directive,
-    uint64_t component_index,
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
@@ -327,8 +319,6 @@ suit_err_t suit_report_finalize(
         dependency_tree,
         manifest_key,
         section_offset,
-        condition_or_directive,
-        component_index,
         parameter_keys,
         parameter_value
     );
@@ -371,8 +361,6 @@ suit_err_t suit_report_extend_record(
     suit_manifest_tree_t dependency_tree,
     suit_manifest_key_t manifest_key,
     size_t section_offset,
-    suit_con_dir_key_t condition_or_directive,
-    uint8_t component_index,
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
@@ -398,8 +386,6 @@ suit_err_t suit_report_extend_record(
         dependency_tree,
         manifest_key,
         section_offset,
-        condition_or_directive,
-        component_index,
         parameter_keys,
         parameter_value
     );

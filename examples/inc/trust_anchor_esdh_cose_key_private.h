@@ -5,12 +5,12 @@
  *
  */
 
-#ifndef TRUST_ANCHOR_PRIME256V1_COSE_KEY_PUBLIC_H
-#define TRUST_ANCHOR_PRIME256V1_COSE_KEY_PUBLIC_H
+#ifndef TRUST_ANCHOR_ECDH_ES_A128KW_COSE_KEY_PRIVATE_H
+#define TRUST_ANCHOR_ECDH_ES_A128KW_COSE_KEY_PRIVATE_H
 #include "qcbor/UsefulBuf.h"
 
-const unsigned char trust_anchor_prime256v1_cose_key_public_buf[] = {
-    0xA6,                                 //# map(6)
+const unsigned char trust_anchor_ecdh_es_a128kw_cose_key_private_buf[] = {
+    0xA7,                                 //# map(7)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
        0x02,                              //# unsigned(2) / 2 = kid /
@@ -20,7 +20,7 @@ const unsigned char trust_anchor_prime256v1_cose_key_public_buf[] = {
           0x4A, 0xC2, 0x9E, 0x45, 0x7E, 0x87, 0x3A, 0x5D,
           0x6A, 0x73, 0x13, 0xF7, 0x16, 0x90, 0xB3, 0x3C,
        0x03,                              //# unsigned(3) / 3 = alg /
-       0x26,                              //# negative(6) / -7 = ES256 /
+       0x38, 0x1C,                        //# negative(28) / -29 = ECDH-ES+A128KW /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
@@ -35,10 +35,16 @@ const unsigned char trust_anchor_prime256v1_cose_key_public_buf[] = {
           0xC0, 0xA3, 0x6D, 0xAC, 0xD1, 0xD7, 0x8B, 0xD3,
           0x81, 0xDC, 0xDF, 0xB0, 0x9C, 0x05, 0x2D, 0xB3,
           0x39, 0x91, 0xDB, 0x73, 0x38, 0xB4, 0xA8, 0x96,
+       0x23,                              //# negative(3) / -4 = d /
+       0x58, 0x20,                        //# bytes(32)
+          0x02, 0x96, 0x58, 0x8D, 0x90, 0x94, 0x18, 0xB3,
+          0x39, 0xD1, 0x50, 0x42, 0x0A, 0x36, 0x12, 0xB5,
+          0x7F, 0xB4, 0xF6, 0x31, 0xA6, 0x9F, 0x22, 0x4F,
+          0xAE, 0x90, 0xCB, 0x4F, 0x3F, 0xE1, 0x89, 0x73,
 };
 
-const UsefulBufC trust_anchor_prime256v1_cose_key_public = {
-    .ptr = trust_anchor_prime256v1_cose_key_public_buf,
-    .len = sizeof(trust_anchor_prime256v1_cose_key_public_buf)
+const UsefulBufC trust_anchor_ecdh_es_a128kw_cose_key_private = {
+    .ptr = trust_anchor_ecdh_es_a128kw_cose_key_private_buf,
+    .len = sizeof(trust_anchor_ecdh_es_a128kw_cose_key_private_buf)
 };
-#endif /* TRUST_ANCHOR_PRIME256V1_COSE_KEY_PUBLIC_H */
+#endif /* TRUST_ANCHOR_ECDH_ES_A128KW_COSE_KEY_PRIVATE_H */

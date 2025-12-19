@@ -59,6 +59,7 @@ suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
 {
     struct t_cose_sign1_verify_ctx verify_ctx;
     enum t_cose_err_t cose_result;
+    struct t_cose_parameters parameters;
 
     t_cose_sign1_verify_init(&verify_ctx, 0);
     t_cose_sign1_set_verification_key(&verify_ctx, public_key->cose_key);
@@ -66,16 +67,19 @@ suit_err_t suit_verify_cose_sign1(const UsefulBufC signed_cose,
         cose_result = t_cose_sign1_verify(&verify_ctx,
                                            signed_cose,
                                            returned_payload,
-                                           NULL);
+                                          &parameters);
     }
     else {
         cose_result = t_cose_sign1_verify_detached(&verify_ctx,
                                                     signed_cose,
                                                     NULL_Q_USEFUL_BUF_C,
                                                    *returned_payload,
-                                                    NULL);
+                                                   &parameters);
     }
     if (cose_result != T_COSE_SUCCESS) {
+        return SUIT_ERR_FAILED_TO_VERIFY;
+    }
+    if (parameters.cose_algorithm_id != public_key->cose_algorithm_id) {
         return SUIT_ERR_FAILED_TO_VERIFY;
     }
     return SUIT_SUCCESS;
@@ -1126,7 +1130,6 @@ suit_err_t suit_set_suit_key_from_cwt_payload(UsefulBufC cwt_payload,
 
                 switch (item.label.int64) {
                 case SUIT_COSE_CNF_COSE_KEY:
-                    key->cose_algorithm_id = T_COSE_ALGORITHM_ES256;
                     result = suit_set_suit_key_from_cose_key_from_item(&context, &item, key);
                     if (result != SUIT_SUCCESS) {
                         return result;

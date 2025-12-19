@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS = -Wall -g
+CFLAGS = $(CMD_C) -Wall -g
 LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
 INC = $(CMD_INC) -I ./inc -I ./examples/inc
 TARGET = ./bin/suit_manifest_sign

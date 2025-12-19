@@ -8,7 +8,7 @@
 #include "csuit/suit_manifest_print.h"
 #include "suit_examples_common.h"
 #include "trust_anchor_a128_cose_key_secret.h"
-#include "device_es256_cose_key_private.h"
+#include "device_esdh_cose_key_private.h"
 
 #define MAX_FILE_BUFFER_SIZE            2048
 
@@ -37,7 +37,6 @@ int main(int argc, char *argv[]) {
     // Load receiver's private key
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
 
-    mechanisms[0].key.cose_algorithm_id = T_COSE_ALGORITHM_A128KW;
     result = suit_set_suit_key_from_cose_key(trust_anchor_a128_cose_key_secret, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create symmetric key. %s(%d)\n", suit_err_to_str(result), result);
@@ -46,8 +45,7 @@ int main(int argc, char *argv[]) {
     mechanisms[0].cose_tag = CBOR_TAG_COSE_ENCRYPT;
     mechanisms[0].use = true;
 
-    mechanisms[1].key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
-    result = suit_set_suit_key_from_cose_key(device_es256_cose_key_private, &mechanisms[1].key);
+    result = suit_set_suit_key_from_cose_key(device_ecdh_es_a128kw_cose_key_private, &mechanisms[1].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create receiver key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;

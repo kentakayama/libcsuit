@@ -22,6 +22,7 @@
  */
 suit_err_t suit_store_callback(suit_store_args_t store_args, suit_callback_ret_t *store_ret)
 {
+    (void)store_ret;
     return suit_print_store(store_args);
 }
 
@@ -31,6 +32,7 @@ suit_err_t suit_store_callback(suit_store_args_t store_args, suit_callback_ret_t
 suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args,
                                suit_callback_ret_t *fetch_ret)
 {
+    (void)fetch_ret;
     return suit_print_fetch(fetch_args, fetch_ret);
 }
 
@@ -47,6 +49,7 @@ suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args)
  */
 suit_err_t suit_condition_callback(suit_condition_args_t condition_args, suit_callback_ret_t *condition_ret)
 {
+    (void)condition_ret;
     return suit_print_condition(condition_args);
 }
 

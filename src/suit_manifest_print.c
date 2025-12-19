@@ -616,7 +616,7 @@ suit_err_t suit_component_identifier_to_filename(const suit_component_identifier
 
         bool available = true;
         for (size_t j = 0; j < comp_id->identifier[i].len; j++) {
-            if (!is_available_char_for_filename(((char *)comp_id->identifier[i].ptr)[j])) {
+            if (!is_available_char_for_filename(((uint8_t *)comp_id->identifier[i].ptr)[j])) {
                 available = false;
             }
         }
@@ -632,7 +632,7 @@ suit_err_t suit_component_identifier_to_filename(const suit_component_identifier
                 return SUIT_ERR_NO_MEMORY;
             }
             for (size_t j = 0; j < comp_id->identifier[i].len; j++) {
-                pos += sprintf(&filename[pos], "%02x", ((char *)comp_id->identifier[i].ptr)[j]);
+                pos += sprintf(&filename[pos], "%02x", ((uint8_t *)comp_id->identifier[i].ptr)[j]);
             }
         }
     }
@@ -1201,6 +1201,7 @@ suit_err_t suit_print_permission_map(const suit_permission_map_t *permission_map
                                      const uint32_t indent_space,
                                      const uint32_t indent_delta)
 {
+    (void)indent_delta;
     for (size_t i = 0; i < permission_map->len; i++) {
         printf("%*s", indent_space, "");
         suit_print_actor_id(&permission_map->permission_map[i].actor);

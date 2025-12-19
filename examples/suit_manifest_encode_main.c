@@ -10,7 +10,7 @@
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_prime256v1_cose_key_private.h"
+#include "trust_anchor_es256_cose_key_private.h"
 
 #define MAX_FILE_BUFFER_SIZE            4096
 
@@ -23,8 +23,7 @@ int main(int argc, char *argv[]) {
     char *manifest_file = argv[1];
 
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
-    UsefulBufC private_key = trust_anchor_prime256v1_cose_key_private;
-    mechanisms[0].key.cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+    UsefulBufC private_key = trust_anchor_es256_cose_key_private;
     suit_err_t result = suit_set_suit_key_from_cose_key(private_key, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create ES256 key pair. %s(%d)\n", suit_err_to_str(result), result);
@@ -43,7 +42,7 @@ int main(int argc, char *argv[]) {
     suit_common_t *common = &manifest->common;
     common->components_len = 1;
     common->components[0].component.len = 1;
-    common->components[0].component.identifier[0] = (suit_buf_t){.ptr = component_id, .len = sizeof(component_id)};
+    common->components[0].component.identifier[0] = (UsefulBufC){.ptr = component_id, .len = sizeof(component_id)};
 
     uint8_t vendor_id[] = {0xFA, 0x6B, 0x4A, 0x53, 0xD5, 0xAD, 0x5F, 0xDF, 0xBE, 0x9D, 0xE6, 0x63, 0xE4, 0xD4, 0x1F, 0xFE};
     uint8_t class_id[] = {0x14, 0x92, 0xAF, 0x14, 0x25, 0x69, 0x5E, 0x48, 0xBF, 0x42, 0x9B, 0x2D, 0x51, 0xF2, 0xAB, 0x45};
@@ -102,7 +101,7 @@ int main(int argc, char *argv[]) {
 
     // Print manifest.
     printf("\nmain : Print Manifest.\n");
-    result = suit_print_envelope(SUIT_DECODE_MODE_STRICT, &envelope, 4, 4);
+    result = suit_print_envelope(&envelope, 4, 4);
     if (result != SUIT_SUCCESS) {
         printf("main : Can't print Manifest file.\n");
         return EXIT_FAILURE;
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
     size_t encode_len = MAX_FILE_BUFFER_SIZE;
     uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
-    result = suit_encode_envelope(SUIT_DECODE_MODE_STRICT, &envelope, mechanisms, &ret_pos, &encode_len);
+    result = suit_encode_envelope(&envelope, mechanisms, &ret_pos, &encode_len);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;

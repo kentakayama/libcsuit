@@ -22,7 +22,7 @@
 #include "csuit/suit_cose.h"
 #include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_prime256v1_cose_key_public.h"
+#include "trust_anchor_es256_cose_key_public.h"
 #include "delegated_authority_cose_key_public.h"
 #include "trust_anchor_hmac256_cose_key_secret.h"
 #include "trust_anchor_a128_cose_key_secret.h"
@@ -614,7 +614,7 @@ int main(int argc, char *argv[]) {
 
     #define NUM_PUBLIC_KEYS_FOR_ECDSA       2
     UsefulBufC public_keys_for_ecdsa[NUM_PUBLIC_KEYS_FOR_ECDSA] = {
-        trust_anchor_prime256v1_cose_key_public,
+        trust_anchor_es256_cose_key_public,
         delegated_authority_es256_cose_key_public,
     };
     #define NUM_SECRET_KEYS_FOR_MAC         1
