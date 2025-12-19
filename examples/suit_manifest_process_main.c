@@ -22,12 +22,12 @@
 #include "csuit/suit_cose.h"
 #include "csuit/suit_digest.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_es256_cose_key_public.h"
+#include "trust_anchor_esp256_cose_key_public.h"
 #include "delegated_authority_cose_key_public.h"
 #include "trust_anchor_hmac256_cose_key_secret.h"
 #include "trust_anchor_a128_cose_key_secret.h"
 #include "device_esdh_cose_key_private.h"
-#include "device_es256_cose_key_private.h"
+#include "device_esp256_cose_key_private.h"
 
 #define BUFFER_SIZE (8 * 1024 * 1024)
 #define REPORT_SIZE (1024)
@@ -614,8 +614,8 @@ int main(int argc, char *argv[]) {
 
     #define NUM_PUBLIC_KEYS_FOR_ECDSA       2
     UsefulBufC public_keys_for_ecdsa[NUM_PUBLIC_KEYS_FOR_ECDSA] = {
-        trust_anchor_es256_cose_key_public,
-        delegated_authority_es256_cose_key_public,
+        trust_anchor_esp256_cose_key_public,
+        delegated_authority_esp256_cose_key_public,
     };
     #define NUM_SECRET_KEYS_FOR_MAC         1
     UsefulBufC secret_keys_for_mac[NUM_SECRET_KEYS_FOR_MAC] = {
@@ -644,7 +644,7 @@ int main(int argc, char *argv[]) {
     }
 
     suit_report_init_engine(reporting_engine, REPORT_SIZE);
-    suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, device_es256_cose_key_private);
+    suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, device_esp256_cose_key_private);
     UsefulBufC nonce = NULLUsefulBufC;
     suit_report_start_encoding(reporting_engine, nonce);
 

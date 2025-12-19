@@ -9,7 +9,7 @@
 #include "qcbor/qcbor_spiffy_decode.h"
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include "../examples/inc/trust_anchor_es256_cose_key_private.h"
+#include "../examples/inc/trust_anchor_esp256_cose_key_private.h"
 
 void test_csuit_rollback(void);
 void test_csuit_get_digest(void);
@@ -294,7 +294,7 @@ void test_csuit_cose_key(void)
            0x01,                              //# unsigned(1) / 1 = kty /
            0x02,                              //# unsigned(2) / 2 = EC2 /
            0x03,                              //# unsigned(3) / 3 = alg /
-           0x26,                              //# netative(6) / -7 = ES256 /
+           0x28,                              //# netative(8) / -9 = ESP256 /
            0x20,                              //# negative(0) / -1 = crv /
            0x01,                              //# unsigned(1) / 1 = P-256 /
            0x21,                              //# negative(1) / -2 = x /
@@ -322,6 +322,7 @@ void test_csuit_cose_key(void)
     };
     result = suit_set_suit_key_from_cose_key(cose_key, &mechanism.key);
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+    CU_ASSERT_EQUAL(mechanism.key.cose_algorithm_id, T_COSE_ALGORITHM_ESP256);
     CU_ASSERT_EQUAL(mechanism.key.private_key_len, 32);
     CU_ASSERT_EQUAL(mechanism.key.public_key_len, 65);
 
@@ -334,7 +335,7 @@ void test_csuit_cose_key(void)
                  0x01,                              //# unsigned(1) / 1 = kty /
                  0x02,                              //# unsigned(2) / 2 = EC2 /
                  0x03,                              //# unsigned(3) / 3 = alg /
-                 0x26,                              //# netative(6) / -7 = ES256 /
+                 0x28,                              //# netative(8) / -9 = ESP256 /
                  0x20,                              //# negative(0) / -1 = crv /
                  0x01,                              //# unsigned(1) / 1 = P-256 /
                  0x21,                              //# negative(1) / -2 = x /
@@ -357,6 +358,7 @@ void test_csuit_cose_key(void)
 
     result = suit_set_suit_key_from_cwt_payload(cwt_payload, &mechanism.key);
     CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+    CU_ASSERT_EQUAL(mechanism.key.cose_algorithm_id, T_COSE_ALGORITHM_ESP256);
     CU_ASSERT_EQUAL(mechanism.key.private_key_len, 0);
     CU_ASSERT_EQUAL(mechanism.key.public_key_len, 65);
 }

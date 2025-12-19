@@ -303,6 +303,8 @@ suit_err_t suit_report_finalize(
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
+    UsefulBufC payload;
+
     // 1. stop encoding suit-report-records
     if (suit_report_stop_records(report_context) != SUIT_SUCCESS) {
         return SUIT_ERR_WHILE_REPORTING;
@@ -333,7 +335,6 @@ suit_err_t suit_report_finalize(
         break;
     case CBOR_TAG_COSE_SIGN1:
         // use t_cose two-step sign to save memory
-        UsefulBufC payload;
         QCBOREncode_CloseBstrWrap2(&report_context->cbor_encoder, false, &payload);
         enum t_cose_err_t t_cose_error = t_cose_sign_encode_finish(
             &report_context->sign_ctx,

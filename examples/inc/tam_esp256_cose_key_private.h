@@ -5,12 +5,12 @@
  *
  */
 
-#ifndef TAM_ES256_COSE_KEY_PUBLIC_H
-#define TAM_ES256_COSE_KEY_PUBLIC_H
+#ifndef TAM_ESP256_COSE_KEY_PRIVATE_H
+#define TAM_ESP256_COSE_KEY_PRIVATE_H
 #include "qcbor/UsefulBuf.h"
 
-const unsigned char tam_es256_cose_key_public_buf[] = {
-    0xA6,                                 //# map(6)
+const unsigned char tam_esp256_cose_key_private_buf[] = {
+    0xA7,                                 //# map(7)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
        0x02,                              //# unsigned(2) / 2 = kid /
@@ -20,7 +20,7 @@ const unsigned char tam_es256_cose_key_public_buf[] = {
           0x68, 0xAD, 0xDD, 0xD9, 0x81, 0x63, 0x76, 0xE0,
           0xCB, 0xE7, 0xB0, 0xAE, 0x73, 0x13, 0x88, 0x6A,
        0x03,                              //# unsigned(3) / 3 = alg /
-       0x26,                              //# negative(6) / -7 = ES256 /
+       0x28,                              //# negative(8) / -9 = ESP256 /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
@@ -35,9 +35,15 @@ const unsigned char tam_es256_cose_key_public_buf[] = {
           0x90, 0xBA, 0x21, 0x06, 0x48, 0xBF, 0x79, 0xAB,
           0x16, 0x4D, 0x49, 0xAD, 0x35, 0x51, 0xD7, 0x1D,
           0x31, 0x4B, 0x27, 0x49, 0xEE, 0x42, 0xD2, 0x9A,
+       0x23,                              //# negative(3) / -4 = d /
+       0x58, 0x20,                        //# bytes(32)
+          0x84, 0x1A, 0xEB, 0xB7, 0xB9, 0xEA, 0x6F, 0x02,
+          0x60, 0xBE, 0x73, 0x55, 0xA2, 0x45, 0x88, 0xB9,
+          0x77, 0xD2, 0x3D, 0x2A, 0xC5, 0xBF, 0x2B, 0x6B,
+          0x2D, 0x83, 0x79, 0x43, 0x2A, 0x1F, 0xEA, 0x98,
 };
-const UsefulBufC tam_es256_cose_key_public = {
-    .ptr = tam_es256_cose_key_public_buf,
-    .len = sizeof(tam_es256_cose_key_public_buf)
+const UsefulBufC tam_esp256_cose_key_private = {
+    .ptr = tam_esp256_cose_key_private_buf,
+    .len = sizeof(tam_esp256_cose_key_private_buf)
 };
-#endif /* TAM_ES256_COSE_KEY_PUBLIC_H */
+#endif /* TAM_ESP256_COSE_KEY_PRIVATE_H */

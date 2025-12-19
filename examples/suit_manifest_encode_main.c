@@ -10,7 +10,7 @@
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_es256_cose_key_private.h"
+#include "trust_anchor_esp256_cose_key_private.h"
 
 #define MAX_FILE_BUFFER_SIZE            4096
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     char *manifest_file = argv[1];
 
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
-    UsefulBufC private_key = trust_anchor_es256_cose_key_private;
+    UsefulBufC private_key = trust_anchor_esp256_cose_key_private;
     suit_err_t result = suit_set_suit_key_from_cose_key(private_key, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create ES256 key pair. %s(%d)\n", suit_err_to_str(result), result);

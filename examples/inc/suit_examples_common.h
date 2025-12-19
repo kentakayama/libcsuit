@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "csuit/suit_common.h"
 #include "csuit/suit_manifest_decode.h"
 #include "csuit/suit_manifest_process.h"

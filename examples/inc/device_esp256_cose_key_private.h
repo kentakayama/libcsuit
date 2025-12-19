@@ -5,11 +5,11 @@
  *
  */
 
-#ifndef DEVICE_ES256_COSE_KEY_PRIVATE_H
-#define DEVICE_ES256_COSE_KEY_PRIVATE_H
+#ifndef DEVICE_ESP256_COSE_KEY_PRIVATE_H
+#define DEVICE_ESP256_COSE_KEY_PRIVATE_H
 #include "qcbor/UsefulBuf.h"
 
-const unsigned char device_es256_cose_key_private_buf[] = {
+const unsigned char device_esp256_cose_key_private_buf[] = {
     0xA7,                                 //# map(7)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
@@ -20,7 +20,7 @@ const unsigned char device_es256_cose_key_private_buf[] = {
           0x4C, 0x09, 0x11, 0xDD, 0x8C, 0xFE, 0xAD, 0xDE,
           0x25, 0xEC, 0x30, 0xCC, 0xB5, 0xA7, 0xB5, 0xAF,
        0x03,                              //# unsigned(3) / 3 = alg /
-       0x26,                              //# negative(6) / -7 = ES256 /
+       0x28,                              //# negative(8) / -9 = ESP256 /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
@@ -42,8 +42,8 @@ const unsigned char device_es256_cose_key_private_buf[] = {
           0xC5, 0xBA, 0x81, 0xB8, 0xCB, 0x53, 0xEE, 0x24,
           0x9E, 0x4B, 0x4E, 0xB1, 0x02, 0xC4, 0x76, 0xB3,
 };
-const UsefulBufC device_es256_cose_key_private = {
-    .ptr = device_es256_cose_key_private_buf,
-    .len = sizeof(device_es256_cose_key_private_buf)
+const UsefulBufC device_esp256_cose_key_private = {
+    .ptr = device_esp256_cose_key_private_buf,
+    .len = sizeof(device_esp256_cose_key_private_buf)
 };
-#endif /* DEVICE_ES256_COSE_KEY_PRIVATE_H */
+#endif /* DEVICE_ESP256_COSE_KEY_PRIVATE_H */

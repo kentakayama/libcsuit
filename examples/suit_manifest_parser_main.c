@@ -11,7 +11,7 @@
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_es256_cose_key_private.h"
+#include "trust_anchor_esp256_cose_key_private.h"
 #include "delegated_authority_cose_key_private.h"
 #include "trust_anchor_hmac256_cose_key_secret.h"
 
@@ -44,7 +44,7 @@ int main(int argc,
     char *manifest_file = argv[1];
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
 
-    result = suit_set_suit_key_from_cose_key(trust_anchor_es256_cose_key_private, &mechanisms[0].key);
+    result = suit_set_suit_key_from_cose_key(trust_anchor_esp256_cose_key_private, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
@@ -53,7 +53,7 @@ int main(int argc,
     mechanisms[0].cose_tag = CBOR_TAG_COSE_SIGN1;
     mechanisms[0].use = false;
 
-    result = suit_set_suit_key_from_cose_key(trust_anchor_es256_cose_key_private, &mechanisms[1].key);
+    result = suit_set_suit_key_from_cose_key(trust_anchor_esp256_cose_key_private, &mechanisms[1].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
@@ -61,7 +61,7 @@ int main(int argc,
     mechanisms[1].cose_tag = CBOR_TAG_COSE_SIGN1;
     mechanisms[1].use = false;
 
-    result = suit_set_suit_key_from_cose_key(delegated_authority_es256_cose_key_private, &mechanisms[2].key);
+    result = suit_set_suit_key_from_cose_key(delegated_authority_esp256_cose_key_private, &mechanisms[2].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
@@ -70,7 +70,7 @@ int main(int argc,
     mechanisms[2].cose_tag = CBOR_TAG_COSE_SIGN1;
     mechanisms[2].use = false;
 
-    result = suit_set_suit_key_from_cose_key(delegated_authority_es256_cose_key_private, &mechanisms[3].key);
+    result = suit_set_suit_key_from_cose_key(delegated_authority_esp256_cose_key_private, &mechanisms[3].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create public key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;

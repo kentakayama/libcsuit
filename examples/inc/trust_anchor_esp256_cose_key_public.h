@@ -5,11 +5,11 @@
  *
  */
 
-#ifndef TRUST_ANCHOR_ES256_COSE_KEY_PUBLIC_H
-#define TRUST_ANCHOR_ES256_COSE_KEY_PUBLIC_H
+#ifndef TRUST_ANCHOR_ESP256_COSE_KEY_PUBLIC_H
+#define TRUST_ANCHOR_ESP256_COSE_KEY_PUBLIC_H
 #include "qcbor/UsefulBuf.h"
 
-const unsigned char trust_anchor_es256_cose_key_public_buf[] = {
+const unsigned char trust_anchor_esp256_cose_key_public_buf[] = {
     0xA6,                                 //# map(6)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
@@ -20,7 +20,7 @@ const unsigned char trust_anchor_es256_cose_key_public_buf[] = {
           0x4A, 0xC2, 0x9E, 0x45, 0x7E, 0x87, 0x3A, 0x5D,
           0x6A, 0x73, 0x13, 0xF7, 0x16, 0x90, 0xB3, 0x3C,
        0x03,                              //# unsigned(3) / 3 = alg /
-       0x26,                              //# negative(6) / -7 = ES256 /
+       0x28,                              //# negative(8) / -9 = ESP256 /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
@@ -37,8 +37,8 @@ const unsigned char trust_anchor_es256_cose_key_public_buf[] = {
           0x39, 0x91, 0xDB, 0x73, 0x38, 0xB4, 0xA8, 0x96,
 };
 
-const UsefulBufC trust_anchor_es256_cose_key_public = {
-    .ptr = trust_anchor_es256_cose_key_public_buf,
-    .len = sizeof(trust_anchor_es256_cose_key_public_buf)
+const UsefulBufC trust_anchor_esp256_cose_key_public = {
+    .ptr = trust_anchor_esp256_cose_key_public_buf,
+    .len = sizeof(trust_anchor_esp256_cose_key_public_buf)
 };
-#endif /* TRUST_ANCHOR_ES256_COSE_KEY_PUBLIC_H */
+#endif /* TRUST_ANCHOR_ESP256_COSE_KEY_PUBLIC_H */

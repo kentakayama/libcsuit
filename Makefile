@@ -41,7 +41,8 @@ PUBLIC_INTERFACE = \
 	inc/csuit/suit_manifest_encode.h \
 	inc/csuit/suit_manifest_process.h \
 	inc/csuit/suit_manifest_callbacks.h \
-	inc/csuit/suit_manifest_print.h
+	inc/csuit/suit_manifest_print.h \
+	inc/csuit/suit_reporting_engine.h
 
 OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 
