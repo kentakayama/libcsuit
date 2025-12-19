@@ -10,9 +10,17 @@
 #include "qcbor/UsefulBuf.h"
 
 const unsigned char trust_anchor_prime256v1_cose_key_private_buf[] = {
-    0xA5,                                 //# map(5)
+    0xA7,                                 //# map(7)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
+       0x02,                              //# unsigned(2) / 2 = kid /
+       0x58, 0x20,                        //# bytes(32)
+          0xCA, 0x9E, 0x35, 0xF2, 0x3B, 0x2B, 0x52, 0x5F,
+          0xB4, 0xFC, 0x83, 0xF5, 0x12, 0xB0, 0xDC, 0xAC,
+          0x4A, 0xC2, 0x9E, 0x45, 0x7E, 0x87, 0x3A, 0x5D,
+          0x6A, 0x73, 0x13, 0xF7, 0x16, 0x90, 0xB3, 0x3C,
+       0x03,                              //# unsigned(3) / 3 = alg /
+       0x26,                              //# negative(6) / -7 = ES256 /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /

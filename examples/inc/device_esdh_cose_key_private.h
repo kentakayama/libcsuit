@@ -5,12 +5,12 @@
  *
  */
 
-#ifndef DEVICE_ES256_COSE_KEY_PUBLIC_H
-#define DEVICE_ES256_COSE_KEY_PUBLIC_H
+#ifndef DEVICE_ECDH_ES_A128KW_COSE_KEY_PRIVATE_H
+#define DEVICE_ECDH_ES_A128KW_COSE_KEY_PRIVATE_H
 #include "qcbor/UsefulBuf.h"
 
-const unsigned char device_es256_cose_key_public_buf[] = {
-    0xA6,                                 //# map(6)
+const unsigned char device_ecdh_es_a128kw_cose_key_private_buf[] = {
+    0xA7,                                 //# map(7)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
        0x02,                              //# unsigned(2) / 2 = kid /
@@ -20,7 +20,7 @@ const unsigned char device_es256_cose_key_public_buf[] = {
           0x4C, 0x09, 0x11, 0xDD, 0x8C, 0xFE, 0xAD, 0xDE,
           0x25, 0xEC, 0x30, 0xCC, 0xB5, 0xA7, 0xB5, 0xAF,
        0x03,                              //# unsigned(3) / 3 = alg /
-       0x26,                              //# negative(6) / -7 = ES256 /
+       0x38, 0x1C,                        //# negative(28) / -29 = ECDH-ES+A128KW /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
@@ -35,9 +35,15 @@ const unsigned char device_es256_cose_key_public_buf[] = {
           0xC0, 0xEA, 0xD3, 0x65, 0x0D, 0x0A, 0x48, 0x5C,
           0xF7, 0x26, 0xD3, 0x78, 0xD1, 0xB0, 0x16, 0xED,
           0x42, 0x98, 0xB2, 0x96, 0x1E, 0x25, 0x8F, 0x1B,
+       0x23,                              //# negative(3) / -4 = d /
+       0x58, 0x20,                        //# bytes(32)
+          0x60, 0xFE, 0x6D, 0xD6, 0xD8, 0x5D, 0x57, 0x40,
+          0xA5, 0x34, 0x9B, 0x6F, 0x91, 0x26, 0x7E, 0xEA,
+          0xC5, 0xBA, 0x81, 0xB8, 0xCB, 0x53, 0xEE, 0x24,
+          0x9E, 0x4B, 0x4E, 0xB1, 0x02, 0xC4, 0x76, 0xB3,
 };
-const UsefulBufC device_es256_cose_key_public = {
-    .ptr = device_es256_cose_key_public_buf,
-    .len = sizeof(device_es256_cose_key_public_buf)
+const UsefulBufC device_ecdh_es_a128kw_cose_key_private = {
+    .ptr = device_ecdh_es_a128kw_cose_key_private_buf,
+    .len = sizeof(device_ecdh_es_a128kw_cose_key_private_buf)
 };
-#endif /* DEVICE_ES256_COSE_KEY_PUBLIC_H */
+#endif /* DEVICE_ECDH_ES_A128KW_COSE_KEY_PRIVATE_H */

@@ -10,9 +10,17 @@
 #include "qcbor/UsefulBuf.h"
 
 const unsigned char device_es256_cose_key_private_buf[] = {
-    0xA5,                                 //# map(5)
+    0xA7,                                 //# map(7)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
+       0x02,                              //# unsigned(2) / 2 = kid /
+       0x58, 0x20,                        //# bytes(32)
+          0xE9, 0x67, 0x88, 0xB1, 0x0B, 0x16, 0x10, 0xAB,
+          0xE4, 0x78, 0xF9, 0xCE, 0x8D, 0xCF, 0xE2, 0x30,
+          0x4C, 0x09, 0x11, 0xDD, 0x8C, 0xFE, 0xAD, 0xDE,
+          0x25, 0xEC, 0x30, 0xCC, 0xB5, 0xA7, 0xB5, 0xAF,
+       0x03,                              //# unsigned(3) / 3 = alg /
+       0x26,                              //# negative(6) / -7 = ES256 /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /

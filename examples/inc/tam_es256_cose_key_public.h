@@ -10,9 +10,17 @@
 #include "qcbor/UsefulBuf.h"
 
 const unsigned char tam_es256_cose_key_public_buf[] = {
-    0xA4,                                 //# map(4)
+    0xA6,                                 //# map(6)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
+       0x02,                              //# unsigned(2) / 2 = kid /
+       0x58, 0x20,                        //# bytes(32)
+          0x4C, 0xE5, 0x30, 0xD7, 0x0F, 0xDC, 0xA7, 0xCD,
+          0x34, 0x12, 0x37, 0xC3, 0x06, 0x54, 0x9C, 0xA6,
+          0x68, 0xAD, 0xDD, 0xD9, 0x81, 0x63, 0x76, 0xE0,
+          0xCB, 0xE7, 0xB0, 0xAE, 0x73, 0x13, 0x88, 0x6A,
+       0x03,                              //# unsigned(3) / 3 = alg /
+       0x26,                              //# negative(6) / -7 = ES256 /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
