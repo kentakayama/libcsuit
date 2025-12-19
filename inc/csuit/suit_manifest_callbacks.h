@@ -23,7 +23,7 @@ extern "C" {
     \brief  SUIT fetch callback triggerd in libcsuit
 
     \param[in]      fetch_args      Fetch and suit-report arguments. See \ref suit_fetch_args_t.
-    \param[out]     fetch_ret       Fetch result. See \ref suit_fetch_ret_t.
+    \param[out]     fetch_ret       Return value for SUIT Reporting Engine. See \ref suit_callback_ret_t.
     Triggered on \ref SUIT_DIRECTIVE_FETCH.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 
@@ -32,12 +32,13 @@ extern "C" {
     The libcsuit triggers this function at suit-directive-fetch
     requesting to fetch an image and dependent SUIT Manifest into component.
 */
-suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
+suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_callback_ret_t *fetch_ret);
 
 /*!
     \brief  SUIT store callback triggerd in libcsuit
     \param[in]      store_args      Store and suit-report arguments. See \ref suit_store_args_t.
     Triggered on \ref SUIT_DIRECTIVE_FETCH of integrated-payload or integrated-dependency.
+    \param[out]     callback_ret       Return value for SUIT Reporting Engine. See \ref suit_store_ret_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 
     This function is expected to be replaced by user defined function
@@ -48,7 +49,7 @@ suit_err_t suit_fetch_callback(suit_fetch_args_t fetch_args, suit_fetch_ret_t *f
     requesting to store an image and dependent SUIT Manifest into component or
     to unlink a component.
 */
-suit_err_t suit_store_callback(suit_store_args_t store_args);
+suit_err_t suit_store_callback(suit_store_args_t store_args, suit_callback_ret_t *store_ret);
 
 /*!
     \brief  SUIT invoke callback triggerd in libcsuit
@@ -64,7 +65,8 @@ suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
 
 /*!
     \brief  SUIT condition callback triggerd in libcsuit
-    \param[in]      condition_args     Condition and suit-report arguments. See \ref suit_condition_args_t.
+    \param[in]      condition_args      Condition and suit-report arguments. See \ref suit_condition_args_t.
+    \param[out]     ret       Return value for SUIT Reporting Engine. See \ref suit_callback_ret_t.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 
     This function is expected to be replaced by user defined function
@@ -72,7 +74,7 @@ suit_err_t suit_invoke_callback(suit_invoke_args_t invoke_args);
     The libcsuit may trigger this function at suit-condition-*
     requesting to check the condition.
 */
-suit_err_t suit_condition_callback(suit_condition_args_t condition_args);
+suit_err_t suit_condition_callback(suit_condition_args_t condition_args, suit_callback_ret_t *ret);
 
 /*!
     \brief  SUIT set-version callback triggerd in libcsuit

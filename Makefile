@@ -7,7 +7,7 @@
 NAME = libcsuit
 CFLAGS ?= -Os
 WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
-LOCAL_CFLAGS = $(WARNING_CFLAGS) -fPIC -I /usr/local/include -I ./inc
+LOCAL_CFLAGS = $(WARNING_CFLAGS) -fPIC -I ./inc
 LOCAL_CFLAGS += -ffunction-sections -fdata-sections
 # link me with -Wl,--gc-sections
 
@@ -23,6 +23,7 @@ endif
 SRCS = \
 	src/suit_common.c \
 	src/suit_manifest_process.c \
+	src/suit_reporting_engine.c \
 	src/suit_manifest_callbacks.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_encode.c \
@@ -40,7 +41,8 @@ PUBLIC_INTERFACE = \
 	inc/csuit/suit_manifest_encode.h \
 	inc/csuit/suit_manifest_process.h \
 	inc/csuit/suit_manifest_callbacks.h \
-	inc/csuit/suit_manifest_print.h
+	inc/csuit/suit_manifest_print.h \
+	inc/csuit/suit_reporting_engine.h
 
 OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
 

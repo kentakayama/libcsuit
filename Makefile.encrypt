@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS = -Wall -g
-LDFLAGS = -lt_cose -lqcbor -lm
-INC = -I ./inc -I ./examples/inc
+CFLAGS = $(CMD_C) -Wall -g
+LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
+INC = $(CMD_INC) -I ./inc -I ./examples/inc
 TARGET_AES = ./bin/suit_manifest_encrypt_aes
 SRC_AES = examples/suit_manifest_encrypt_aes_main.c
 TARGET_ESDH = ./bin/suit_manifest_encrypt_esdh

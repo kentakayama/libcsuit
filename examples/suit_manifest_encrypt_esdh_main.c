@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include "csuit/suit_manifest_print.h"
 #include "suit_examples_common.h"
-#include "trust_anchor_prime256v1_cose_key_private.h"
-#include "device_es256_cose_key_private.h"
+#include "trust_anchor_esdh_cose_key_private.h"
+#include "device_esdh_cose_key_private.h"
 
 #define MAX_FILE_BUFFER_SIZE            2048
 
@@ -25,16 +25,14 @@ int main(int argc, char *argv[]) {
 
     // Load sender's private key
     suit_mechanism_t mechanism = {0};
-    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
-    result = suit_set_suit_key_from_cose_key(trust_anchor_prime256v1_cose_key_private, &mechanism.key);
+    result = suit_set_suit_key_from_cose_key(trust_anchor_ecdh_es_a128kw_cose_key_private, &mechanism.key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create sender key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
     // Load receiver's public key
-    mechanism.rkey.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
     mechanism.rkid = Q_USEFUL_BUF_FROM_SZ_LITERAL("kid-2");
-    result = suit_set_suit_key_from_cose_key(device_es256_cose_key_private, &mechanism.rkey);
+    result = suit_set_suit_key_from_cose_key(device_ecdh_es_a128kw_cose_key_private, &mechanism.rkey);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create receiver key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
@@ -69,8 +67,7 @@ int main(int argc, char *argv[]) {
     // Decrypt
     // Load receiver's private key
     mechanism = (suit_mechanism_t){0};
-    mechanism.key.cose_algorithm_id = T_COSE_ALGORITHM_ECDH_ES_A128KW;
-    result = suit_set_suit_key_from_cose_key(device_es256_cose_key_private, &mechanism.key);
+    result = suit_set_suit_key_from_cose_key(device_ecdh_es_a128kw_cose_key_private, &mechanism.key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create receiver key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;

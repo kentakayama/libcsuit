@@ -13,9 +13,7 @@
 
     Call suit_decode_envelope() to decode whole SUIT manifest.
  */
-
-suit_err_t suit_decode_digest_from_item(const suit_decode_mode_t mode,
-                                        QCBORDecodeContext *context,
+suit_err_t suit_decode_digest_from_item(QCBORDecodeContext *context,
                                         QCBORItem *item,
                                         bool next,
                                         suit_digest_t *digest)
@@ -29,25 +27,19 @@ suit_err_t suit_decode_digest_from_item(const suit_decode_mode_t mode,
     size_t ext_len = (item->val.uCount > 2) ? item->val.uCount - 2 : 0;
 
     result = suit_qcbor_get_next(context, item, QCBOR_TYPE_INT64);
-    if (!suit_continue(mode, result)) {
+    if (result != SUIT_SUCCESS) {
         return result;
     }
     digest->algorithm_id = item->val.int64;
 
     result = suit_qcbor_get_next(context, item, QCBOR_TYPE_BYTE_STRING);
-    if (!suit_continue(mode, result)) {
+    if (result != SUIT_SUCCESS) {
         return result;
     }
-    if (result == SUIT_SUCCESS) {
-        digest->bytes.ptr = (uint8_t *)item->val.string.ptr;
-        digest->bytes.len = item->val.string.len;
-    }
+    digest->bytes = item->val.string;
 
     for (size_t i = 0; i < ext_len; i++) {
         // TODO
-        if (!suit_continue(mode, SUIT_ERR_NOT_IMPLEMENTED)) {
-            return SUIT_ERR_NOT_IMPLEMENTED;
-        }
         if (!suit_qcbor_skip_any(context, item)) {
             return SUIT_ERR_NO_MORE_ITEMS;
         }
@@ -55,14 +47,13 @@ suit_err_t suit_decode_digest_from_item(const suit_decode_mode_t mode,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_decode_digest(const suit_decode_mode_t mode,
-                              suit_buf_t *buf,
+suit_err_t suit_decode_digest(UsefulBufC buf,
                               suit_digest_t *digest)
 {
     QCBORDecodeContext digest_context;
     QCBORItem item;
-    QCBORDecode_Init(&digest_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_digest_from_item(mode, &digest_context, &item, true, digest);
+    QCBORDecode_Init(&digest_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_digest_from_item(&digest_context, &item, true, digest);
     QCBORError error = QCBORDecode_Finish(&digest_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -70,8 +61,7 @@ suit_err_t suit_decode_digest(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_digest_from_bstr(const suit_decode_mode_t mode,
-                                        QCBORDecodeContext *context,
+suit_err_t suit_decode_digest_from_bstr(QCBORDecodeContext *context,
                                         QCBORItem *item,
                                         bool next,
                                         suit_digest_t *digest)
@@ -80,10 +70,7 @@ suit_err_t suit_decode_digest_from_bstr(const suit_decode_mode_t mode,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    suit_buf_t buf;
-    buf.ptr = (uint8_t *)item->val.string.ptr;
-    buf.len = item->val.string.len;
-    return suit_decode_digest(mode, &buf, digest);
+    return suit_decode_digest(item->val.string, digest);
 }
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
@@ -127,12 +114,12 @@ suit_err_t suit_decode_version_match_from_item(QCBORDecodeContext *context,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_decode_version_match(const suit_buf_t *buf,
+suit_err_t suit_decode_version_match(const UsefulBufC buf,
                                      suit_version_match_t *version_match)
 {
     QCBORDecodeContext version_match_context;
     QCBORItem item;
-    QCBORDecode_Init(&version_match_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    QCBORDecode_Init(&version_match_context, buf, QCBOR_DECODE_MODE_NORMAL);
     suit_err_t result = suit_decode_version_match_from_item(&version_match_context, &item, true, version_match);
     QCBORError error = QCBORDecode_Finish(&version_match_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
@@ -215,12 +202,12 @@ suit_err_t suit_decode_wait_event_from_item(QCBORDecodeContext *context,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_decode_wait_event(const suit_buf_t *buf,
+suit_err_t suit_decode_wait_event(const UsefulBufC buf,
                                   suit_wait_event_t *wait_event)
 {
     QCBORDecodeContext wait_event_context;
     QCBORItem item;
-    QCBORDecode_Init(&wait_event_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    QCBORDecode_Init(&wait_event_context, buf, QCBOR_DECODE_MODE_NORMAL);
     suit_err_t result = suit_decode_wait_event_from_item(&wait_event_context, &item, true, wait_event);
     QCBORError error = QCBORDecode_Finish(&wait_event_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
@@ -303,6 +290,7 @@ suit_err_t suit_decode_actor_id_from_item(QCBORDecodeContext *context,
             if (item->val.uint64 >= INT64_MAX) {
                 return SUIT_ERR_INVALID_TYPE_OF_VALUE;
             }
+            // fall through
         case QCBOR_TYPE_INT64:
             actor_id->type = SUIT_ACTOR_TYPE_INT;
             actor_id->actor_id_i64 = item->val.int64;
@@ -429,12 +417,12 @@ suit_err_t suit_decode_component_metadata_from_item(QCBORDecodeContext *context,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_decode_component_metadata(const suit_buf_t *buf,
+suit_err_t suit_decode_component_metadata(const UsefulBufC buf,
                                           suit_component_metadata_t *component_metadata)
 {
     QCBORDecodeContext component_metadata_context;
     QCBORItem item;
-    QCBORDecode_Init(&component_metadata_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    QCBORDecode_Init(&component_metadata_context, buf, QCBOR_DECODE_MODE_NORMAL);
     suit_err_t result = suit_decode_component_metadata_from_item(&component_metadata_context, &item, true, component_metadata);
     QCBORError error = QCBORDecode_Finish(&component_metadata_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
@@ -444,8 +432,7 @@ suit_err_t suit_decode_component_metadata(const suit_buf_t *buf,
 }
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
 
-suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
-                                                 QCBORDecodeContext *context,
+suit_err_t suit_decode_parameters_list_from_item(QCBORDecodeContext *context,
                                                  QCBORItem *item,
                                                  bool next,
                                                  suit_parameters_list_t *params_list)
@@ -465,7 +452,7 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
         if (result != SUIT_SUCCESS) {
             return result;
         }
-        if (label > item->label.int64 && !mode.ALLOW_NOT_CANONICAL_CBOR) {
+        if (label > item->label.int64) {
             return SUIT_ERR_NOT_CANONICAL_CBOR;
         }
         label = item->label.int64;
@@ -587,7 +574,7 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
 
         /* SUIT_Digest */
         case SUIT_PARAMETER_IMAGE_DIGEST:
-            result = suit_decode_digest_from_bstr(mode, context, item, false, &params_list->params[i].value.digest);
+            result = suit_decode_digest_from_bstr(context, item, false, &params_list->params[i].value.digest);
             break;
 
 
@@ -595,7 +582,7 @@ suit_err_t suit_decode_parameters_list_from_item(const suit_decode_mode_t mode,
             result = SUIT_ERR_NOT_IMPLEMENTED;
             break;
         }
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             return result;
         }
         if (result != SUIT_SUCCESS && !suit_qcbor_skip_any(context, item)) {
@@ -623,8 +610,7 @@ bool is_suit_directive_only(int64_t label)
     return false;
 }
 
-suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_t mode,
-                                                         QCBORDecodeContext *context,
+suit_err_t suit_decode_command_shared_sequence_from_item(QCBORDecodeContext *context,
                                                          QCBORItem *item,
                                                          bool next,
                                                          suit_command_sequence_t *cmd_seq,
@@ -811,7 +797,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
         case SUIT_DIRECTIVE_SET_PARAMETERS:
 #endif
         case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-            result = suit_decode_parameters_list_from_item(mode, context, item, true, &cmd_seq->commands[cmd_seq->len].value.params_list);
+            result = suit_decode_parameters_list_from_item(context, item, true, &cmd_seq->commands[cmd_seq->len].value.params_list);
             if (result != SUIT_SUCCESS) {
                 return result;
             }
@@ -855,7 +841,7 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
-                result = suit_decode_parameters_list_from_item(mode, context, item, false, &command->value.params_list);
+                result = suit_decode_parameters_list_from_item(context, item, false, &command->value.params_list);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -964,23 +950,21 @@ suit_err_t suit_decode_command_shared_sequence_from_item(const suit_decode_mode_
     return result;
 }
 
-suit_err_t suit_decode_shared_sequence_from_item(const suit_decode_mode_t mode,
-                                                 QCBORDecodeContext *context,
+suit_err_t suit_decode_shared_sequence_from_item(QCBORDecodeContext *context,
                                                  QCBORItem *item,
                                                  bool next,
                                                  suit_command_sequence_t *cmn_seq)
 {
-    return suit_decode_command_shared_sequence_from_item(mode, context, item, next, cmn_seq, true);
+    return suit_decode_command_shared_sequence_from_item(context, item, next, cmn_seq, true);
 }
 
-suit_err_t suit_decode_shared_sequence(const suit_decode_mode_t mode,
-                                       const suit_buf_t *buf,
+suit_err_t suit_decode_shared_sequence(const UsefulBufC buf,
                                        suit_command_sequence_t *cmn_seq)
 {
     QCBORDecodeContext cmn_seq_context;
     QCBORItem item;
-    QCBORDecode_Init(&cmn_seq_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_shared_sequence_from_item(mode, &cmn_seq_context, &item, true, cmn_seq);
+    QCBORDecode_Init(&cmn_seq_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_shared_sequence_from_item(&cmn_seq_context, &item, true, cmn_seq);
     QCBORError error = QCBORDecode_Finish(&cmn_seq_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -988,8 +972,7 @@ suit_err_t suit_decode_shared_sequence(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_shared_sequence_from_bstr(const suit_decode_mode_t mode,
-                                                 QCBORDecodeContext *context,
+suit_err_t suit_decode_shared_sequence_from_bstr(QCBORDecodeContext *context,
                                                  QCBORItem *item,
                                                  bool next,
                                                  suit_command_sequence_t *cmn_seq)
@@ -998,29 +981,24 @@ suit_err_t suit_decode_shared_sequence_from_bstr(const suit_decode_mode_t mode,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    suit_buf_t buf;
-    buf.len = item->val.string.len;
-    buf.ptr = (uint8_t *)item->val.string.ptr;
-    return suit_decode_command_sequence(mode, &buf, cmn_seq);
+    return suit_decode_command_sequence(item->val.string, cmn_seq);
 }
 
-suit_err_t suit_decode_command_sequence_from_item(const suit_decode_mode_t mode,
-                                                  QCBORDecodeContext *context,
+suit_err_t suit_decode_command_sequence_from_item(QCBORDecodeContext *context,
                                                   QCBORItem *item,
                                                   bool next,
                                                   suit_command_sequence_t *cmd_seq)
 {
-    return suit_decode_command_shared_sequence_from_item(mode, context, item, next, cmd_seq, false);
+    return suit_decode_command_shared_sequence_from_item(context, item, next, cmd_seq, false);
 }
 
-suit_err_t suit_decode_command_sequence(const suit_decode_mode_t mode,
-                                        const suit_buf_t *buf,
+suit_err_t suit_decode_command_sequence(const UsefulBufC buf,
                                         suit_command_sequence_t *cmd_seq)
 {
     QCBORDecodeContext cmd_seq_context;
     QCBORItem item;
-    QCBORDecode_Init(&cmd_seq_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_command_sequence_from_item(mode, &cmd_seq_context, &item, true, cmd_seq);
+    QCBORDecode_Init(&cmd_seq_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_command_sequence_from_item(&cmd_seq_context, &item, true, cmd_seq);
     QCBORError error = QCBORDecode_Finish(&cmd_seq_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -1028,8 +1006,7 @@ suit_err_t suit_decode_command_sequence(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_command_sequence_from_bstr(const suit_decode_mode_t mode,
-                                                  QCBORDecodeContext *context,
+suit_err_t suit_decode_command_sequence_from_bstr(QCBORDecodeContext *context,
                                                   QCBORItem *item,
                                                   bool next,
                                                   suit_command_sequence_t *cmd_seq)
@@ -1038,14 +1015,10 @@ suit_err_t suit_decode_command_sequence_from_bstr(const suit_decode_mode_t mode,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    suit_buf_t buf;
-    buf.len = item->val.string.len;
-    buf.ptr = (uint8_t *)item->val.string.ptr;
-    return suit_decode_command_sequence(mode, &buf, cmd_seq);
+    return suit_decode_command_sequence(item->val.string, cmd_seq);
 }
 
-suit_err_t suit_decode_component_identifiers_from_item(const suit_decode_mode_t mode,
-                                                       QCBORDecodeContext *context,
+suit_err_t suit_decode_component_identifiers_from_item(QCBORDecodeContext *context,
                                                        QCBORItem *item,
                                                        bool next,
                                                        suit_component_identifier_t *identifier)
@@ -1059,7 +1032,7 @@ suit_err_t suit_decode_component_identifiers_from_item(const suit_decode_mode_t 
     size_t len = item->val.uCount;
     for (size_t i = 0; i < len; i++) {
         result = suit_qcbor_get_next(context, item, QCBOR_TYPE_BYTE_STRING);
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             break;
         }
         if (result == SUIT_SUCCESS) {
@@ -1075,14 +1048,13 @@ suit_err_t suit_decode_component_identifiers_from_item(const suit_decode_mode_t 
     return result;
 }
 
-suit_err_t suit_decode_component_identifiers(const suit_decode_mode_t mode,
-                                             suit_buf_t *buf,
+suit_err_t suit_decode_component_identifiers(UsefulBufC buf,
                                              suit_component_identifier_t *identifier)
 {
     QCBORDecodeContext component_context;
     QCBORItem item;
-    QCBORDecode_Init(&component_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_component_identifiers_from_item(mode, &component_context, &item, true, identifier);
+    QCBORDecode_Init(&component_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_component_identifiers_from_item(&component_context, &item, true, identifier);
     QCBORError error = QCBORDecode_Finish(&component_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -1090,8 +1062,7 @@ suit_err_t suit_decode_component_identifiers(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_components_from_item(const suit_decode_mode_t mode,
-                                            QCBORDecodeContext *context,
+suit_err_t suit_decode_components_from_item(QCBORDecodeContext *context,
                                             QCBORItem *item,
                                             bool next,
                                             suit_component_with_index_t *components,
@@ -1107,11 +1078,11 @@ suit_err_t suit_decode_components_from_item(const suit_decode_mode_t mode,
     }
     for (size_t i = 0; i < len; i++) {
         result = suit_qcbor_get(context, item, true, QCBOR_TYPE_ARRAY);
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             break;
         }
         if (result == SUIT_SUCCESS) {
-            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &components[i].component);
+            result = suit_decode_component_identifiers_from_item(context, item, false, &components[i].component);
             if (result == SUIT_ERR_INVALID_TYPE_OF_VALUE) {
                 if (!suit_qcbor_skip_any(context, item)) {
                     result = SUIT_ERR_FATAL;
@@ -1119,7 +1090,7 @@ suit_err_t suit_decode_components_from_item(const suit_decode_mode_t mode,
             }
             components[i].index = i;
         }
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             break;
         }
     }
@@ -1129,13 +1100,12 @@ suit_err_t suit_decode_components_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_set_version(const suit_decode_mode_t mode,
-                                   const suit_buf_t *buf,
+suit_err_t suit_decode_set_version(const UsefulBufC buf,
                                    suit_int64_array_t *set_version)
 {
     QCBORDecodeContext context;
     QCBORItem item;
-    QCBORDecode_Init(&context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
+    QCBORDecode_Init(&context, buf, QCBOR_DECODE_MODE_NORMAL);
     suit_err_t result = suit_qcbor_get(&context, &item, true, QCBOR_TYPE_ARRAY);
     if (result != SUIT_SUCCESS) {
         return result;
@@ -1146,7 +1116,7 @@ suit_err_t suit_decode_set_version(const suit_decode_mode_t mode,
     }
     for (size_t i = 0; i < set_version->len; i++) {
         result = suit_qcbor_get(&context, &item, true, QCBOR_TYPE_INT64);
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             break;
         }
         set_version->int64[i] = item.val.int64;
@@ -1158,8 +1128,7 @@ suit_err_t suit_decode_set_version(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_set_version_from_bstr(const suit_decode_mode_t mode,
-                                             QCBORDecodeContext *context,
+suit_err_t suit_decode_set_version_from_bstr(QCBORDecodeContext *context,
                                              QCBORItem *item,
                                              bool next,
                                              suit_int64_array_t *set_version)
@@ -1168,15 +1137,11 @@ suit_err_t suit_decode_set_version_from_bstr(const suit_decode_mode_t mode,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    suit_buf_t buf;
-    buf.len = item->val.string.len;
-    buf.ptr = (uint8_t *)item->val.string.ptr;
-    return suit_decode_set_version(mode, &buf, set_version);
+    return suit_decode_set_version(item->val.string, set_version);
 }
 
 #if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
-suit_err_t suit_decode_dependency_metadata_from_item(const suit_decode_mode_t mode,
-                                                     QCBORDecodeContext *context,
+suit_err_t suit_decode_dependency_metadata_from_item(QCBORDecodeContext *context,
                                                      QCBORItem *item,
                                                      bool next,
                                                      suit_dependency_metadata_t *dependency_metadata)
@@ -1189,13 +1154,13 @@ suit_err_t suit_decode_dependency_metadata_from_item(const suit_decode_mode_t mo
     size_t len = item->val.uCount;
     for (size_t i = 0; i < len; i++) {
         result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ANY);
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             break;
         }
 
         switch (item->label.uint64) {
         case SUIT_DEPENDENCY_PREFIX:
-            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &dependency_metadata->prefix);
+            result = suit_decode_component_identifiers_from_item(context, item, false, &dependency_metadata->prefix);
             break;
         default:
             // TODO
@@ -1209,8 +1174,7 @@ suit_err_t suit_decode_dependency_metadata_from_item(const suit_decode_mode_t mo
     return result;
 }
 
-suit_err_t suit_decode_dependencies_from_item(const suit_decode_mode_t mode,
-                                              QCBORDecodeContext *context,
+suit_err_t suit_decode_dependencies_from_item(QCBORDecodeContext *context,
                                               QCBORItem *item,
                                               bool next,
                                               suit_dependencies_t *dependencies)
@@ -1236,7 +1200,7 @@ suit_err_t suit_decode_dependencies_from_item(const suit_decode_mode_t mode,
             return SUIT_ERR_INVALID_TYPE_OF_KEY;
         }
         dependency->index = item->label.uint64;
-        result = suit_decode_dependency_metadata_from_item(mode, context, item, false, &dependency->dependency_metadata);
+        result = suit_decode_dependency_metadata_from_item(context, item, false, &dependency->dependency_metadata);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -1246,21 +1210,19 @@ suit_err_t suit_decode_dependencies_from_item(const suit_decode_mode_t mode,
 }
 #endif /* LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
 
-suit_err_t suit_decode_authentication_block(suit_buf_t *buf,
-                                            suit_buf_t *digest_buf,
+suit_err_t suit_decode_authentication_block(UsefulBufC authentication_block,
+                                            UsefulBufC digest_buf,
                                             const suit_key_t *public_key)
 {
-    UsefulBufC signed_cose = {buf->ptr, buf->len};
     suit_err_t result;
-    cbor_tag_key_t cose_tag = suit_judge_cose_tag_from_buf(signed_cose);
+    cbor_tag_key_t cose_tag = suit_judge_cose_tag_from_buf(authentication_block);
 
-    UsefulBufC returned_payload = {.ptr = digest_buf->ptr, .len = digest_buf->len};
     switch (cose_tag) {
     case COSE_SIGN1_TAG:
-        result = suit_verify_cose_sign1(signed_cose, public_key, &returned_payload);
+        result = suit_verify_cose_sign1(authentication_block, public_key, &digest_buf);
         break;
     case COSE_MAC0_TAG:
-        result = suit_validate_cose_mac0(signed_cose, public_key, &returned_payload);
+        result = suit_validate_cose_mac0(authentication_block, public_key, &digest_buf);
         break;
     default:
         result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -1268,8 +1230,7 @@ suit_err_t suit_decode_authentication_block(suit_buf_t *buf,
     return result;
 }
 
-suit_err_t suit_decode_common_from_item(const suit_decode_mode_t mode,
-                                        QCBORDecodeContext *context,
+suit_err_t suit_decode_common_from_item(QCBORDecodeContext *context,
                                         QCBORItem *item,
                                         bool next,
                                         suit_common_t *common)
@@ -1281,28 +1242,28 @@ suit_err_t suit_decode_common_from_item(const suit_decode_mode_t mode,
     size_t map_count = item->val.uCount;
     for (size_t i = 0; i < map_count; i++) {
         result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ANY);
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             break;
         }
         switch (item->label.uint64) {
 #if !defined(LIBCSUIT_DISABLE_COMMON_DEPENDENCIES)
         case SUIT_DEPENDENCIES:
-            result = suit_decode_dependencies_from_item(mode, context, item, false, &common->dependencies);
+            result = suit_decode_dependencies_from_item(context, item, false, &common->dependencies);
             break;
 #endif /* !LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
 
         case SUIT_COMPONENTS:
-            result = suit_decode_components_from_item(mode, context, item, false, common->components, &common->components_len);
+            result = suit_decode_components_from_item(context, item, false, common->components, &common->components_len);
             break;
 
         case SUIT_SHARED_SEQUENCE:
-            result = suit_decode_shared_sequence_from_bstr(mode, context, item, false, &common->shared_seq);
+            result = suit_decode_shared_sequence_from_bstr(context, item, false, &common->shared_seq);
             break;
 
         default:
             return SUIT_ERR_NOT_IMPLEMENTED;
         }
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             return result;
         }
     }
@@ -1310,8 +1271,7 @@ suit_err_t suit_decode_common_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_common_from_bstr(const suit_decode_mode_t mode,
-                                        QCBORDecodeContext *context,
+suit_err_t suit_decode_common_from_bstr(QCBORDecodeContext *context,
                                         QCBORItem *item,
                                         bool next,
                                         suit_common_t *common)
@@ -1324,7 +1284,7 @@ suit_err_t suit_decode_common_from_bstr(const suit_decode_mode_t mode,
     QCBORDecode_Init(&common_context,
                      item->val.string,
                      QCBOR_DECODE_MODE_NORMAL);
-    result = suit_decode_common_from_item(mode, &common_context, item, true, common);
+    result = suit_decode_common_from_item(&common_context, item, true, common);
     QCBORError error = QCBORDecode_Finish(&common_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -1349,45 +1309,41 @@ suit_err_t suit_decode_text_component_from_item(QCBORDecodeContext *context,
         if (result != SUIT_SUCCESS) {
             return result;
         }
-        suit_buf_t *buf = NULL;
         switch (item->val.uint64) {
         case SUIT_TEXT_VENDOR_NAME:
-            buf = &text_component->vendor_name;
+            QCBORDecode_GetTextString(context, &text_component->vendor_name);
             break;
         case SUIT_TEXT_MODEL_NAME:
-            buf = &text_component->model_name;
+            QCBORDecode_GetTextString(context, &text_component->model_name);
             break;
         case SUIT_TEXT_VENDOR_DOMAIN:
-            buf = &text_component->vendor_domain;
+            QCBORDecode_GetTextString(context, &text_component->vendor_domain);
             break;
         case SUIT_TEXT_MODEL_INFO:
-            buf = &text_component->model_info;
+            QCBORDecode_GetTextString(context, &text_component->model_info);
             break;
         case SUIT_TEXT_COMPONENT_DESCRIPTION:
-            buf = &text_component->component_description;
+            QCBORDecode_GetTextString(context, &text_component->component_description);
             break;
         case SUIT_TEXT_COMPONENT_VERSION:
-            buf = &text_component->component_version;
+            QCBORDecode_GetTextString(context, &text_component->component_version);
             break;
         /* in draft-ietf-suit-update-management */
         case SUIT_TEXT_VERSION_REQUIRED:
-            buf = &text_component->version_required;
+            QCBORDecode_GetTextString(context, &text_component->version_required);
             break;
         default:
             return SUIT_ERR_NOT_IMPLEMENTED;
         }
-        result = suit_qcbor_get_next(context, item, QCBOR_TYPE_TEXT_STRING);
-        if (result != SUIT_SUCCESS) {
-            return result;
+        QCBORError error = QCBORDecode_GetError(context);
+        if (error != QCBOR_SUCCESS) {
+            return suit_error_from_qcbor_error(error);
         }
-        buf->len = item->val.string.len;
-        buf->ptr = (uint8_t *)item->val.string.ptr;
     }
     return result;
 }
 
-suit_err_t suit_decode_text_lmap_from_item(const suit_decode_mode_t mode,
-                                           QCBORDecodeContext *context,
+suit_err_t suit_decode_text_lmap_from_item(QCBORDecodeContext *context,
                                            QCBORItem *item,
                                            bool next,
                                            suit_text_lmap_t *text_lmap)
@@ -1412,7 +1368,7 @@ suit_err_t suit_decode_text_lmap_from_item(const suit_decode_mode_t mode,
             if (text_lmap->component_len >= SUIT_MAX_ARRAY_LENGTH) {
                 return SUIT_ERR_NO_MEMORY;
             }
-            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &text_lmap->component[text_lmap->component_len].key);
+            result = suit_decode_component_identifiers_from_item(context, item, false, &text_lmap->component[text_lmap->component_len].key);
             if (result != SUIT_SUCCESS) {
                 return result;
             }
@@ -1423,7 +1379,7 @@ suit_err_t suit_decode_text_lmap_from_item(const suit_decode_mode_t mode,
             text_lmap->component_len++;
             break;
         case QCBOR_TYPE_INT64:
-            if (label > item->val.int64 && !mode.ALLOW_NOT_CANONICAL_CBOR) {
+            if (label > item->val.int64) {
                 return SUIT_ERR_NOT_CANONICAL_CBOR;
             }
             /* NOTE: we are in [key, value, key, valye, ...] array */
@@ -1464,8 +1420,7 @@ suit_err_t suit_decode_text_lmap_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_text_map_from_item(const suit_decode_mode_t mode,
-                                          QCBORDecodeContext *context,
+suit_err_t suit_decode_text_map_from_item(QCBORDecodeContext *context,
                                           QCBORItem *item,
                                           bool next,
                                           suit_text_map_t *text_map)
@@ -1486,9 +1441,9 @@ suit_err_t suit_decode_text_map_from_item(const suit_decode_mode_t mode,
         if (result != SUIT_SUCCESS) {
             return result;
         }
-        text_map->text_lmaps[i].tag38_ltag = (suit_buf_t){.ptr = (uint8_t *)item->val.string.ptr, .len = item->val.string.len};
+        text_map->text_lmaps[i].tag38_ltag = item->val.string;
 
-        result = suit_decode_text_lmap_from_item(mode, context, item, next, &text_map->text_lmaps[i]);
+        result = suit_decode_text_lmap_from_item(context, item, next, &text_map->text_lmaps[i]);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -1496,8 +1451,7 @@ suit_err_t suit_decode_text_map_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_text_from_bstr(const suit_decode_mode_t mode,
-                                      QCBORDecodeContext *context,
+suit_err_t suit_decode_text_from_bstr(QCBORDecodeContext *context,
                                       QCBORItem *item,
                                       bool next,
                                       suit_text_map_t *text_map)
@@ -1510,7 +1464,7 @@ suit_err_t suit_decode_text_from_bstr(const suit_decode_mode_t mode,
     QCBORDecode_Init(&text_context,
                      (UsefulBufC){item->val.string.ptr, item->val.string.len},
                      QCBOR_DECODE_MODE_MAP_AS_ARRAY);
-    result = suit_decode_text_map_from_item(mode, &text_context, item, true, text_map);
+    result = suit_decode_text_map_from_item(&text_context, item, true, text_map);
     QCBORError error = QCBORDecode_Finish(&text_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -1519,8 +1473,7 @@ suit_err_t suit_decode_text_from_bstr(const suit_decode_mode_t mode,
 }
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_TEXT */
 
-suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
-                                          QCBORDecodeContext *context,
+suit_err_t suit_decode_manifest_from_item(QCBORDecodeContext *context,
                                           QCBORItem *item,
                                           bool next,
                                           suit_manifest_t *manifest)
@@ -1542,7 +1495,7 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
         if (result != SUIT_SUCCESS) {
             return result;
         }
-        if (label > item->label.int64 && !mode.ALLOW_NOT_CANONICAL_CBOR) {
+        if (label > item->label.int64) {
             return SUIT_ERR_NOT_CANONICAL_CBOR;
         }
         label = item->label.int64;
@@ -1560,22 +1513,22 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
             manifest->sequence_number = item->val.uint64;
             break;
         case SUIT_COMMON:
-            result = suit_decode_common_from_bstr(mode, context, item, false, &manifest->common);
+            result = suit_decode_common_from_bstr(context, item, false, &manifest->common);
             break;
         case SUIT_MANIFEST_COMPONENT_ID:
 #if defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
             return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-            result = suit_decode_component_identifiers_from_item(mode, context, item, false, &manifest->manifest_component_id);
+            result = suit_decode_component_identifiers_from_item(context, item, false, &manifest->manifest_component_id);
             break;
         case SUIT_DEPENDENCY_RESOLUTION:
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
-                result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.dependency_resolution);
+                result = suit_decode_digest_from_item(context, item, false, &manifest->sev_mem_dig.dependency_resolution);
             }
             else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
                 /* bstr .cbor SUIT_Command_Sequence */
-                result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->sev_man_mem.dependency_resolution);
+                result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->sev_man_mem.dependency_resolution);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -1596,10 +1549,10 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
-                result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.payload_fetch);
+                result = suit_decode_digest_from_item(context, item, false, &manifest->sev_mem_dig.payload_fetch);
             }
             else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
-                result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->sev_man_mem.payload_fetch);
+                result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->sev_man_mem.payload_fetch);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -1620,11 +1573,11 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
-                result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.candidate_verification);
+                result = suit_decode_digest_from_item(context, item, false, &manifest->sev_mem_dig.candidate_verification);
             }
             else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
                 /* bstr .cbor SUIT_Command_Sequence */
-                result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->sev_man_mem.candidate_verification);
+                result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->sev_man_mem.candidate_verification);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -1645,11 +1598,11 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
-                result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.install);
+                result = suit_decode_digest_from_item(context, item, false, &manifest->sev_mem_dig.install);
             }
             else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
                 /* bstr .cbor SUIT_Command_Sequence */
-                result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->sev_man_mem.install);
+                result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->sev_man_mem.install);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -1670,11 +1623,11 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
-                result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.text);
+                result = suit_decode_digest_from_item(context, item, false, &manifest->sev_mem_dig.text);
             }
             else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
                 /* bstr .cbor SUIT_Text_Map */
-                result = suit_decode_text_from_bstr(mode, context, item, false, &manifest->sev_man_mem.text);
+                result = suit_decode_text_from_bstr(context, item, false, &manifest->sev_man_mem.text);
                 if (result != SUIT_SUCCESS) {
                     return result;
                 }
@@ -1695,7 +1648,7 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #else
             if (item->uDataType == QCBOR_TYPE_ARRAY) {
                 /* SUIT_Digest */
-                result = suit_decode_digest_from_item(mode, context, item, false, &manifest->sev_mem_dig.coswid);
+                result = suit_decode_digest_from_item(context, item, false, &manifest->sev_mem_dig.coswid);
             }
             else if (item->uDataType == QCBOR_TYPE_BYTE_STRING) {
                 /* bstr .cbor concise-swid-tag */
@@ -1718,19 +1671,19 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
             return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-            result = suit_decode_set_version_from_bstr(mode, context, item, false, &manifest->unsev_mem.set_version);
+            result = suit_decode_set_version_from_bstr(context, item, false, &manifest->unsev_mem.set_version);
             break;
 #endif /* LIBCSUIT_DISABLE_MANIFEST_SET_VERSION */
 
         case SUIT_VALIDATE:
-            result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.validate);
+            result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->unsev_mem.validate);
             break;
 
         case SUIT_LOAD:
 #if defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
             return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-            result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.load);
+            result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->unsev_mem.load);
 #endif /* LIBCSUIT_DISABLE_MANIFEST_LOAD */
             break;
 
@@ -1738,7 +1691,7 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_MANIFEST_INVOKE)
             return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-            result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.invoke);
+            result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->unsev_mem.invoke);
 #endif /* LIBCSUIT_DISABLE_MANIFEST_INVOKE */
             break;
 
@@ -1747,7 +1700,7 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
             return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-            result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &manifest->unsev_mem.uninstall);
+            result = suit_decode_command_sequence_from_bstr(context, item, false, &manifest->unsev_mem.uninstall);
 #endif /* LIBCSUIT_DISABLE_MANIFEST_UNINSTALL */
             break;
 
@@ -1773,16 +1726,15 @@ suit_err_t suit_decode_manifest_from_item(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_manifest(const suit_decode_mode_t mode,
-                                suit_buf_t *buf,
+suit_err_t suit_decode_manifest(UsefulBufC buf,
                                 suit_manifest_t *manifest)
 {
     QCBORDecodeContext manifest_context;
     QCBORItem item;
     QCBORDecode_Init(&manifest_context,
-                     (UsefulBufC){buf->ptr, buf->len},
+                     buf,
                      QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_manifest_from_item(mode, &manifest_context, &item, true, manifest);
+    suit_err_t result = suit_decode_manifest_from_item(&manifest_context, &item, true, manifest);
     QCBORError error = QCBORDecode_Finish(&manifest_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -1790,8 +1742,7 @@ suit_err_t suit_decode_manifest(const suit_decode_mode_t mode,
     return result;
 }
 
-suit_err_t suit_decode_manifest_from_bstr(const suit_decode_mode_t mode,
-                                          QCBORDecodeContext *context,
+suit_err_t suit_decode_manifest_from_bstr(QCBORDecodeContext *context,
                                           QCBORItem *item,
                                           bool next,
                                           suit_manifest_t *manifest,
@@ -1804,19 +1755,16 @@ suit_err_t suit_decode_manifest_from_bstr(const suit_decode_mode_t mode,
 
     /* verify the SUIT_Manifest with SUIT_Digest */
     result = suit_verify_item(context, item, digest);
-    if (!suit_continue(mode, result)) {
+    if (result != SUIT_SUCCESS) {
         return result;
     }
     if (result == SUIT_SUCCESS) {
         manifest->is_verified = true;
     }
-    suit_buf_t buf = {.ptr = (uint8_t *)item->val.string.ptr, .len = item->val.string.len};
-
-    return suit_decode_manifest(mode, &buf, manifest);
+    return suit_decode_manifest(item->val.string, manifest);
 }
 
-suit_err_t suit_decode_authentication_wrapper_from_item(const suit_decode_mode_t mode,
-                                                        QCBORDecodeContext *context,
+suit_err_t suit_decode_authentication_wrapper_from_item(QCBORDecodeContext *context,
                                                         QCBORItem *item,
                                                         bool next,
                                                         suit_authentication_wrapper_t *wrapper,
@@ -1836,10 +1784,8 @@ suit_err_t suit_decode_authentication_wrapper_from_item(const suit_decode_mode_t
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    suit_buf_t digest_buf;
-    digest_buf.ptr = (uint8_t *)item->val.string.ptr;
-    digest_buf.len = item->val.string.len;
-    result = suit_decode_digest(mode, &digest_buf, &wrapper->digest);
+    UsefulBufC digest_bytes = item->val.string;
+    result = suit_decode_digest(item->val.string, &wrapper->digest);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -1850,12 +1796,9 @@ suit_err_t suit_decode_authentication_wrapper_from_item(const suit_decode_mode_t
             suit_qcbor_skip_any(context, item);
             continue;
         }
-        suit_buf_t *buf = &wrapper->signatures[i];
-        buf->ptr = (uint8_t *)item->val.string.ptr;
-        buf->len = item->val.string.len;
-
+        wrapper->signatures[i] = item->val.string;
         for (int32_t j = 0; j < SUIT_MAX_KEY_NUM; j++) {
-            result = suit_decode_authentication_block(buf, &digest_buf, &mechanisms[j].key);
+            result = suit_decode_authentication_block(wrapper->signatures[i], digest_bytes, &mechanisms[j].key);
             if (result == SUIT_SUCCESS) {
                 verified = true;
                 mechanisms[j].use = true;
@@ -1867,15 +1810,14 @@ suit_err_t suit_decode_authentication_wrapper_from_item(const suit_decode_mode_t
     return (verified) ? SUIT_SUCCESS : SUIT_ERR_FAILED_TO_VERIFY;
 }
 
-suit_err_t suit_decode_authentication_wrapper(const suit_decode_mode_t mode,
-                                              suit_buf_t *buf,
+suit_err_t suit_decode_authentication_wrapper(UsefulBufC buf,
                                               suit_authentication_wrapper_t *wrapper,
                                               suit_mechanism_t mechanisms[])
 {
     QCBORDecodeContext auth_context;
     QCBORItem item;
-    QCBORDecode_Init(&auth_context, (UsefulBufC){buf->ptr, buf->len}, QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_authentication_wrapper_from_item(mode, &auth_context, &item, true, wrapper, mechanisms);
+    QCBORDecode_Init(&auth_context, buf, QCBOR_DECODE_MODE_NORMAL);
+    suit_err_t result = suit_decode_authentication_wrapper_from_item(&auth_context, &item, true, wrapper, mechanisms);
     QCBORError error = QCBORDecode_Finish(&auth_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);
@@ -1965,8 +1907,7 @@ suit_err_t suit_decode_delegation(UsefulBufC buf,
 }
 #endif /* !LIBCSUIT_DISABLE_ENVELOPE_DELGATION */
 
-suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
-                                          QCBORDecodeContext *context,
+suit_err_t suit_decode_envelope_from_item(QCBORDecodeContext *context,
                                           QCBORItem *item,
                                           bool next,
                                           suit_envelope_t *envelope,
@@ -1994,9 +1935,8 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
         return SUIT_ERR_INVALID_TYPE_OF_VALUE;
     }
     size_t map_count = item->val.uCount;
-    bool is_authentication_set = (mode.SKIP_AUTHENTICATION_FAILURE) ? true : false;
+    bool is_authentication_set = false;
     bool is_manifest_set = false;
-    suit_buf_t buf;
     int64_t label = INT64_MIN;
     for (size_t i = 0; i < map_count; i++) {
         result = suit_qcbor_get_next(context, item, QCBOR_TYPE_ANY);
@@ -2010,7 +1950,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
             }
             label = INT64_MAX;
             suit_payload_t *payload = &envelope->payloads.payload[envelope->payloads.len];
-            if (envelope->payloads.len > 0 && !mode.ALLOW_NOT_CANONICAL_CBOR) {
+            if (envelope->payloads.len > 0) {
                 size_t len = (payload->key.len < item->label.string.len) ? payload->key.len : item->label.string.len;
                 if (memcmp(payload->key.ptr, item->label.string.ptr, len) >= 0 && len == item->label.string.len) {
                     return SUIT_ERR_NOT_CANONICAL_CBOR;
@@ -2025,7 +1965,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
             return SUIT_ERR_NOT_IMPLEMENTED;
         }
         else if (item->uLabelType == QCBOR_TYPE_INT64) {
-            if (label > item->label.int64 && !mode.ALLOW_NOT_CANONICAL_CBOR) {
+            if (label > item->label.int64) {
                 return SUIT_ERR_NOT_CANONICAL_CBOR;
             }
             label = item->label.int64;
@@ -2045,17 +1985,15 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
                 if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
                     return SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 }
-                buf.ptr = (uint8_t *)item->val.string.ptr;
-                buf.len = item->val.string.len;
-                result = suit_decode_authentication_wrapper(mode, &buf, &envelope->wrapper, mechanisms);
+                result = suit_decode_authentication_wrapper(item->val.string, &envelope->wrapper, mechanisms);
                 if (result == SUIT_SUCCESS) {
                     is_authentication_set = true;
                 }
                 break;
 
             case SUIT_MANIFEST:
-                if (is_authentication_set || mode.SKIP_AUTHENTICATION_FAILURE) {
-                    result = suit_decode_manifest_from_bstr(mode, context, item, false, &envelope->manifest, &envelope->wrapper.digest);
+                if (is_authentication_set) {
+                    result = suit_decode_manifest_from_bstr(context, item, false, &envelope->manifest, &envelope->wrapper.digest);
                     if (result != SUIT_SUCCESS) {
                         return result;
                     }
@@ -2071,13 +2009,13 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_ENVELOPE_PAYLOAD_FETCH)
                 return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-                if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
+                if (is_authentication_set && is_manifest_set) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.payload_fetch);
-                    if (!suit_continue(mode, result)) {
+                    if (result != SUIT_SUCCESS) {
                         return result;
                     }
                     envelope->manifest.sev_man_mem.payload_fetch_status |= SUIT_SEVERABLE_IS_VERIFIED;
-                    result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &envelope->manifest.sev_man_mem.payload_fetch);
+                    result = suit_decode_command_sequence_from_bstr(context, item, false, &envelope->manifest.sev_man_mem.payload_fetch);
                     if (result != SUIT_SUCCESS) {
                         return result;
                     }
@@ -2098,13 +2036,13 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_ENVELOPE_INSTALL)
                 return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-                if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
+                if (is_authentication_set && is_manifest_set) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.install);
-                    if (!suit_continue(mode, result)) {
+                    if (result != SUIT_SUCCESS) {
                         return result;
                     }
                     envelope->manifest.sev_man_mem.install_status |= SUIT_SEVERABLE_IS_VERIFIED;
-                    result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &envelope->manifest.sev_man_mem.install);
+                    result = suit_decode_command_sequence_from_bstr(context, item, false, &envelope->manifest.sev_man_mem.install);
                     if (result != SUIT_SUCCESS) {
                         return result;
                     }
@@ -2125,13 +2063,13 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_ENVELOPE_TEXT)
                 return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-                if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
+                if (is_authentication_set && is_manifest_set) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.text);
-                    if (!suit_continue(mode, result)) {
+                    if (result != SUIT_SUCCESS) {
                         return result;
                     }
                     envelope->manifest.sev_man_mem.text_status |= SUIT_SEVERABLE_IS_VERIFIED;
-                    result = suit_decode_text_from_bstr(mode, context, item, false, &envelope->manifest.sev_man_mem.text);
+                    result = suit_decode_text_from_bstr(context, item, false, &envelope->manifest.sev_man_mem.text);
                     if (result != SUIT_SUCCESS) {
                         return result;
                     }
@@ -2152,9 +2090,9 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_ENVELOPE_COSWID)
                 return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-                if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
+                if (is_authentication_set && is_manifest_set) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.coswid);
-                    if (!suit_continue(mode, result)) {
+                    if (result != SUIT_SUCCESS) {
                         break;
                     }
                     envelope->manifest.sev_man_mem.coswid_status |= SUIT_SEVERABLE_IS_VERIFIED;
@@ -2180,12 +2118,12 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 #if defined(LIBCSUIT_DISABLE_ENVELOPE_DEPENDENCY_RESOLUTION)
                 return SUIT_ERR_NOT_IMPLEMENTED;
 #else
-                if ((is_authentication_set && is_manifest_set) || mode.SKIP_AUTHENTICATION_FAILURE) {
+                if (is_authentication_set && is_manifest_set) {
                     result = suit_verify_item(context, item, &envelope->manifest.sev_mem_dig.dependency_resolution);
-                    if (!suit_continue(mode, result)) {
+                    if (result != SUIT_SUCCESS) {
                         break;
                     }
-                    result = suit_decode_command_sequence_from_bstr(mode, context, item, false, &envelope->manifest.sev_man_mem.dependency_resolution);
+                    result = suit_decode_command_sequence_from_bstr(context, item, false, &envelope->manifest.sev_man_mem.dependency_resolution);
                     if (result != SUIT_SUCCESS) {
                         return result;
                     }
@@ -2205,7 +2143,7 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
             default:
                 return SUIT_ERR_NOT_IMPLEMENTED;
             }
-            if (!suit_continue(mode, result)) {
+            if (result != SUIT_SUCCESS) {
                 return result;
             }
             if (result != SUIT_SUCCESS && !suit_qcbor_skip_any(context, item)) {
@@ -2220,17 +2158,16 @@ suit_err_t suit_decode_envelope_from_item(const suit_decode_mode_t mode,
 /*
     Public function. See suit_manifest_decode.h
  */
-suit_err_t suit_decode_envelope(const suit_decode_mode_t mode,
-                                suit_buf_t *buf,
+suit_err_t suit_decode_envelope(UsefulBufC buf,
                                 suit_envelope_t *envelope,
                                 suit_mechanism_t mechanisms[])
 {
     QCBORDecodeContext decode_context;
     QCBORItem item;
     QCBORDecode_Init(&decode_context,
-                     (UsefulBufC){buf->ptr, buf->len},
+                     buf,
                      QCBOR_DECODE_MODE_NORMAL);
-    suit_err_t result = suit_decode_envelope_from_item(mode, &decode_context, &item, true, envelope, mechanisms);
+    suit_err_t result = suit_decode_envelope_from_item(&decode_context, &item, true, envelope, mechanisms);
     QCBORError error = QCBORDecode_Finish(&decode_context);
     if (error != QCBOR_SUCCESS && result == SUIT_SUCCESS) {
         result = suit_error_from_qcbor_error(error);

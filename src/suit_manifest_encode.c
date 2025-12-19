@@ -90,6 +90,26 @@ suit_err_t suit_encode_append_manifest(const suit_encode_t *suit_encode,
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_encode_append_version_match(const suit_version_match_t *version_match,
+                                            const uint32_t label,
+                                            QCBOREncodeContext *context)
+{
+    if (label > 0) {
+        /* in map */
+        QCBOREncode_OpenArrayInMapN(context, label);
+    }
+    else {
+        QCBOREncode_OpenArray(context);
+    }
+    QCBOREncode_AddInt64(context, version_match->type);
+    QCBOREncode_OpenArray(context);
+    for (size_t i = 0; i < version_match->value.len; i++) {
+        QCBOREncode_AddInt64(context, version_match->value.int64[i]);
+    }
+    QCBOREncode_CloseArray(context);
+    return SUIT_SUCCESS;
+}
+
 suit_err_t suit_encode_append_digest(const suit_digest_t *digest,
                                      const uint32_t label,
                                      QCBOREncodeContext *context)
@@ -152,7 +172,7 @@ suit_err_t suit_generate_digest_include_header(const uint8_t *ptr,
         return result;
     }
     digest->algorithm_id = SUIT_ALGORITHM_ID_SHA256;
-    return suit_generate_digest_using_encode_buf(t_buf.ptr, t_buf.len, suit_encode, digest);
+    return suit_generate_digest_using_encode_buf(t_buf, suit_encode, digest);
 }
 
 suit_err_t suit_generate_encoded_digest(const uint8_t *ptr,
@@ -636,8 +656,7 @@ suit_err_t suit_encode_append_component_identifier(const suit_component_identifi
         QCBOREncode_OpenArray(context);
     }
     for (size_t j = 0; j < component_id->len; j++) {
-        const suit_buf_t *identifier = &component_id->identifier[j];
-        QCBOREncode_AddBytes(context, (UsefulBufC){.ptr = identifier->ptr, .len = identifier->len});
+        QCBOREncode_AddBytes(context, component_id->identifier[j]);
     }
     QCBOREncode_CloseArray(context);
     return SUIT_SUCCESS;
@@ -1246,8 +1265,7 @@ suit_err_t suit_encode_manifest(const suit_envelope_t *envelope,
 /*
     Public function. See suit_manifest_encode.h
  */
-suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
-                                const suit_envelope_t *envelope,
+suit_err_t suit_encode_envelope(const suit_envelope_t *envelope,
                                 const suit_mechanism_t *mechanisms,
                                 uint8_t **buf,
                                 size_t *len)
@@ -1305,7 +1323,7 @@ suit_err_t suit_encode_envelope(const suit_decode_mode_t mode,
         default:
             result = SUIT_ERR_NOT_IMPLEMENTED;
         }
-        if (!suit_continue(mode, result)) {
+        if (result != SUIT_SUCCESS) {
             return result;
         }
 
@@ -1372,4 +1390,3 @@ out:
     }
     return result;
 }
-

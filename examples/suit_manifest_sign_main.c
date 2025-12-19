@@ -12,29 +12,25 @@
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
 #if defined(SUIT_MANIFEST_SIGNER_TRUST_ANCHOR)
-#include "trust_anchor_prime256v1_cose_key_private.h"
-UsefulBufC private_key = trust_anchor_prime256v1_cose_key_private;
+#include "trust_anchor_esp256_cose_key_private.h"
+UsefulBufC private_key = trust_anchor_esp256_cose_key_private;
 UsefulBufC public_key = NULLUsefulBufC;
-int cose_algorithm = T_COSE_ALGORITHM_ESP256;
 cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
 #elif defined(SUIT_MANIFEST_SIGNER_TAM)
-#include "tam_es256_cose_key_private.h"
-UsefulBufC private_key = tam_es256_cose_key_private;
-#include "trust_anchor_prime256v1_cose_key_public.h"
-UsefulBufC public_key = trust_anchor_prime256v1_cose_key_public;
-int cose_algorithm = T_COSE_ALGORITHM_ESP256;
+#include "tam_esp256_cose_key_private.h"
+UsefulBufC private_key = tam_esp256_cose_key_private;
+#include "trust_anchor_esp256_cose_key_public.h"
+UsefulBufC public_key = trust_anchor_esp256_cose_key_public;
 cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
 #elif defined(SUIT_MANIFEST_SIGNER_MAC)
 #include "trust_anchor_hmac256_cose_key_secret.h"
 UsefulBufC private_key = trust_anchor_hmac256_cose_key_secret;
 UsefulBufC public_key = NULLUsefulBufC;
-int cose_algorithm = T_COSE_ALGORITHM_HMAC256;
 cbor_tag_key_t cose_tag = CBOR_TAG_COSE_MAC0;
 #else
 #error Signing key is not specified
 UsefulBufC private_key = NULLUsefulBufC;
 UsefulBufC public_key = NULLUsefulBufC;
-int cose_algorithm = 0;
 cbor_tag_key_t cose_tag = 0;
 #endif
 
@@ -55,10 +51,9 @@ int main(int argc,
     char *input_file = argv[1];
     char *output_file = argv[2];
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
-    uint8_t *manifest_buf = NULL;
+    UsefulBuf manifest;
     uint8_t *encode_buf = NULL;
 
-    mechanisms[0].key.cose_algorithm_id = cose_algorithm;
     result = suit_set_suit_key_from_cose_key(private_key, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create signing key. %s(%d)\n", suit_err_to_str(result), result);
@@ -68,7 +63,6 @@ int main(int argc,
     mechanisms[0].use = true;
 
     if (!UsefulBuf_IsNULLOrEmptyC(public_key)) {
-        mechanisms[1].key.cose_algorithm_id = cose_algorithm;
         result = suit_set_suit_key_from_cose_key(public_key, &mechanisms[1].key);
         if (result != SUIT_SUCCESS) {
             printf("main : Failed to create verification key of trust anchor. %s(%d)\n", suit_err_to_str(result), result);
@@ -80,26 +74,23 @@ int main(int argc,
 
     // Read manifest file.
     printf("main : Read Manifest file.\n");
-    manifest_buf = malloc(SUIT_MAX_DATA_SIZE);
-    if (manifest_buf == NULL) {
+    manifest.ptr = malloc(SUIT_MAX_DATA_SIZE);
+    if (manifest.ptr == NULL) {
         printf("main : Failed to allocate memory.\n");
         goto out;
     }
-    size_t manifest_len = read_from_file(input_file, manifest_buf, SUIT_MAX_DATA_SIZE);
-    if (manifest_len == 0) {
+    manifest.len = read_from_file(input_file, manifest.ptr, SUIT_MAX_DATA_SIZE);
+    if (manifest.len == 0) {
         printf("main : Failed to read Manifest file.\n");
         goto out;
     }
-    suit_print_hex(manifest_buf, manifest_len);
+    suit_print_hex(manifest.ptr, manifest.len);
     printf("\n\n");
 
     // Decode manifest file.
     printf("main : Decode Manifest file.\n");
-    suit_decode_mode_t mode;
-    mode.SKIP_AUTHENTICATION_FAILURE = 1;
     suit_envelope_t envelope = {0};
-    suit_buf_t buf = {.ptr = manifest_buf, .len = manifest_len};
-    result = suit_decode_envelope(mode, &buf, &envelope, mechanisms);
+    result = suit_decode_envelope(UsefulBuf_Const(manifest), &envelope, mechanisms);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to parse Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
@@ -107,7 +98,7 @@ int main(int argc,
 
     // Print manifest.
     printf("\nmain : Print Decoded Manifest.\n");
-    result = suit_print_envelope(mode, &envelope, indent, tabstop);
+    result = suit_print_envelope(&envelope, indent, tabstop);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to print Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
@@ -122,28 +113,19 @@ int main(int argc,
     size_t encode_len = SUIT_MAX_DATA_SIZE;
     uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
-    result = suit_encode_envelope(mode, &envelope, mechanisms, &ret_pos, &encode_len);
+    result = suit_encode_envelope(&envelope, mechanisms, &ret_pos, &encode_len);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
     printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
 
-    // Print manifest.
-    /*
-    printf("\nmain : Print Signed Manifest.\n");
-    result = suit_print_envelope(mode, &envelope, indent, tabstop);
-    if (result != SUIT_SUCCESS) {
-        printf("main : Failed to print Manifest file. %s(%d)\n", suit_err_to_str(result), result);
-        return EXIT_FAILURE;
-    }
-    */
-
     write_to_file(output_file, ret_pos, encode_len);
     ret = EXIT_SUCCESS;
 out:
-    if (manifest_buf != NULL) {
-        free(manifest_buf);
+    if (manifest.ptr != NULL) {
+        free(manifest.ptr);
+        manifest.ptr = NULL;
     }
     if (encode_buf != NULL) {
         free(encode_buf);

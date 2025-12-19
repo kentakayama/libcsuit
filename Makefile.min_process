@@ -6,9 +6,9 @@
 
 CFLAGS ?= -Os
 WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
-LOCAL_CFLAGS = $(WARNING_CFLAGS) -I /usr/local/include -I ./examples/inc
+LOCAL_CFLAGS = $(WARNING_CFLAGS) -I ./examples/inc
 LDFLAGS ?=
-LOCAL_LDFLAGS = -L /usr/local/lib -lcsuit -lt_cose -lqcbor -lm
+LOCAL_LDFLAGS = -lcsuit -lt_cose -lqcbor -lm
 LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \
 	-Xlinker --wrap=suit_store_callback \

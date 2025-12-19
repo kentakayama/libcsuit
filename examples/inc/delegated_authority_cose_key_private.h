@@ -5,14 +5,22 @@
  *
  */
 
-#ifndef DELEGATED_AUTHORITY_ES256_COSE_KEY_PRIVATE_H
-#define DELEGATED_AUTHORITY_ES256_COSE_KEY_PRIVATE_H
+#ifndef DELEGATED_AUTHORITY_ESP256_COSE_KEY_PRIVATE_H
+#define DELEGATED_AUTHORITY_ESP256_COSE_KEY_PRIVATE_H
 #include "qcbor/UsefulBuf.h"
 
-const unsigned char delegated_authority_es256_cose_key_private_buf[] = {
-    0xA5,                                 //# map(5)
+const unsigned char delegated_authority_esp256_cose_key_private_buf[] = {
+    0xA7,                                 //# map(7)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
+       0x02,                              //# unsigned(2) / 2 = kid /
+       0x58, 0x20,                        //# bytes(32)
+          0xC7, 0x70, 0xEC, 0x53, 0x5D, 0x8C, 0x94, 0x95,
+          0x86, 0x32, 0x4A, 0xDA, 0xF2, 0xDD, 0xFF, 0xB7,
+          0x6B, 0x1A, 0x85, 0x2D, 0xFA, 0x52, 0xE1, 0x9C,
+          0x80, 0xF7, 0x44, 0x0E, 0xC1, 0x63, 0xBE, 0xEA,
+       0x03,                              //# unsigned(3) / 3 = alg /
+       0x28,                              //# negative(8) / -9 = ESP256 /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
@@ -34,8 +42,8 @@ const unsigned char delegated_authority_es256_cose_key_private_buf[] = {
           0x77, 0xD2, 0x3D, 0x2A, 0xC5, 0xBF, 0x2B, 0x6B,
           0x2D, 0x83, 0x79, 0x43, 0x2A, 0x1F, 0xEA, 0x98,
 };
-const UsefulBufC delegated_authority_es256_cose_key_private = {
-    .ptr = delegated_authority_es256_cose_key_private_buf,
-    .len = sizeof(delegated_authority_es256_cose_key_private_buf)
+const UsefulBufC delegated_authority_esp256_cose_key_private = {
+    .ptr = delegated_authority_esp256_cose_key_private_buf,
+    .len = sizeof(delegated_authority_esp256_cose_key_private_buf)
 };
-#endif /* DELEGATED_AUTHORITY_ES256_COSE_KEY_PRIVATE_H */
+#endif /* DELEGATED_AUTHORITY_ESP256_COSE_KEY_PRIVATE_H */

@@ -5,14 +5,22 @@
  *
  */
 
-#ifndef TRUST_ANCHOR_PRIME256V1_COSE_KEY_PUBLIC_H
-#define TRUST_ANCHOR_PRIME256V1_COSE_KEY_PUBLIC_H
+#ifndef TRUST_ANCHOR_ECDH_ES_A128KW_COSE_KEY_PUBLIC_H
+#define TRUST_ANCHOR_ECDH_ES_A128KW_COSE_KEY_PUBLIC_H
 #include "qcbor/UsefulBuf.h"
 
-const unsigned char trust_anchor_prime256v1_cose_key_public_buf[] = {
-    0xA4,                                 //# map(4)
+const unsigned char trust_anchor_ecdh_es_a128kw_cose_key_public_buf[] = {
+    0xA6,                                 //# map(6)
        0x01,                              //# unsigned(1) / 1 = kty /
        0x02,                              //# unsigned(2) / 2 = EC2 /
+       0x02,                              //# unsigned(2) / 2 = kid /
+       0x58, 0x20,                        //# bytes(32)
+          0xCA, 0x9E, 0x35, 0xF2, 0x3B, 0x2B, 0x52, 0x5F,
+          0xB4, 0xFC, 0x83, 0xF5, 0x12, 0xB0, 0xDC, 0xAC,
+          0x4A, 0xC2, 0x9E, 0x45, 0x7E, 0x87, 0x3A, 0x5D,
+          0x6A, 0x73, 0x13, 0xF7, 0x16, 0x90, 0xB3, 0x3C,
+       0x03,                              //# unsigned(3) / 3 = alg /
+       0x38, 0x1C,                        //# negative(28) / -29 = ECDH-ES+A128KW /
        0x20,                              //# negative(0) / -1 = crv /
        0x01,                              //# unsigned(1) / 1 = P-256 /
        0x21,                              //# negative(1) / -2 = x /
@@ -29,8 +37,8 @@ const unsigned char trust_anchor_prime256v1_cose_key_public_buf[] = {
           0x39, 0x91, 0xDB, 0x73, 0x38, 0xB4, 0xA8, 0x96,
 };
 
-const UsefulBufC trust_anchor_prime256v1_cose_key_public = {
-    .ptr = trust_anchor_prime256v1_cose_key_public_buf,
-    .len = sizeof(trust_anchor_prime256v1_cose_key_public_buf)
+const UsefulBufC trust_anchor_esdh_es_a128kw_cose_key_public = {
+    .ptr = trust_anchor_ecdh_es_a128kw_cose_key_public_buf,
+    .len = sizeof(trust_anchor_ecdh_es_a128kw_cose_key_public_buf)
 };
-#endif /* TRUST_ANCHOR_PRIME256V1_COSE_KEY_PUBLIC_H */
+#endif /* TRUST_ANCHOR_ECDH_ES_A128KW_COSE_KEY_PUBLIC_H */

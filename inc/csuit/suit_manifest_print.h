@@ -16,6 +16,7 @@
 #include <string.h>
 #include "suit_common.h"
 #include "suit_manifest_decode.h"
+#include "suit_manifest_process.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,20 +50,20 @@ suit_err_t suit_print_hex(const uint8_t *array, size_t size);
 suit_err_t suit_print_bytestr(const uint8_t *bytes, size_t len);
 
 suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_list, const uint32_t indent_space, const uint32_t indent_delta);
-suit_err_t suit_print_cmd_seq(suit_decode_mode_t mode, const suit_command_sequence_t *cmd_seq, const uint32_t indent_space, const uint32_t indent_delta);
+suit_err_t suit_print_cmd_seq(const suit_command_sequence_t *cmd_seq, const uint32_t indent_space, const uint32_t indent_delta);
 suit_err_t suit_print_component_identifier(const suit_component_identifier_t *identifier);
 suit_err_t suit_print_digest(const suit_digest_t *digest, const uint32_t indent_space, const uint32_t indent_delta);
-suit_err_t suit_print_envelope(suit_decode_mode_t mode, const suit_envelope_t *envelope, const uint32_t indent_space, const uint32_t indent_delta);
+suit_err_t suit_print_envelope(const suit_envelope_t *envelope, const uint32_t indent_space, const uint32_t indent_delta);
 
 /*!
     \brief  Print SUIT fetch callback
 
     \param[in]      fetch_args      Fetch and suit-report arguments. See \ref suit_fetch_args_t.
-    \param[out]     fetch_ret       Fetch result. See \ref suit_fetch_ret_t.
+    \param[out]     fetch_ret       Fetch result. See \ref suit_callback_ret_t.
     Triggered on \ref SUIT_DIRECTIVE_FETCH.
     \return         This returns one of the error codes defined by \ref suit_err_t.
 */
-suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args, suit_fetch_ret_t *fetch_ret);
+suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args, suit_callback_ret_t *fetch_ret);
 
 /*!
     \brief Print SUIT store callback
