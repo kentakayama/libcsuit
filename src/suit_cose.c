@@ -289,7 +289,7 @@ enum t_cose_err_t suit_encrypt_cose_encrypt_aeskw(const UsefulBufC plaintext_pay
     struct t_cose_encrypt_enc encrypt_context;
 
     t_cose_recipient_enc_keywrap_init(&kw_recipient, mechanism->key.cose_algorithm_id);
-    t_cose_recipient_enc_keywrap_set_key(&kw_recipient, mechanism->key.cose_key, mechanism->kid);
+    t_cose_recipient_enc_keywrap_set_key(&kw_recipient, mechanism->key.cose_key, mechanism->key.kid);
 
     t_cose_encrypt_enc_init(&encrypt_context, T_COSE_OPT_MESSAGE_TYPE_ENCRYPT, T_COSE_ALGORITHM_A128GCM);
     t_cose_encrypt_add_recipient(&encrypt_context, (struct t_cose_recipient_enc *)&kw_recipient);
@@ -848,8 +848,14 @@ suit_err_t suit_free_key(const suit_key_t *key)
 
 suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context,
                                                      QCBORItem *item,
-                                                     suit_key_t *suit_key)
+                                                     suit_key_t *key)
 {
+    if (key == NULL) {
+        return SUIT_ERR_NO_MEMORY;
+    }
+    memset(key, 0, sizeof(suit_key_t));
+    key->kid = NULLUsefulBufC;
+
     suit_err_t result;
     QCBORError error;
     if (item->uDataType != QCBOR_TYPE_MAP) {
@@ -891,6 +897,18 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
             default:
                 return SUIT_ERR_NOT_IMPLEMENTED;
             }
+            break;
+        case SUIT_COSE_KID:
+            if (item->uDataType != QCBOR_TYPE_BYTE_STRING) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            key->kid = item->val.string;
+            break;
+        case SUIT_COSE_ALG:
+            if (item->uDataType != QCBOR_TYPE_INT64) {
+                return SUIT_ERR_INVALID_TYPE_OF_VALUE;
+            }
+            key->cose_algorithm_id = item->val.int64;
             break;
         case -1:
             if (kty == SUIT_COSE_KTY_EC2) {
@@ -971,14 +989,14 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
             }
             if (key_params.d.len == PRIME256V1_PRIVATE_KEY_LENGTH) {
                 // TODO: can we limit EC P-256 for ES256?
-                if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
-                    result = suit_key_init_ecdh_p256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+                if (key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+                    result = suit_key_init_ecdh_p256_key_pair(key_params.d.ptr, public_key.ptr, key);
                 }
-                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
-                    result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+                else if (key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                    result = suit_key_init_es256_key_pair(key_params.d.ptr, public_key.ptr, key);
                 }
-                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ESP256) {
-                    result = suit_key_init_esp256_key_pair(key_params.d.ptr, public_key.ptr, suit_key);
+                else if (key->cose_algorithm_id == T_COSE_ALGORITHM_ESP256) {
+                    result = suit_key_init_esp256_key_pair(key_params.d.ptr, public_key.ptr, key);
                 }
                 else {
                     result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -986,14 +1004,14 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
             }
             else if (key_params.d.len == 0) {
                 // TODO: can we limit EC P-256 for ES256?
-                if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
-                    result = suit_key_init_ecdh_p256_public_key(public_key.ptr, suit_key);
+                if (key->cose_algorithm_id == T_COSE_ALGORITHM_ECDH_ES_A128KW) {
+                    result = suit_key_init_ecdh_p256_public_key(public_key.ptr, key);
                 }
-                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
-                    result = suit_key_init_es256_public_key(public_key.ptr, suit_key);                    
+                else if (key->cose_algorithm_id == T_COSE_ALGORITHM_ES256) {
+                    result = suit_key_init_es256_public_key(public_key.ptr, key);
                 }
-                else if (suit_key->cose_algorithm_id == T_COSE_ALGORITHM_ESP256) {
-                    result = suit_key_init_esp256_public_key(public_key.ptr, suit_key);
+                else if (key->cose_algorithm_id == T_COSE_ALGORITHM_ESP256) {
+                    result = suit_key_init_esp256_public_key(public_key.ptr, key);
                 }
                 else {
                     result = SUIT_ERR_NOT_IMPLEMENTED;
@@ -1016,27 +1034,27 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
     case SUIT_COSE_KTY_SYMMETRIC:
         switch (key_params.k.len) {
         case 16:
-            switch (suit_key->cose_algorithm_id) {
+            switch (key->cose_algorithm_id) {
             case T_COSE_ALGORITHM_A128KW:
             default:
-                result = suit_key_init_a128kw_secret_key(key_params.k.ptr, suit_key);
+                result = suit_key_init_a128kw_secret_key(key_params.k.ptr, key);
             }
             break;
         case 24:
-            switch (suit_key->cose_algorithm_id) {
+            switch (key->cose_algorithm_id) {
             case T_COSE_ALGORITHM_A192KW:
             default:
-                result = suit_key_init_a192kw_secret_key(key_params.k.ptr, suit_key);
+                result = suit_key_init_a192kw_secret_key(key_params.k.ptr, key);
             }
             break;
         case 32:
-            switch (suit_key->cose_algorithm_id) {
+            switch (key->cose_algorithm_id) {
             case T_COSE_ALGORITHM_HMAC256:
-                result = suit_key_init_hmac256_secret_key(key_params.k.ptr, suit_key);
+                result = suit_key_init_hmac256_secret_key(key_params.k.ptr, key);
                 break;
             case T_COSE_ALGORITHM_A256KW:
             default:
-                result = suit_key_init_a256kw_secret_key(key_params.k.ptr, suit_key);
+                result = suit_key_init_a256kw_secret_key(key_params.k.ptr, key);
             }
             break;
         }
@@ -1054,13 +1072,13 @@ suit_err_t suit_set_suit_key_from_cose_key_from_item(QCBORDecodeContext *context
 }
 
 suit_err_t suit_set_suit_key_from_cose_key(UsefulBufC cose_key,
-                                           suit_key_t *suit_key)
+                                           suit_key_t *key)
 {
     QCBORDecodeContext decode_context;
     QCBORItem item;
     QCBORDecode_Init(&decode_context, cose_key, QCBOR_DECODE_MODE_NORMAL);
     QCBORDecode_PeekNext(&decode_context, &item);
-    suit_err_t result = suit_set_suit_key_from_cose_key_from_item(&decode_context, &item, suit_key);
+    suit_err_t result = suit_set_suit_key_from_cose_key_from_item(&decode_context, &item, key);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -1072,7 +1090,7 @@ suit_err_t suit_set_suit_key_from_cose_key(UsefulBufC cose_key,
 }
 
 suit_err_t suit_set_suit_key_from_cwt_payload(UsefulBufC cwt_payload,
-                                              suit_key_t *suit_key)
+                                              suit_key_t *key)
 {
     suit_err_t result;
     QCBORDecodeContext context;
@@ -1107,9 +1125,9 @@ suit_err_t suit_set_suit_key_from_cwt_payload(UsefulBufC cwt_payload,
                 }
 
                 switch (item.label.int64) {
-                case SUIT_COSE_COSE_KEY:
-                    suit_key->cose_algorithm_id = T_COSE_ALGORITHM_ES256;
-                    result = suit_set_suit_key_from_cose_key_from_item(&context, &item, suit_key);
+                case SUIT_COSE_CNF_COSE_KEY:
+                    key->cose_algorithm_id = T_COSE_ALGORITHM_ES256;
+                    result = suit_set_suit_key_from_cose_key_from_item(&context, &item, key);
                     if (result != SUIT_SUCCESS) {
                         return result;
                     }

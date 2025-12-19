@@ -316,8 +316,25 @@ typedef struct suit_condition_args {
     suit_union_parameter_t expected;
 } suit_condition_args_t;
 
-/*
- * A context for SUIT Manifest Processor
+/*!
+    \brief  A context for the SUIT Manifest Processor
+    
+    Allocate this object with:
+    
+        suit_processor_context_t *processor_context =
+            malloc(sizeof(suit_processor_context_t) + SUIT_PROCESSOR_BUFFER_SIZE);
+    
+    and free it with
+    
+        free(processor_context);
+        processor_context = NULL;
+    
+    If the size for the SUIT Manifest, to be fetched payload, etc. are expected small, you may allocate it on the stack:
+    
+        uint8_t tmp[sizeof(suit_processor_context_t) + SUIT_REPORT_BUFFER_SIZE];
+        suit_processor_context_t    processor_context = (suit_processor_context_t    )tmp;
+    
+    You don't need to free it.
  */
 typedef struct suit_processor_context {
     union {
@@ -472,22 +489,65 @@ suit_err_t suit_process_digest(QCBORDecodeContext *context,
 suit_err_t suit_process_envelope(
     suit_processor_context_t *processor_context);
 
+
+/*!
+    \brief      Initializes the SUIT Manifest Processor
+
+    \param[in]  processr_context    Pointer to the SUIT Manifest Processor itself.
+    \param[in]  buf_size            Allocated buffer size for the SUIT Manifest Processor while processing.
+    \param[in]  report_context      Pointer to the SUIT Reporting Engine. No SUIT Report will be produced on NULL.
+    \param[out] manifest            The buffer to be used for the SUIT Manifest.
+
+    Call this function first to process a SUIT Manifest.
+    The size of processor_context must be sizeof(suit_processor_context_t) + buf_size.
+    Refer \ref suit_processor_context_t .
+ */
+suit_err_t suit_processor_init(
+    suit_processor_context_t *processor_context,
+    size_t buf_size,
+    suit_report_context_t *report_context,
+    UsefulBuf *manifest);
+
+/*!
+    \brief      Assigns the SUIT Manifest to the SUIT Manifest Processor
+
+    \param[in]  processr_context    Pointer to the SUIT Manifest Processor.
+    \param[in]  manifest            The buffer initialized with the SUIT Manifest.
+    \param[in]  process_flags       Indicates which section should be processed, e.g. VALIDATE & INSTALL & INVOKE.
+
+    The manifest buffer must start from the one returned by suit_rocessor_init().
+ */
 suit_err_t suit_processor_add_manifest(
     suit_processor_context_t *processor_context,
     UsefulBufC manifest,
     suit_process_flag_t process_flags);
 
+/*!
+    \brief      Assigns a recipient key to the SUIT Manifest Processor
+
+    \param[in]  processr_context    Pointer to the SUIT Manifest Processor.
+    \param[in]  cose_tag            The tag, for example, 18 (COSE_Sign1), 17 (COSE_Mac0) or 96 (COSE_Encrypt).
+    \param[in]  cose_algorithm_id   The COSE Algorithm identifier, such as -7 (ES256).
+    \param[in]  cose_key            COSE_Key used as a sender key.
+
+    The cose_algorithm_id will be ignored if the cose_key has.
+
+ */
 suit_err_t suit_processor_add_recipient_key(
     suit_processor_context_t *processor_context,
     int cose_tag,
     int cose_algorithm_id,
     UsefulBufC cose_key);
 
-suit_err_t suit_processor_init(
-    suit_processor_context_t *processor_context,
-    size_t buf_size,
-    suit_report_context_t *report_context,
-    UsefulBuf *manifest);
+/*!
+    \brief      Terminates the the SUIT Manifest Processor
+
+    \param[in]  processr_context    Pointer to the SUIT Manifest Processor itself.
+
+    You can reuse the same processor_context with suit_processor_init().
+    NULL report_context is ignored.
+ */
+void suit_processor_free(suit_processor_context_t *processor_context);
 
 #ifdef __cplusplus
 }

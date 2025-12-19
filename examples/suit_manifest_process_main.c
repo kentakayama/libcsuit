@@ -26,6 +26,7 @@
 #include "delegated_authority_cose_key_public.h"
 #include "trust_anchor_hmac256_cose_key_secret.h"
 #include "trust_anchor_a128_cose_key_secret.h"
+#include "device_esdh_cose_key_private.h"
 #include "device_es256_cose_key_private.h"
 
 #define BUFFER_SIZE (8 * 1024 * 1024)
@@ -626,7 +627,7 @@ int main(int argc, char *argv[]) {
     };
     #define NUM_PRIVATE_KEYS_FOR_ESDH       1
     UsefulBufC private_keys_for_esdh[NUM_PRIVATE_KEYS_FOR_ESDH] = {
-        device_es256_cose_key_private,
+        device_ecdh_es_a128kw_cose_key_private,
     };
 
     reporting_engine = malloc(sizeof(suit_report_context_t) + REPORT_SIZE);
@@ -641,15 +642,15 @@ int main(int argc, char *argv[]) {
         exit_code = EXIT_FAILURE;
         goto out;
     }
-    suit_mechanism_t protection_mechanism;
-    protection_mechanism.cose_tag = 0; // raw SUIT_Report
+
+    suit_report_init_engine(reporting_engine, REPORT_SIZE);
+    suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, device_es256_cose_key_private);
     UsefulBufC nonce = NULLUsefulBufC;
-    suit_report_engine_init(reporting_engine, REPORT_SIZE, nonce, &protection_mechanism);
+    suit_report_start_encoding(reporting_engine, nonce);
 
     UsefulBuf manifest_buf;
     suit_processor_init(processor_context, BUFFER_SIZE, reporting_engine, &manifest_buf);
 
-    // Read manifest file.
     printf("\nmain : Read Manifest file.\n");
     
     manifest_buf.len = read_from_file(argv[optind], manifest_buf.ptr, manifest_buf.len);
@@ -711,7 +712,6 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    // Process manifest file.
     printf("\nmain : Process Manifest file.\n");
     suit_err = suit_process_envelope(processor_context);
     if (suit_err != SUIT_SUCCESS) {
@@ -720,12 +720,18 @@ int main(int argc, char *argv[]) {
         goto out;
     }
 
-    // Print SUIT Report
+    printf("\nSUIT Report : ");
     suit_print_hex_in_max(reporting_engine->suit_report.ptr, reporting_engine->suit_report.len, reporting_engine->suit_report.len);
+    printf("\n");
 
 out:
+    suit_processor_free(processor_context);
+    suit_report_free_engine(reporting_engine);
+
     free(processor_context);
+    processor_context = NULL;
     free(reporting_engine);
+    reporting_engine = NULL;
 
     return exit_code;
 }

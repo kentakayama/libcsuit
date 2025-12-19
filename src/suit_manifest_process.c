@@ -1288,10 +1288,8 @@ suit_err_t suit_process_try_each(suit_processor_context_t *processor_context,
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
     if (processor_context->reporting_engine != NULL) {
         if (!done_any) {
-            suit_report_result(
+            suit_report_extend_record(
                 processor_context->reporting_engine,
-                SUIT_ERR_TRY_OUT,
-                SUIT_REPORT_REASON_OPERATION_FAILED,
                 processor_context->dependency_tree,
                 processor_context->manifest_key,
                 processor_context->section_offset,
@@ -2961,10 +2959,12 @@ suit_err_t suit_processor_add_recipient_key(
         return SUIT_ERR_NO_MEMORY;
     }
 
-    processor_context->mechanisms[i].key.cose_algorithm_id = cose_algorithm_id;
     suit_err_t result = suit_set_suit_key_from_cose_key(cose_key, &processor_context->mechanisms[i].key);
     if (result != SUIT_SUCCESS) {
         return result;
+    }
+    if (processor_context->mechanisms[i].key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+        processor_context->mechanisms[i].key.cose_algorithm_id = cose_algorithm_id;
     }
     processor_context->mechanisms[i].use = true;
     processor_context->mechanisms[i].cose_tag = cose_tag;
@@ -2974,11 +2974,6 @@ suit_err_t suit_processor_add_recipient_key(
     return SUIT_SUCCESS;
 }
 
-/*
- * suit_procesor_init()
- * NULL is allowed for report_context
- * return SUIT_ERR_NOT_INITIALIZED if the reporting_engine is set but not initialized
- */
 suit_err_t suit_processor_init(
     suit_processor_context_t *processor_context,
     size_t buf_size,
@@ -2990,8 +2985,8 @@ suit_err_t suit_processor_init(
     processor_context->final_state = SUIT_SUCCESS;
     processor_context->component = NULL;
 
-    // NULL is allowed
-    if (report_context != NULL && report_context->state != SUIT_REPORTING_ENGINE_INITIALIZED) {
+    // NULL is allowed, but it should be started if exists
+    if (report_context != NULL && report_context->state != SUIT_REPORTING_ENGINE_STARTED) {
         return SUIT_ERR_NOT_INITIALIZED;
     }
     processor_context->reporting_engine = report_context;
@@ -3006,4 +3001,16 @@ suit_err_t suit_processor_init(
 
     processor_context->initialized = 1;
     return SUIT_SUCCESS;
+}
+
+void suit_processor_free(suit_processor_context_t *processor_context)
+{
+    if (processor_context == NULL) {
+        return;
+    }
+    for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
+        suit_free_key(&processor_context->mechanisms[i].key);
+        processor_context->mechanisms[i] = (suit_mechanism_t){0};
+    }
+    processor_context->status = 0;
 }

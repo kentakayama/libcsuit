@@ -181,6 +181,8 @@ suit_err_t suit_report_stop_records(suit_report_context_t *report_context)
         // in SUIT_Report, ignored
         break;
     case SUIT_REPORTING_ENGINE_NOT_INITIALIZED:
+    case SUIT_REPORTING_ENGINE_KEY_LOADED:
+    case SUIT_REPORTING_ENGINE_STARTED:
     case SUIT_REPORTING_ENGINE_SUIT_REPORT_IS_ENCODED:
     case SUIT_REPORTING_ENGINE_FINALIZED:
         return SUIT_ERR_WHILE_REPORTING;
@@ -190,7 +192,7 @@ suit_err_t suit_report_stop_records(suit_report_context_t *report_context)
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_report_reason_from_suit_err(suit_err_t result)
+suit_report_reason_t suit_report_reason_from_suit_err(suit_err_t result)
 {
     switch (result) {
     case SUIT_ERR_NOT_A_SUIT_MANIFEST:
@@ -478,7 +480,7 @@ suit_err_t suit_report_manifest_digest(
     suit_report_context_t *report_context,
     suit_digest_t digest)
 {
-    if (report_context->state != SUIT_REPORTING_ENGINE_INITIALIZED) {
+    if (report_context->state != SUIT_REPORTING_ENGINE_STARTED) {
         return SUIT_ERR_WHILE_REPORTING;
     }
     report_context->digest = digest;
@@ -487,29 +489,73 @@ suit_err_t suit_report_manifest_digest(
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_report_engine_init(
+suit_err_t suit_report_start_encoding(
     suit_report_context_t *report_context,
-    size_t buf_size,
-    UsefulBufC nonce,
-    const suit_mechanism_t *cose_protection_mechanism)
+    UsefulBufC nonce)
 {
-    report_context->state = SUIT_REPORTING_ENGINE_NOT_INITIALIZED;
+    // SUIT_Report start {
+    QCBOREncode_OpenMap(&report_context->cbor_encoder);
+    // ? suit-report-nonce         => bstr,
+    if (!UsefulBuf_IsNULLOrEmptyC(nonce)) {
+        QCBOREncode_AddBytesToMapN(&report_context->cbor_encoder, SUIT_REPORT_NONCE, nonce);
+    }
 
-    report_context->cose_protection_mechanism = cose_protection_mechanism->cose_tag;
-    QCBOREncode_Init(&report_context->cbor_encoder, (UsefulBuf){.ptr = report_context->buf, .len = buf_size});
-    switch (report_context->cose_protection_mechanism) {
-    case 0:
-        // raw SUIT_Report, do nothing here
+    // TODO: encode * SUIT_Capability_Report
+
+    report_context->state = SUIT_REPORTING_ENGINE_STARTED;
+
+    return SUIT_SUCCESS;
+}
+
+void suit_report_free_engine(suit_report_context_t *report_context)
+{
+    if (report_context == NULL) {
+        return;
+    }
+    if (report_context->cose_protection_mechanism != 0) {
+        suit_free_key(&report_context->sender_key);
+    }
+
+    report_context->state = SUIT_REPORTING_ENGINE_NOT_INITIALIZED;
+}
+
+suit_err_t suit_report_add_sender_key(
+    suit_report_context_t *report_context,
+    const int cose_tag,
+    int cose_algorithm_id,
+    UsefulBufC cose_key)
+{
+    switch (report_context->state) {
+    case SUIT_REPORTING_ENGINE_NOT_INITIALIZED:
+        return SUIT_ERR_NOT_INITIALIZED;
+    case SUIT_REPORTING_ENGINE_KEY_LOADED:
+        return SUIT_ERR_REDUNDANT;
+    case SUIT_REPORTING_ENGINE_INITIALIZED:
         break;
+    default:
+        return SUIT_ERR_WHILE_REPORTING;
+    }
+
+    if (suit_set_suit_key_from_cose_key(cose_key, &report_context->sender_key) != SUIT_SUCCESS) {
+        return SUIT_ERR_WHILE_REPORTING;
+    }
+    if (report_context->sender_key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+        // the algorithm id is overwritten by the key
+        report_context->sender_key.cose_algorithm_id = cose_algorithm_id;
+    }
+    if (report_context->sender_key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+        return SUIT_ERR_WHILE_REPORTING;
+    }
+
+    switch (cose_tag) {
     case CBOR_TAG_COSE_SIGN1:
         // use t_cose two-step sign to save memory
         t_cose_sign_sign_init(&report_context->sign_ctx,
                               T_COSE_OPT_MESSAGE_TYPE_SIGN1);
-        t_cose_signature_sign_main_init(&report_context->signer,
-                                         cose_protection_mechanism->key.cose_algorithm_id);
+        t_cose_signature_sign_main_init(&report_context->signer, report_context->sender_key.cose_algorithm_id);
         t_cose_signature_sign_main_set_signing_key(&report_context->signer,
-                                                    cose_protection_mechanism->key.cose_key,
-                                                    cose_protection_mechanism->kid);
+                                                    report_context->sender_key.cose_key,
+                                                    report_context->sender_key.kid);
         t_cose_sign_add_signer(&report_context->sign_ctx,
                                 t_cose_signature_sign_from_main(&report_context->signer));
         enum t_cose_err_t t_cose_error = 
@@ -520,17 +566,29 @@ suit_err_t suit_report_engine_init(
         }
         QCBOREncode_BstrWrap(&report_context->cbor_encoder);
         break;
-    default:
+    case CBOR_TAG_COSE_MAC0:
+    case CBOR_TAG_COSE_ENCRYPT:
         return SUIT_ERR_NOT_IMPLEMENTED;
-    }
-    // SUIT_Report start {
-    QCBOREncode_OpenMap(&report_context->cbor_encoder);
-    // ? suit-report-nonce         => bstr,
-    if (!UsefulBuf_IsNULLOrEmptyC(nonce)) {
-        QCBOREncode_AddBytesToMapN(&report_context->cbor_encoder, SUIT_REPORT_NONCE, nonce);
+    case CBOR_TAG_COSE_SIGN:
+    case CBOR_TAG_COSE_MAC:
+    default:
+        return SUIT_ERR_INVALID_VALUE;
     }
 
-    // TODO: encode * SUIT_Capability_Report
+    report_context->cose_protection_mechanism = cose_tag;
+
+    report_context->state = SUIT_REPORTING_ENGINE_KEY_LOADED;
+
+    return SUIT_SUCCESS;
+}
+
+suit_err_t suit_report_init_engine(
+    suit_report_context_t *report_context,
+    size_t buf_size)
+{
+    report_context->state = SUIT_REPORTING_ENGINE_NOT_INITIALIZED;
+
+    QCBOREncode_Init(&report_context->cbor_encoder, (UsefulBuf){.ptr = report_context->buf, .len = buf_size});
 
     report_context->state = SUIT_REPORTING_ENGINE_INITIALIZED;
 

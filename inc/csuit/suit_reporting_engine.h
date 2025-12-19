@@ -30,8 +30,64 @@
 extern "C" {
 #endif
 
-// defined in csuit/suit_manifest_process.h
+struct suit_report_context;
 struct suit_union_parameter;
+
+/*!
+    \brief      Initializes the SUIT Reporting Engine
+
+    \param[in]  report_context  Pointer to the Reporting Engine itself.
+    \param[in]  buf_size        Allocated buffer size for the Reporting Engine for encoding SUIT Report.
+
+    Call this function first to encode SUIT_Report.
+    The size of report_context must be sizeof(suit_report_context_t) + buf_size.
+    Optionally, you may call suit_report_add_sender_key() after this function.
+    Then, call suit_report_start_encoding().
+    Don't forget free it after use with suit_report_free_engine().
+ */
+suit_err_t suit_report_init_engine(
+    struct suit_report_context *report_context,
+    size_t buf_size);
+
+/*!
+    \brief      Registers a SUIT Report private key to the SUIT Reporting Engine
+
+    \param[in]  report_context      Pointer to the Reporting Engine.
+    \param[in]  cose_tag            0 (raw), 18 (COSE_Sign1), 17 (COSE_Mac0) or 16 (COSE_Encrypt0).
+    \param[in]  cose_algorithm_id   The COSE Algorithm identifier, such as -7 (ES256).
+    \param[in]  cose_key            COSE_Key used as a sender key.
+
+    The cose_algorithm_id will be ignored if the cose_key has.
+ */
+suit_err_t suit_report_add_sender_key(
+    struct suit_report_context *report_context,
+    const int cose_tag,
+    int cose_algorithm_id,
+    UsefulBufC cose_key);
+
+/*!
+    \brief      Starts the SUIT Reporting Engine
+
+    \param[in]  report_context      Pointer to the Reporting Engine.
+    \param[in]  nonce               The suit-nonce for replay protection.
+
+    Before calling this function, at least suit_report_init_engine() must be called.
+ */
+suit_err_t suit_report_start_encoding(
+    struct suit_report_context *report_context,
+    UsefulBufC nonce);
+
+/*!
+    \brief      Terminates the SUIT Reporting Engine
+
+    \param[in]  report_context      Pointer to the Reporting Engine.
+
+    You can reuse the same report_context with suit_report_init_engine().
+    NULL report_context is ignored.
+ */
+void suit_report_free_engine(struct suit_report_context *report_context);
+
+// Following structs and functions are expected to be used by the SUIT Manifest Processor
 
 /* draft-ietf-suit-report */
 
@@ -71,6 +127,11 @@ typedef enum suit_report_reason {
     SUIT_REPORT_REASON_INVOKE_PENDING           = 12, /*! Invocation is about to be attempted and the final outcome is not yet known. */
 } suit_report_reason_t;
 
+/*!
+    \brief  Returns SUIT_REPORT_READON_* from libcsuit internal error code.
+ */
+suit_report_reason_t suit_report_reason_from_suit_err(suit_err_t result);
+
 typedef enum suit_report_capability_report_key {
     SUIT_REPORT_CAPABILITY_INVALID          = 0,
     SUIT_REPORT_CAPABILITY_COMPONENT        = 1,
@@ -93,6 +154,8 @@ typedef struct suit_manifest_tree {
 enum suit_report_state {
     SUIT_REPORTING_ENGINE_NOT_INITIALIZED = 0,
     SUIT_REPORTING_ENGINE_INITIALIZED,
+    SUIT_REPORTING_ENGINE_KEY_LOADED,
+    SUIT_REPORTING_ENGINE_STARTED,
     SUIT_REPORTING_ENGINE_SUIT_DIGEST_STORED,
     SUIT_REPORTING_ENGINE_IN_REPORT_RECORD,
     SUIT_REPORTING_ENGINE_IN_SYSTEM_PROPERTY_CLAIMS,
@@ -102,22 +165,22 @@ enum suit_report_state {
 };
 
 /*!
-    \brief  A context for SUIT Reporting Engine
+    \brief  A context for the SUIT Reporting Engine
     
     Allocate this object with:
     
-         suit_report_context_t    report_context =
-             calloc(sizeof(suit_report_context_t) + SUIT_REPORT_BUFFER_SIZE);
+        suit_report_context_t *report_context =
+            malloc(sizeof(suit_report_context_t) + SUIT_REPORT_BUFFER_SIZE);
     
     and free it with
     
-         free(report_context);
-         report_context = NULL;
+        free(report_context);
+        report_context = NULL;
     
     If the size of the SUIT_Report expected small, you may allocate it on the stack
     
-         uint8_t tmp[sizeof(suit_report_context_t) + SUIT_REPORT_BUFFER_SIZE];
-         suit_report_context_t    report_context = (suit_report_context_t    )tmp;
+        uint8_t tmp[sizeof(suit_report_context_t) + SUIT_REPORT_BUFFER_SIZE];
+        suit_report_context_t report_context = (suit_report_context_t)tmp;
     
     You don't need to free it.
  */
@@ -132,7 +195,7 @@ typedef struct suit_report_context {
 
     // only COSE_Sign1 (18) is supported, and 0 means the raw SUIT_Report
     int cose_protection_mechanism;
-    // enum t_cose_err_t   t_cose_error;
+    suit_key_t sender_key;
     union {
         struct {
             struct t_cose_sign_sign_ctx         sign_ctx;
@@ -157,6 +220,20 @@ typedef struct suit_report_context {
 } suit_report_context_t;
 
 /*!
+    \brief  This function should be called after SUIT_Digest authentication.
+ */
+suit_err_t suit_report_manifest_digest(
+    suit_report_context_t *report_context,
+    suit_digest_t digest);
+
+/*!
+    \brief  This function should be called on suit-reference-uri.
+ */
+suit_err_t suit_report_manifest_reference_uri(
+    suit_report_context_t *report_context,
+    UsefulBufC reference_uri);
+
+/*!
     \brief      Stops encoding the suit-report-records
 
     \param[in]  report_context  Pointer to the context of Repoting Engine
@@ -169,21 +246,6 @@ typedef struct suit_report_context {
     The state will be \ref SUIT_REPORTING_ENGINE_RECORDING_STOPPED.
  */
 suit_err_t suit_report_stop_records(suit_report_context_t *report_context);
-
-/*!
-    \brief      St
- */
-suit_err_t suit_report_result(
-    suit_report_context_t *report_context,
-    suit_err_t final_state,
-    suit_report_reason_t reason,
-    suit_manifest_tree_t dependency_tree,
-    suit_manifest_key_t manifest_key,
-    size_t section_offset,
-    suit_con_dir_key_t condition_or_directive,
-    uint64_t component_index,
-    suit_parameter_key_t parameter_keys[],
-    const struct suit_union_parameter *parameter_value);
 
 /*!
     \brief      Finalizes the SUIT_Report encoder
@@ -258,23 +320,6 @@ suit_err_t suit_report_extend_system_property_claims(
     const suit_component_identifier_t *component,
     suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
-
-suit_err_t suit_report_manifest_reference_uri(
-    suit_report_context_t *report_context,
-    UsefulBufC reference_uri);
-
-suit_err_t suit_report_manifest_digest(
-    suit_report_context_t *report_context,
-    suit_digest_t digest);
-
-struct suit_mechanism;
-suit_err_t suit_report_engine_init(
-    suit_report_context_t *report_context,
-    size_t buf_size,
-    UsefulBufC nonce,
-    const struct suit_mechanism *cose_protection_mechanism);
-
-suit_err_t suit_report_reason_from_suit_err(suit_err_t result);
 
 #ifdef __cplusplus
 }
