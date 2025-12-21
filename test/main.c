@@ -10,6 +10,9 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include "../examples/inc/trust_anchor_esp256_cose_key_private.h"
+#include "../examples/inc/device_esp256_cose_key_private.h"
+
+#define REPORT_SIZE 1024
 
 void test_csuit_rollback(void);
 void test_csuit_get_digest(void);
@@ -17,7 +20,8 @@ void test_component_identifier_to_filename(void);
 void test_csuit_suit_encode_buf(void);
 void test_csuit_without_authentication_wrapper(void);
 void test_csuit_cose_key(void);
-
+void test_csuit_report_example0_success_report(void);
+void test_csuit_report_example0_failure_report(void);
 
 int main(int argc, char *argv[])
 {
@@ -30,10 +34,14 @@ int main(int argc, char *argv[])
     CU_add_test(suite, "test_csuit_suit_encode_buf", test_csuit_suit_encode_buf);
     CU_add_test(suite, "test_csuit_without_authentication_wrapper", test_csuit_without_authentication_wrapper);
     CU_add_test(suite, "test_csuit_cose_key", test_csuit_cose_key);
-    CU_basic_set_mode(CU_BRM_SILENT);
-    CU_basic_run_tests();
+    CU_add_test(suite, "test_csuit_report_example0_success_report", test_csuit_report_example0_success_report);
+    CU_add_test(suite, "test_csuit_report_example0_failure_report", test_csuit_report_example0_failure_report);
+    CU_ErrorCode err = CU_basic_run_tests();
     CU_cleanup_registry();
-    return 0;
+    if (err != CUE_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
 
 size_t test_csuit_rollback_buf(const uint8_t *buf, const size_t len)
@@ -361,4 +369,251 @@ void test_csuit_cose_key(void)
     CU_ASSERT_EQUAL(mechanism.key.cose_algorithm_id, T_COSE_ALGORITHM_ESP256);
     CU_ASSERT_EQUAL(mechanism.key.private_key_len, 0);
     CU_ASSERT_EQUAL(mechanism.key.public_key_len, 65);
+}
+
+void test_csuit_report_example0_success_report(void)
+{
+    suit_report_context_t *reporting_engine = malloc(sizeof(suit_report_context_t) + REPORT_SIZE);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(reporting_engine);
+    CU_ASSERT_EQUAL_FATAL(suit_report_init_engine(reporting_engine, REPORT_SIZE), SUIT_SUCCESS);
+    suit_key_t sender_key;
+    CU_ASSERT_EQUAL(SUIT_SUCCESS, suit_set_suit_key_from_cose_key(device_esp256_cose_key_private, &sender_key));
+    CU_ASSERT_EQUAL_FATAL(suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, &sender_key), SUIT_SUCCESS);
+    UsefulBufC nonce = NULLUsefulBufC;
+    suit_report_start_encoding(reporting_engine, nonce);
+    uint8_t bytes[] = {
+        0x66, 0x58, 0xEA, 0x56, 0x02, 0x62, 0x69, 0x6D,
+        0xD1, 0xF1, 0x3B, 0x78, 0x22, 0x39, 0xA0, 0x64,
+        0xDA, 0x7C, 0x6C, 0x5C, 0xBA, 0xF5, 0x2F, 0xDE,
+        0xD4, 0x28, 0xA6, 0xFC, 0x83, 0xC7, 0xE5, 0xAF,
+    };
+    UsefulBufC digest_bytes = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bytes);
+    suit_digest_t digest = {.algorithm_id = T_COSE_ALGORITHM_SHA_256, .bytes = digest_bytes};
+    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, digest), SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_reference_uri(reporting_engine, UsefulBuf_FROM_SZ_LITERAL("http://example.com/manifest.suit")), SUIT_SUCCESS);
+
+    suit_component_identifier_t component;
+    component.len = 1;
+    component.identifier[0] = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0x00}));
+
+    suit_union_parameter_t parameter_value;
+
+    parameter_value.str = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0xFA, 0x6B, 0x4A, 0x53, 0xD5, 0xAD, 0x5F, 0xDF, 0xBE, 0x9D, 0xE6, 0x63, 0xE4, 0xD4, 0x1F, 0xFE}));
+    suit_report_extend_system_property_claims(
+        reporting_engine,
+        0,
+        &component,
+        (suit_parameter_key_t []){SUIT_PARAMETER_VENDOR_IDENTIFIER, SUIT_PARAMETER_INVALID},
+        &parameter_value
+    );
+
+    parameter_value.str = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0x14, 0x92, 0xAF, 0x14, 0x25, 0x69, 0x5E, 0x48, 0xBF, 0x42, 0x9B, 0x2D, 0x51, 0xF2, 0xAB, 0x45}));
+    suit_report_extend_system_property_claims(
+        reporting_engine,
+        0,
+        &component,
+        (suit_parameter_key_t []){SUIT_PARAMETER_CLASS_IDENTIFIER, SUIT_PARAMETER_INVALID},
+        &parameter_value
+    );
+
+    uint8_t image_digest_bstr[] = {
+        0x82, 0x2F, 0x58, 0x20,
+        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
+        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+        0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    };
+    parameter_value.u64 = 34768;
+    parameter_value.str = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(image_digest_bstr);
+    CU_ASSERT_EQUAL_FATAL(suit_report_extend_system_property_claims(
+        reporting_engine,
+        0,
+        &component,
+        (suit_parameter_key_t []){SUIT_PARAMETER_IMAGE_SIZE, SUIT_PARAMETER_IMAGE_DIGEST},
+        &parameter_value
+    ), SUIT_SUCCESS);
+
+    CU_ASSERT_EQUAL_FATAL(suit_report_finalize(
+        reporting_engine,
+        SUIT_SUCCESS,
+        0,
+        (suit_manifest_tree_t){.len = 0},
+        0,
+        0,
+        (suit_parameter_key_t[]){SUIT_PARAMETER_INVALID, SUIT_PARAMETER_INVALID},
+        NULL
+    ), SUIT_SUCCESS);
+
+    CU_ASSERT_NOT_EQUAL_FATAL(0, reporting_engine->suit_report.len);
+    UsefulBufC payload = NULLUsefulBufC;
+    CU_ASSERT_EQUAL_FATAL(SUIT_SUCCESS, suit_verify_cose_sign1(reporting_engine->suit_report, &sender_key, &payload));
+    CU_ASSERT_PTR_NOT_NULL(payload.ptr);
+    // {
+    //     / suit-reference / 99: [
+    //         / manifest-uri: / "http://example.com/manifest.suit",
+    //         / manifest-digest: / [
+    //             -16,
+    //             h'6658EA560262696DD1F13B782239A064DA7C6C5CBAF52FDED428A6FC83C7E5AF'
+    //         ]
+    //     ],
+    //     / suit-report-records / 3: [
+    //         {
+    //             / system-component-id / 0: [h'00'],
+    //             / vendor-id / 1: h'FA6B4A53D5AD5FDFBE9DE663E4D41FFE',
+    //             / class-id / 2: h'1492AF1425695E48BF429B2D51F2AB45',
+    //             / image-size/ 14: 34768,
+    //             / image-digest/ 3: << [
+    //                 -16,
+    //                 h'00112233445566778899aabbccddeeff0123456789abcdeffedcba9876543210'
+    //             ] >>
+    //         }
+    //     ],
+    //     / suit-report-result / 4: true
+    // }
+    uint8_t expected[] = {
+        0xA3, 0x18, 0x63, 0x82, 0x78, 0x20, 0x68, 0x74, 0x74, 0x70, 0x3A, 0x2F, 0x2F, 0x65, 0x78, 0x61,
+        0x6D, 0x70, 0x6C, 0x65, 0x2E, 0x63, 0x6F, 0x6D, 0x2F, 0x6D, 0x61, 0x6E, 0x69, 0x66, 0x65, 0x73,
+        0x74, 0x2E, 0x73, 0x75, 0x69, 0x74, 0x82, 0x2F, 0x58, 0x20, 0x66, 0x58, 0xEA, 0x56, 0x02, 0x62,
+        0x69, 0x6D, 0xD1, 0xF1, 0x3B, 0x78, 0x22, 0x39, 0xA0, 0x64, 0xDA, 0x7C, 0x6C, 0x5C, 0xBA, 0xF5,
+        0x2F, 0xDE, 0xD4, 0x28, 0xA6, 0xFC, 0x83, 0xC7, 0xE5, 0xAF, 0x03, 0x81, 0xA5, 0x00, 0x81, 0x41,
+        0x00, 0x01, 0x50, 0xFA, 0x6B, 0x4A, 0x53, 0xD5, 0xAD, 0x5F, 0xDF, 0xBE, 0x9D, 0xE6, 0x63, 0xE4,
+        0xD4, 0x1F, 0xFE, 0x02, 0x50, 0x14, 0x92, 0xAF, 0x14, 0x25, 0x69, 0x5E, 0x48, 0xBF, 0x42, 0x9B,
+        0x2D, 0x51, 0xF2, 0xAB, 0x45, 0x0E, 0x19, 0x87, 0xD0, 0x03, 0x58, 0x24, 0x82, 0x2F, 0x58, 0x20,
+        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
+        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+        0x04, 0xF5,
+    };
+    suit_print_hex_in_max(payload.ptr, payload.len, REPORT_SIZE);
+    CU_ASSERT_EQUAL(0, UsefulBuf_Compare(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(expected), payload));
+}
+
+void test_csuit_report_example0_failure_report(void)
+{
+    suit_report_context_t *reporting_engine = malloc(sizeof(suit_report_context_t) + REPORT_SIZE);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(reporting_engine);
+    CU_ASSERT_EQUAL_FATAL(suit_report_init_engine(reporting_engine, REPORT_SIZE), SUIT_SUCCESS);
+    suit_key_t sender_key;
+    CU_ASSERT_EQUAL(SUIT_SUCCESS, suit_set_suit_key_from_cose_key(device_esp256_cose_key_private, &sender_key));
+    CU_ASSERT_EQUAL_FATAL(suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, &sender_key), SUIT_SUCCESS);
+    UsefulBufC nonce = NULLUsefulBufC;
+    CU_ASSERT_EQUAL_FATAL(suit_report_start_encoding(reporting_engine, nonce), SUIT_SUCCESS);
+    uint8_t bytes[] = {
+        0x66, 0x58, 0xEA, 0x56, 0x02, 0x62, 0x69, 0x6D,
+        0xD1, 0xF1, 0x3B, 0x78, 0x22, 0x39, 0xA0, 0x64,
+        0xDA, 0x7C, 0x6C, 0x5C, 0xBA, 0xF5, 0x2F, 0xDE,
+        0xD4, 0x28, 0xA6, 0xFC, 0x83, 0xC7, 0xE5, 0xAF,
+    };
+    UsefulBufC digest_bytes = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bytes);
+    suit_digest_t digest = {.algorithm_id = T_COSE_ALGORITHM_SHA_256, .bytes = digest_bytes};
+    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, digest), SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_reference_uri(reporting_engine, UsefulBuf_FROM_SZ_LITERAL("http://example.com/manifest.suit")), SUIT_SUCCESS);
+
+    suit_component_identifier_t component;
+    component.len = 1;
+    component.identifier[0] = UsefulBuf_FROM_BYTE_ARRAY_LITERAL((uint8_t []){0x00});
+    uint8_t image_digest_bstr[] = {
+        0x82, 0x2F, 0x58, 0x20,
+        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
+        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+        0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    };
+    suit_union_parameter_t parameter_value;
+
+    parameter_value.str = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0xFA, 0x6B, 0x4A, 0x53, 0xD5, 0xAD, 0x5F, 0xDF, 0xBE, 0x9D, 0xE6, 0x63, 0xE4, 0xD4, 0x1F, 0xFE}));
+    CU_ASSERT_EQUAL_FATAL(suit_report_extend_system_property_claims(
+        reporting_engine,
+        0,
+        &component,
+        (suit_parameter_key_t []){SUIT_PARAMETER_VENDOR_IDENTIFIER, SUIT_PARAMETER_INVALID},
+        &parameter_value
+    ), SUIT_SUCCESS);
+
+    parameter_value.str = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0x14, 0x92, 0xAF, 0x14, 0x25, 0x69, 0x5E, 0x48, 0xBF, 0x42, 0x9B, 0x2D, 0x51, 0xF2, 0xAB, 0x45}));
+    CU_ASSERT_EQUAL_FATAL(suit_report_extend_system_property_claims(
+        reporting_engine,
+        0,
+        &component,
+        (suit_parameter_key_t []){SUIT_PARAMETER_CLASS_IDENTIFIER, SUIT_PARAMETER_INVALID},
+        &parameter_value
+    ), SUIT_SUCCESS);
+
+    parameter_value.u64 = 34768;
+    parameter_value.str = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(image_digest_bstr);
+    CU_ASSERT_EQUAL_FATAL(suit_report_extend_record(
+        reporting_engine,
+        (suit_manifest_tree_t){.len = 0},
+        SUIT_VALIDATE,
+        0,
+        (suit_parameter_key_t[]){SUIT_PARAMETER_IMAGE_DIGEST, SUIT_PARAMETER_INVALID},
+        &parameter_value
+    ), SUIT_SUCCESS);
+
+    CU_ASSERT_EQUAL_FATAL(suit_report_finalize(
+        reporting_engine,
+        SUIT_ERR_CONDITION_MISMATCH,
+        SUIT_REPORT_REASON_CONDITION_FAILED,
+        (suit_manifest_tree_t){.len = 0},
+        SUIT_VALIDATE,
+        0,
+        (suit_parameter_key_t[]){SUIT_PARAMETER_IMAGE_DIGEST, SUIT_PARAMETER_INVALID},
+        &parameter_value
+    ), SUIT_SUCCESS);
+
+    CU_ASSERT_PTR_NOT_NULL_FATAL(reporting_engine->suit_report.ptr);
+    CU_ASSERT_NOT_EQUAL_FATAL(0, reporting_engine->suit_report.len);
+    UsefulBufC payload = NULLUsefulBufC;
+    CU_ASSERT_EQUAL_FATAL(SUIT_SUCCESS, suit_verify_cose_sign1(reporting_engine->suit_report, &sender_key, &payload));
+    CU_ASSERT_PTR_NOT_NULL_FATAL(payload.ptr);
+    // {
+    //     / suit-reference / 99: [
+    //         / manifest-uri: / "http://example.com/manifest.suit",
+    //         / manifest-digest: / [
+    //             -16,
+    //             h'6658EA560262696DD1F13B782239A064DA7C6C5CBAF52FDED428A6FC83C7E5AF'
+    //         ]
+    //     ],
+    //     / suit-report-records / 3: [
+    //         / system-property-claims = / {
+    //             / system-component-id / 0: [h'00'],
+    //             / vendor-id / 1: h'FA6B4A53D5AD5FDFBE9DE663E4D41FFE',
+    //             / class-id / 2: h'1492AF1425695E48BF429B2D51F2AB45'
+    //         },
+    //         / SUIT_Record = / [
+    //             / manifest-id: / []
+    //             / manifest-section: / 7 / SUIT_VALIDATE /,
+    //             / section-offset: / 0,
+    //             / component-index: / 0,
+    //             / record-properties: / {3: << [-16, h'00112233445566778899aabbccddeeff0123456789abcdeffedcba9876543210'] >>}
+    //         ]
+    //     ],
+    //     / suit-report-result / 4: {
+    //         / result-code / 5: 21 / libcsuit error: SUIT_ERR_CONDITION_MISMATCH /,
+    //         / result-record / 6: [
+    //             / manifest-id: / []
+    //             / manifest-section: / 7 / SUIT_VALIDATE /,
+    //             / section-offset: / 0,
+    //             / component-index: / 0,
+    //             / record-properties: / {3: << [-16, h'00112233445566778899aabbccddeeff0123456789abcdeffedcba9876543210'] >>}
+    //         ],
+    //         / result-reason / 7: 10 / suit-report-reason-condition-failed /
+    //     }
+    // }
+    uint8_t expected[] = {
+        0xA3, 0x18, 0x63, 0x82, 0x78, 0x20, 0x68, 0x74, 0x74, 0x70, 0x3A, 0x2F, 0x2F, 0x65, 0x78, 0x61,
+        0x6D, 0x70, 0x6C, 0x65, 0x2E, 0x63, 0x6F, 0x6D, 0x2F, 0x6D, 0x61, 0x6E, 0x69, 0x66, 0x65, 0x73,
+        0x74, 0x2E, 0x73, 0x75, 0x69, 0x74, 0x82, 0x2F, 0x58, 0x20, 0x66, 0x58, 0xEA, 0x56, 0x02, 0x62,
+        0x69, 0x6D, 0xD1, 0xF1, 0x3B, 0x78, 0x22, 0x39, 0xA0, 0x64, 0xDA, 0x7C, 0x6C, 0x5C, 0xBA, 0xF5,
+        0x2F, 0xDE, 0xD4, 0x28, 0xA6, 0xFC, 0x83, 0xC7, 0xE5, 0xAF, 0x03, 0x82, 0xA3, 0x00, 0x81, 0x41,
+        0x00, 0x01, 0x50, 0xFA, 0x6B, 0x4A, 0x53, 0xD5, 0xAD, 0x5F, 0xDF, 0xBE, 0x9D, 0xE6, 0x63, 0xE4,
+        0xD4, 0x1F, 0xFE, 0x02, 0x50, 0x14, 0x92, 0xAF, 0x14, 0x25, 0x69, 0x5E, 0x48, 0xBF, 0x42, 0x9B,
+        0x2D, 0x51, 0xF2, 0xAB, 0x45, 0x85, 0x80, 0x07, 0x00, 0x00, 0xA1, 0x03, 0x58, 0x24, 0x82, 0x2F,
+        0x58, 0x20, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD,
+        0xEE, 0xFF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54,
+        0x32, 0x10, 0x04, 0xA3, 0x05, 0x15, 0x06, 0x85, 0x80, 0x07, 0x00, 0x00, 0xA1, 0x03, 0x58, 0x24,
+        0x82, 0x2F, 0x58, 0x20, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB,
+        0xCC, 0xDD, 0xEE, 0xFF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98,
+        0x76, 0x54, 0x32, 0x10, 0x07, 0x0A,
+    };
+    CU_ASSERT_EQUAL(0, UsefulBuf_Compare(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(expected), payload));
 }

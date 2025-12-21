@@ -5,7 +5,7 @@
 #
 
 CFLAGS = $(CMD_C) -Wall -g
-LDFLAGS = $(CMD_LD) ../libcsuit.a -lt_cose -lqcbor -lcunit -lm
+LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lcunit -lm
 INC = $(CMD_INC) -I ../inc/
 TARGET = ./libcsuit_test
 RESULT = result.txt
@@ -24,16 +24,14 @@ endif
 
 all: $(TARGET)
 
-$(TARGET): main.c
+$(TARGET): main.c ../libcsuit.a
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(INC)
 
-$(RESULT): $(TARGET)
-	$(TARGET) > $(RESULT)
+../libcsuit.a:
+	$(MAKE) -C ../ MBEDTLS=$(MBEDTLS)
 
-run: $(RESULT)
-	cat $(RESULT)
-	$(eval RES := $(shell cat $(RESULT) | head -n-2 | tail -n+4 | awk '{print $$5}' | paste -s | sed 's/\t//g'))
-	exit $(RES)
+run:
+	$(TARGET)
 
 clean:
 	$(RM) $(TARGET) $(RESULT)
