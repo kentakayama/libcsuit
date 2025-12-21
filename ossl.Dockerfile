@@ -1,11 +1,11 @@
 # Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
 # SPDX-License-Identifier: BSD-2-Clause
-FROM debian:latest
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN apt-get -y install curl git gcc make xxd libcunit1-dev libssl-dev ruby
+RUN apt-get -y install curl git clang make xxd libcunit1-dev libssl-dev ruby
 RUN gem install cbor-diag
 
 RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
