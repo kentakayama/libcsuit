@@ -630,6 +630,13 @@ int main(int argc, char *argv[]) {
         device_ecdh_es_a128kw_cose_key_private,
     };
 
+    suit_key_t sender_key;
+    if (suit_set_suit_key_from_cose_key(device_esp256_cose_key_private, &sender_key) != SUIT_SUCCESS) {
+        printf("main : Failed to initialize sender key\n");
+        exit_code = EXIT_FAILURE;
+        goto out;
+    }
+
     reporting_engine = malloc(sizeof(suit_report_context_t) + REPORT_SIZE);
     if (reporting_engine == NULL) {
         printf("main : Failed to allocate memory for suit_reporting_engine\n");
@@ -644,7 +651,7 @@ int main(int argc, char *argv[]) {
     }
 
     suit_report_init_engine(reporting_engine, REPORT_SIZE);
-    suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, device_esp256_cose_key_private);
+    suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, &sender_key);
     UsefulBufC nonce = NULLUsefulBufC;
     suit_report_start_encoding(reporting_engine, nonce);
 
@@ -726,7 +733,6 @@ int main(int argc, char *argv[]) {
 
 out:
     suit_processor_free(processor_context);
-    suit_report_free_engine(reporting_engine);
 
     free(processor_context);
     processor_context = NULL;

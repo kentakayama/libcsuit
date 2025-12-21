@@ -18,7 +18,7 @@
 
 void suit_report_append_parameter(
     QCBOREncodeContext *cbor_encoder,
-    suit_parameter_key_t parameter_key,
+    const suit_parameter_key_t parameter_key,
     const struct suit_union_parameter *parameter_value)
 {
     switch (parameter_key) {
@@ -113,11 +113,11 @@ void suit_report_append_parameter(
 
 void suit_encode_append_suit_record(
     QCBOREncodeContext *cbor_encoder,
-    uint32_t label,
-    suit_manifest_tree_t dependency_tree,
-    suit_manifest_key_t manifest_key,
-    size_t section_offset,
-    suit_parameter_key_t parameter_keys[],
+    const uint32_t label,
+    const suit_manifest_tree_t dependency_tree,
+    const suit_manifest_key_t manifest_key,
+    const size_t section_offset,
+    const suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     if (label != 0) {
@@ -240,12 +240,12 @@ suit_report_reason_t suit_report_reason_from_suit_err(suit_err_t result)
 
 suit_err_t suit_report_result(
     suit_report_context_t *report_context,
-    suit_err_t final_state,
+    const suit_err_t final_state,
     suit_report_reason_t reason,
-    suit_manifest_tree_t dependency_tree,
-    suit_manifest_key_t manifest_key,
-    size_t section_offset,
-    suit_parameter_key_t parameter_keys[],
+    const suit_manifest_tree_t dependency_tree,
+    const suit_manifest_key_t manifest_key,
+    const size_t section_offset,
+    const suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     if (final_state == SUIT_ERR_ABORT) {
@@ -295,14 +295,15 @@ suit_err_t suit_report_result(
 
 suit_err_t suit_report_finalize(
     suit_report_context_t *report_context,
-    suit_err_t final_state,
+    const suit_err_t final_state,
     suit_report_reason_t reason,
-    suit_manifest_tree_t dependency_tree,
-    suit_manifest_key_t manifest_key,
-    size_t section_offset,
-    suit_parameter_key_t parameter_keys[],
+    const suit_manifest_tree_t dependency_tree,
+    const suit_manifest_key_t manifest_key,
+    const size_t section_offset,
+    const suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
+    suit_err_t result = SUIT_SUCCESS;
     UsefulBufC payload;
 
     // 1. stop encoding suit-report-records
@@ -314,7 +315,7 @@ suit_err_t suit_report_finalize(
     }
 
     // 2. encode suit-report-result
-    suit_report_result(
+    result = suit_report_result(
         report_context,
         final_state,
         reason,
@@ -324,6 +325,9 @@ suit_err_t suit_report_finalize(
         parameter_keys,
         parameter_value
     );
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
 
     // 3. stop encoding SUIT_Report
     QCBOREncode_CloseMap(&report_context->cbor_encoder);
@@ -359,10 +363,10 @@ suit_err_t suit_report_finalize(
 
 suit_err_t suit_report_extend_record(
     suit_report_context_t *report_context,
-    suit_manifest_tree_t dependency_tree,
-    suit_manifest_key_t manifest_key,
-    size_t section_offset,
-    suit_parameter_key_t parameter_keys[],
+    const suit_manifest_tree_t dependency_tree,
+    const suit_manifest_key_t manifest_key,
+    const size_t section_offset,
+    const suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     switch (report_context->state) {
@@ -390,14 +394,16 @@ suit_err_t suit_report_extend_record(
         parameter_keys,
         parameter_value
     );
+
+    report_context->state = SUIT_REPORTING_ENGINE_IN_REPORT_RECORD;
     return SUIT_SUCCESS;
 }
 
 suit_err_t suit_report_extend_system_property_claims(
     suit_report_context_t *report_context,
-    uint8_t component_index,
+    const uint8_t component_index,
     const suit_component_identifier_t *component,
-    suit_parameter_key_t parameter_keys[],
+    const suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
     // ignore if no valid parameter found
@@ -411,11 +417,22 @@ suit_err_t suit_report_extend_system_property_claims(
         return SUIT_SUCCESS;
     }
 
-    if (report_context->state == SUIT_REPORTING_ENGINE_IN_SYSTEM_PROPERTY_CLAIMS
-        && report_context->current_index != component_index) {
-        // need to close the system-property-claims
-        QCBOREncode_CloseMap(&report_context->cbor_encoder);
+    switch (report_context->state) {
+    case SUIT_REPORTING_ENGINE_IN_SYSTEM_PROPERTY_CLAIMS:
+        if (report_context->current_index != component_index) {
+            // need to close the system-property-claims
+            QCBOREncode_CloseMap(&report_context->cbor_encoder);
 
+            // open the map and start encoding system-property-claims for new component
+            QCBOREncode_OpenMap(&report_context->cbor_encoder);
+            //   system-component-id
+            QCBOREncode_AddUInt64(&report_context->cbor_encoder, 0);
+            //   => SUIT_Component_Identifier,
+            suit_encode_append_component_identifier(component, 0, &report_context->cbor_encoder);
+            report_context->current_index = component_index;
+        }
+        break;
+    case SUIT_REPORTING_ENGINE_IN_REPORT_RECORD:
         // open the map and start encoding system-property-claims for new component
         QCBOREncode_OpenMap(&report_context->cbor_encoder);
         //   system-component-id
@@ -423,15 +440,9 @@ suit_err_t suit_report_extend_system_property_claims(
         //   => SUIT_Component_Identifier,
         suit_encode_append_component_identifier(component, 0, &report_context->cbor_encoder);
         report_context->current_index = component_index;
-    }
-    else if (report_context->state == SUIT_REPORTING_ENGINE_IN_REPORT_RECORD) {
-        // open the map and start encoding system-property-claims for new component
-        QCBOREncode_OpenMap(&report_context->cbor_encoder);
-        //   system-component-id
-        QCBOREncode_AddUInt64(&report_context->cbor_encoder, 0);
-        //   => SUIT_Component_Identifier,
-        suit_encode_append_component_identifier(component, 0, &report_context->cbor_encoder);
-        report_context->current_index = component_index;
+        break;
+    default:
+        return SUIT_ERR_WHILE_REPORTING;
     }
 
     // append the parameter
@@ -505,23 +516,11 @@ suit_err_t suit_report_start_encoding(
     return SUIT_SUCCESS;
 }
 
-void suit_report_free_engine(suit_report_context_t *report_context)
-{
-    if (report_context == NULL) {
-        return;
-    }
-    if (report_context->cose_protection_mechanism != 0) {
-        suit_free_key(&report_context->sender_key);
-    }
-
-    report_context->state = SUIT_REPORTING_ENGINE_NOT_INITIALIZED;
-}
-
 suit_err_t suit_report_add_sender_key(
     suit_report_context_t *report_context,
     const int cose_tag,
     int cose_algorithm_id,
-    UsefulBufC cose_key)
+    suit_key_t *sender_key)
 {
     switch (report_context->state) {
     case SUIT_REPORTING_ENGINE_NOT_INITIALIZED:
@@ -534,14 +533,11 @@ suit_err_t suit_report_add_sender_key(
         return SUIT_ERR_WHILE_REPORTING;
     }
 
-    if (suit_set_suit_key_from_cose_key(cose_key, &report_context->sender_key) != SUIT_SUCCESS) {
-        return SUIT_ERR_WHILE_REPORTING;
-    }
-    if (report_context->sender_key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+    if (sender_key->cose_algorithm_id != T_COSE_ALGORITHM_RESERVED) {
         // the algorithm id is overwritten by the key
-        report_context->sender_key.cose_algorithm_id = cose_algorithm_id;
+        cose_algorithm_id = sender_key->cose_algorithm_id;
     }
-    if (report_context->sender_key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+    if (cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
         return SUIT_ERR_WHILE_REPORTING;
     }
 
@@ -550,10 +546,10 @@ suit_err_t suit_report_add_sender_key(
         // use t_cose two-step sign to save memory
         t_cose_sign_sign_init(&report_context->sign_ctx,
                               T_COSE_OPT_MESSAGE_TYPE_SIGN1);
-        t_cose_signature_sign_main_init(&report_context->signer, report_context->sender_key.cose_algorithm_id);
+        t_cose_signature_sign_main_init(&report_context->signer, cose_algorithm_id);
         t_cose_signature_sign_main_set_signing_key(&report_context->signer,
-                                                    report_context->sender_key.cose_key,
-                                                    report_context->sender_key.kid);
+                                                    sender_key->cose_key,
+                                                    sender_key->kid);
         t_cose_sign_add_signer(&report_context->sign_ctx,
                                 t_cose_signature_sign_from_main(&report_context->signer));
         enum t_cose_err_t t_cose_error = 
@@ -582,7 +578,7 @@ suit_err_t suit_report_add_sender_key(
 
 suit_err_t suit_report_init_engine(
     suit_report_context_t *report_context,
-    size_t buf_size)
+    const size_t buf_size)
 {
     report_context->state = SUIT_REPORTING_ENGINE_NOT_INITIALIZED;
 

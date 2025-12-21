@@ -84,8 +84,6 @@ typedef struct suit_parameter_args {
 } suit_parameter_args_t;
 
 typedef struct suit_union_parameter {
-    suit_parameter_key_t parameter_key;
-
     union {
         int64_t                     i64;
         struct {
@@ -185,7 +183,7 @@ typedef struct suit_report_args {
 
 /*!
     \brief  Parameters to request storing data as component identifier.
-    
+
     Used on suit-directive-write, suit-directive-copy, suit-directive-swap,
     suit-directive-unlink and suit-directive-fetch (only for integrated payloads).
  */
