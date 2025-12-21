@@ -48,12 +48,6 @@ docker build -t libcsuit_psa -f psa.Dockerfile .
 docker run -t libcsuit_psa ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
 ```
 
-**(c) Use OpenSSL 3**
-```
-docker build -t libcsuit_ossl3 -f ossl3.Dockerfile .
-docker run -t libcsuit_ossl3 ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
-```
-
 See [SUIT Manifest S1 Example](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS1.md) and [this tutorial](./libcsuit_progress_afterIETF116.pdf).  
 See [INSTALL.md](./INSTALL.md) for other usages.
 
