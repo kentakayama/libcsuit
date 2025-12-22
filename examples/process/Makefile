@@ -4,32 +4,11 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
+include ../common.mk
+
 CFLAGS = $(CMD_C) -Wall -g
+INC = $(CMD_INC) -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
 LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
-LDWRAP = \
-	-Xlinker --wrap=suit_fetch_callback \
-	-Xlinker --wrap=suit_store_callback \
-	-Xlinker --wrap=suit_invoke_callback \
-	-Xlinker --wrap=suit_condition_callback
-
-INC = $(CMD_INC) -I ./inc -I ./examples/inc
-TARGET = ./bin/suit_manifest_process
-SRCS = \
-	examples/suit_examples_common.c \
-	examples/suit_examples_cose.c \
-	src/suit_common.c \
-	src/suit_digest.c \
-	src/suit_cose.c \
-	src/suit_manifest_process.c \
-	src/suit_reporting_engine.c \
-	src/suit_manifest_callbacks.c \
-	src/suit_manifest_decode.c \
-	src/suit_manifest_encode.c \
-	src/suit_manifest_print.c \
-	examples/suit_manifest_process_main.c
-OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
-
-WORKDIR := ./tmp
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
@@ -40,20 +19,36 @@ else
     LDFLAGS += -lcrypto
 endif
 
+LDWRAP = \
+	-Xlinker --wrap=suit_fetch_callback \
+	-Xlinker --wrap=suit_store_callback \
+	-Xlinker --wrap=suit_invoke_callback \
+	-Xlinker --wrap=suit_condition_callback
+
+TARGET = ./suit_manifest_process
+SRCS = \
+	../suit_examples_common.c \
+	../../src/suit_common.c \
+	../../src/suit_digest.c \
+	../../src/suit_cose.c \
+	../../src/suit_manifest_process.c \
+	../../src/suit_reporting_engine.c \
+	../../src/suit_manifest_callbacks.c \
+	../../src/suit_manifest_decode.c \
+	../../src/suit_manifest_encode.c \
+	../../src/suit_manifest_print.c \
+	suit_manifest_process_main.c
+OBJS = $(notdir $(SRCS:.c=.o))
+
 .PHONY: all
 all: $(TARGET)
 
-include Makefile.common
-
-$(TARGET): $(OBJS) | ./bin
+$(TARGET): $(OBJS)
 	$(CC) $(LDWRAP) -o $@ $(OBJS) $(LDFLAGS)
 
-./obj/%.o: %.c | ./obj/src ./obj/examples
-	$(CC) $(CFLAGS) $(INC) $(CMD_LINE) -o $@ -c $<
-
 define test-one
-	$(TARGET) ./testfiles/suit_manifest_exp$(1).suit \
-		-p "$(WORKDIR)" \
+	$(TARGET) ../../testfiles/suit_manifest_exp$(1).suit \
+		-p "./tmp" \
 		-u "https://cdn.example/example3.bin" -f "./testfiles/raw_image.bin" \
 		-u "http://example.com/file.bin" -f "./testfiles/raw_image.bin" \
 		-u "http://example.com/dependent.suit" -f "./testfiles/suit_manifest_expS0.suit" \
@@ -65,12 +60,10 @@ define test-one
 endef
 
 TEST_NUM := 0 1 2A 2B 3 4 5 U I D AF AFS AW EW ED S0 S2 S3 U0 U1
-.PHONY: test
-test: all
+.PHONY: run
+run: all
 	$(foreach num,$(TEST_NUM),$(call test-one,$(num)))
 
 .PHONY: clean
 clean:
-	$(MAKE) -C testfiles
 	$(RM) $(OBJS) $(TARGET)
-
