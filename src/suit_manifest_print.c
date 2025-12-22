@@ -7,14 +7,14 @@
 /*!
     \file   suit_manifest_print.c
 
-    \brief  This implements libcsuit printing
+    \brief  This implements SUIT Manifest printing
 
     Call these functions if you want to print the decoded structures and definitions.
  */
 
 #include "csuit/suit_manifest_print.h"
 
-char* suit_err_to_str(suit_err_t error)
+const char* suit_err_to_str(suit_err_t error)
 {
     switch (error) {
     case SUIT_SUCCESS:
@@ -80,7 +80,7 @@ char* suit_err_to_str(suit_err_t error)
     return NULL;
 }
 
-char* suit_cbor_tag_to_str(cbor_tag_key_t tag)
+const char* suit_cbor_tag_to_str(cbor_tag_key_t tag)
 {
     switch (tag) {
     case COSE_SIGN_TAG:
@@ -106,8 +106,7 @@ char* suit_cbor_tag_to_str(cbor_tag_key_t tag)
     }
 }
 
-
-char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key)
+const char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key)
 {
     switch (envelope_key) {
     case SUIT_DELEGATION:
@@ -129,7 +128,7 @@ char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key)
     return NULL;
 }
 
-char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key)
+const char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key)
 {
     switch (manifest_key) {
     case SUIT_MANIFEST_VERSION:
@@ -170,7 +169,7 @@ char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key)
     return NULL;
 }
 
-char* suit_common_key_to_str(suit_common_key_t common_key)
+const char* suit_common_key_to_str(suit_common_key_t common_key)
 {
     switch (common_key) {
     case SUIT_DEPENDENCIES:
@@ -185,7 +184,7 @@ char* suit_common_key_to_str(suit_common_key_t common_key)
     return NULL;
 }
 
-char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
+const char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
 {
     switch (condition_directive) {
     case SUIT_CONDITION_VENDOR_IDENTIFIER:
@@ -261,7 +260,7 @@ char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive)
     return NULL;
 }
 
-char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
+const char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
 {
     switch (parameter) {
     case SUIT_PARAMETER_VENDOR_IDENTIFIER:
@@ -310,7 +309,7 @@ char* suit_parameter_key_to_str(suit_parameter_key_t parameter)
     return NULL;
 }
 
-char* suit_version_comparison_type_to_str(suit_condition_version_comparison_types_t type)
+const char* suit_version_comparison_type_to_str(suit_condition_version_comparison_types_t type)
 {
     switch (type) {
     case SUIT_CONDITION_VERSION_COMPARISON_GREATER:
@@ -329,7 +328,7 @@ char* suit_version_comparison_type_to_str(suit_condition_version_comparison_type
     return NULL;
 }
 
-char* suit_wait_event_key_to_str(suit_wait_event_key_t key)
+const char* suit_wait_event_key_to_str(suit_wait_event_key_t key)
 {
     switch (key) {
     case SUIT_WAIT_EVENT_AUTHORIZATION:
@@ -352,7 +351,7 @@ char* suit_wait_event_key_to_str(suit_wait_event_key_t key)
     return NULL;
 }
 
-char* suit_cose_protected_key_to_str(int64_t key)
+const char* suit_cose_protected_key_to_str(int64_t key)
 {
     switch (key) {
     case -1:
@@ -378,7 +377,7 @@ char* suit_cose_protected_key_to_str(int64_t key)
 /*
  *  see https://datatracker.ietf.org/doc/draft-moran-suit-mti/
  */
-char* suit_cose_alg_to_str(int64_t id)
+const char* suit_cose_alg_to_str(int64_t id)
 {
     switch (id) {
     case -16:
@@ -494,7 +493,7 @@ char* suit_cose_alg_to_str(int64_t id)
     return NULL;
 }
 
-char* suit_cose_kty_to_str(int64_t kty)
+const char* suit_cose_kty_to_str(int64_t kty)
 {
     switch (kty) {
     case 1:
@@ -513,7 +512,7 @@ char* suit_cose_kty_to_str(int64_t kty)
     return NULL;
 }
 
-char* suit_cose_crv_to_str(int64_t crv)
+const char* suit_cose_crv_to_str(int64_t crv)
 {
     switch (crv) {
     case 1:
@@ -1292,7 +1291,7 @@ suit_err_t suit_print_component_metadata_buf(UsefulBufC component_metadata_buf,
     return result;
 }
 
-char* suit_authentication_value_to_str(cbor_tag_key_t tag)
+const char* suit_authentication_value_to_str(cbor_tag_key_t tag)
 {
     switch (tag) {
     case COSE_SIGN_TAG:
@@ -1307,13 +1306,21 @@ char* suit_authentication_value_to_str(cbor_tag_key_t tag)
     }
 }
 
+void suit_print_usefulbufc_bstr(UsefulBufC bstr, uint32_t indent_space, uint32_t indent_delta)
+{
+    (void)indent_space;
+    (void)indent_delta;
+    suit_print_hex(bstr.ptr, bstr.len);
+}
+
 suit_err_t suit_print_signature(UsefulBufC signature,
                                 const uint32_t indent_space,
-                                const uint32_t indent_delta)
+                                const uint32_t indent_delta,
+                                void (*suit_print_usefulbufc_fp)(UsefulBufC, uint32_t, uint32_t))
 {
     suit_err_t result = SUIT_SUCCESS;
     if (signature.ptr != NULL && signature.len > 0) {
-        char *signature_or_tag = NULL;
+        const char *signature_or_tag = NULL;
         QCBORDecodeContext context;
         QCBORItem item;
         QCBORDecode_Init(&context, signature, QCBOR_DECODE_MODE_NORMAL);
@@ -1349,7 +1356,7 @@ suit_err_t suit_print_signature(UsefulBufC signature,
             printf("null,\n");
         }
         else if (item.uDataType == QCBOR_TYPE_BYTE_STRING) {
-            suit_print_hex(item.val.string.ptr, item.val.string.len);
+            suit_print_usefulbufc_fp(item.val.string, indent_space + indent_delta, indent_delta);
             printf("\n");
         }
         else {
@@ -2323,7 +2330,7 @@ suit_err_t suit_print_envelope(const suit_envelope_t *envelope,
         printf(" >>,\n");
         for (size_t i = 0; i < envelope->wrapper.signatures_len; i++) {
             printf("%*s/ signatures: / << ", indent_space + 2 * indent_delta, "");
-            result = suit_print_signature(envelope->wrapper.signatures[i], indent_space + 2 * indent_delta, indent_delta);
+            result = suit_print_signature(envelope->wrapper.signatures[i], indent_space + 2 * indent_delta, indent_delta, suit_print_usefulbufc_bstr);
             printf(" >>\n");
         }
         printf("%*s] >>,", indent_space + indent_delta, "");
@@ -2448,7 +2455,7 @@ suit_err_t suit_print_invoke(suit_invoke_args_t invoke_args)
     return SUIT_SUCCESS;
 }
 
-char* suit_store_key_to_str(suit_store_key_t operation)
+const char* suit_store_key_to_str(suit_store_key_t operation)
 {
     switch (operation) {
     case SUIT_STORE: return "store";
@@ -2653,62 +2660,3 @@ suit_err_t suit_print_wait(suit_wait_args_t wait_args)
 
     return ret;
 }
-
-suit_err_t suit_print_report(suit_report_args_t report_args)
-{
-    printf("report callback : {\n");
-    printf("  at: %d(%s)", report_args.level0, suit_envelope_key_to_str(report_args.level0));
-
-    switch (report_args.level0) {
-    case SUIT_DELEGATION:
-        break;
-    case SUIT_AUTHENTICATION:
-        break;
-    case SUIT_MANIFEST:
-        printf(", %d(%s)", report_args.level1.manifest_key, suit_manifest_key_to_str(report_args.level1.manifest_key));
-        switch (report_args.level1.manifest_key) {
-        case SUIT_COMMON:
-            printf(", %d(%s)", report_args.level2.common_key, suit_common_key_to_str(report_args.level2.common_key));
-            if (report_args.level2.common_key == SUIT_SHARED_SEQUENCE) {
-                printf(", %d(%s)", report_args.level3.condition_directive, suit_command_sequence_key_to_str(report_args.level3.condition_directive));
-                switch (report_args.level3.condition_directive) {
-                case SUIT_DIRECTIVE_SET_PARAMETERS:
-                case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-                    printf(", %d(%s)", report_args.level4.parameter, suit_parameter_key_to_str(report_args.level4.parameter));
-                    break;
-                default:
-                    break;
-                }
-            }
-            break;
-        case SUIT_INSTALL:
-        case SUIT_VALIDATE:
-        case SUIT_INVOKE:
-            printf(", %d(%s)", report_args.level2.condition_directive, suit_command_sequence_key_to_str(report_args.level2.condition_directive));
-            switch (report_args.level2.condition_directive) {
-            case SUIT_DIRECTIVE_SET_PARAMETERS:
-            case SUIT_DIRECTIVE_OVERRIDE_PARAMETERS:
-                printf(", %d(%s)", report_args.level3.parameter, suit_parameter_key_to_str(report_args.level3.parameter));
-                break;
-            default:
-                break;
-            }
-            break;
-        default:
-            break;
-        }
-        break;
-    default:
-        break;
-    }
-    printf("\n");
-
-    // printf("  QCBORError:    %d(%s)\n", report_args.qcbor_error, qcbor_err_to_str(report_args.qcbor_error));
-    // printf("  suit_err_t:    %d(%s)\n", report_args.suit_error, suit_err_to_str(report_args.suit_error));
-    printf("  suit_rep_policy_t: RecPass%x RecFail%x SysPass%x SysFail%x\n", report_args.policy.record_on_success, report_args.policy.record_on_failure, report_args.policy.sysinfo_success, report_args.policy.sysinfo_failure);
-
-    printf("}\n\n");
-
-    return SUIT_ERR_FATAL;
-}
-

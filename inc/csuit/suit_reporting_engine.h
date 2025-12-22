@@ -116,6 +116,8 @@ typedef enum suit_report_reason {
     SUIT_REPORT_REASON_INVOKE_PENDING           = 12, /*! Invocation is about to be attempted and the final outcome is not yet known. */
 } suit_report_reason_t;
 
+const char *suit_report_reason_to_str(suit_report_reason_t reason);
+
 /*!
     \brief  Returns SUIT_REPORT_READON_* from libcsuit internal error code.
  */

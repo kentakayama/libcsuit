@@ -295,10 +295,16 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
     switch (condition_args.condition) {
     /* bstr */
     case SUIT_CONDITION_VENDOR_IDENTIFIER:
+        condition_ret->parameter_keys[0] = SUIT_PARAMETER_VENDOR_IDENTIFIER;
+        result = SUIT_ERR_NOT_IMPLEMENTED;
     case SUIT_CONDITION_CLASS_IDENTIFIER:
+        condition_ret->parameter_keys[0] = SUIT_PARAMETER_CLASS_IDENTIFIER;
+        result = SUIT_ERR_NOT_IMPLEMENTED;
     case SUIT_CONDITION_DEVICE_IDENTIFIER:
+        condition_ret->parameter_keys[0] = SUIT_PARAMETER_DEVICE_IDENTIFIER;
         result = SUIT_ERR_NOT_IMPLEMENTED;
     case SUIT_CONDITION_CHECK_CONTENT:
+        condition_ret->parameter_keys[0] = SUIT_PARAMETER_CONTENT;
         result = suit_condition_check_content(&condition_args.dst, condition_args.expected.str);
         break;
 
@@ -732,10 +738,6 @@ int main(int argc, char *argv[]) {
         exit_code = EXIT_FAILURE;
         goto out;
     }
-
-    printf("\nSUIT Report : ");
-    suit_print_hex(reporting_engine->suit_report.ptr, reporting_engine->suit_report.len);
-    printf("\n");
 
 out:
     suit_processor_free(processor_context);

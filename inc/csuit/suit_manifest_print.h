@@ -22,14 +22,14 @@
 extern "C" {
 #endif
 
-char* suit_err_to_str(suit_err_t error);
-char* suit_cbor_tag_to_str(cbor_tag_key_t tag);
-char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
-char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
-char* suit_common_key_to_str(suit_common_key_t common_key);
-char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive);
-char* suit_parameter_key_to_str(suit_parameter_key_t parameter);
-char* suit_store_key_to_str(suit_store_key_t operation);
+const char* suit_err_to_str(suit_err_t error);
+const char* suit_cbor_tag_to_str(cbor_tag_key_t tag);
+const char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
+const char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
+const char* suit_common_key_to_str(suit_common_key_t common_key);
+const char* suit_command_sequence_key_to_str(suit_con_dir_key_t condition_directive);
+const char* suit_parameter_key_to_str(suit_parameter_key_t parameter);
+const char* suit_store_key_to_str(suit_store_key_t operation);
 
 suit_err_t suit_component_identifier_to_filename(const suit_component_identifier_t *comp_id,
                                                  const size_t max_filename_len,
@@ -44,6 +44,23 @@ suit_err_t suit_print_component_identifier(const suit_component_identifier_t *id
 suit_err_t suit_print_digest(const suit_digest_t *digest, const uint32_t indent_space, const uint32_t indent_delta);
 suit_err_t suit_print_envelope(const suit_envelope_t *envelope, const uint32_t indent_space, const uint32_t indent_delta);
 
+suit_err_t suit_print_component_metadata(const suit_component_metadata_t *component_metadata,
+                                         const uint32_t indent_space,
+                                         const uint32_t indent_delta);
+suit_err_t suit_print_wait_event(const suit_wait_event_t *wait_event,
+                                 const uint32_t indent_space,
+                                 const uint32_t indent_delta);
+suit_err_t suit_print_version_match(const suit_version_match_t *version_match,
+                                    const uint32_t indent_space,
+                                    const uint32_t indent_delta);
+suit_err_t suit_print_encryption_info(UsefulBufC encryption_info,
+                                      const uint32_t indent_space,
+                                      const uint32_t indent_delta);
+suit_err_t suit_print_string(UsefulBufC string);
+suit_err_t suit_print_signature(UsefulBufC signature,
+                                const uint32_t indent_space,
+                                const uint32_t indent_delta,
+                                void (*suit_print_bstr_fp)(UsefulBufC, uint32_t, uint32_t));
 /*!
     \brief  Print SUIT fetch callback
 

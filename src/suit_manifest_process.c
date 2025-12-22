@@ -2881,6 +2881,9 @@ report:
                 processor_context->parameter_keys,
                 &processor_context->parameter_value
             );
+            suit_report_args_t args = {0};
+            args.suit_report = processor_context->reporting_engine->suit_report;
+            suit_report_callback(args);
         }
     }
 #endif /* !LIBCSUIT_DISABLE_SUIT_REPORT */

@@ -151,34 +151,8 @@ typedef union {
  * This passes enough data to construct SUIT_Report.
  */
 typedef struct suit_report_args {
-    /* parameters for SUIT_Report */
-
-    // suit_report_records_t suit_report_records;
-    bool success;
-    // suit_report_result_t suit_report_result;
-
-    suit_envelope_key_t level0;
-    union {
-        suit_manifest_key_t manifest_key;
-    } level1;
-    union {
-        suit_con_dir_key_t condition_directive;
-        suit_common_key_t common_key;
-        suit_text_key_t text_key;
-    } level2;
-    union {
-        suit_con_dir_key_t condition_directive;
-        suit_parameter_key_t parameter;
-        suit_text_component_key_t text_component_key;
-    } level3;
-    union {
-        suit_parameter_key_t parameter;
-    } level4;
-
-    QCBORError qcbor_error;
-    suit_err_t suit_error;
-
-    suit_rep_policy_t policy;
+    /* encoded (protected) SUIT_Report */
+    UsefulBufC suit_report;
 } suit_report_args_t;
 
 /*!

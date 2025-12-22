@@ -17,15 +17,16 @@ LOCAL_CFLAGS := $(WARNING_CFLAGS) -fPIC -I ./inc -ffunction-sections -fdata-sect
 include common.mk
 
 SRCS = \
-	src/suit_common.c \
 	src/suit_manifest_process.c \
-	src/suit_reporting_engine.c \
 	src/suit_manifest_callbacks.c \
 	src/suit_manifest_decode.c \
 	src/suit_manifest_encode.c \
 	src/suit_manifest_print.c \
+	src/suit_reporting_engine.c \
+	src/suit_report_print.c \
 	src/suit_cose.c \
-	src/suit_digest.c
+	src/suit_digest.c \
+	src/suit_common.c
 
 PUBLIC_INTERFACE = \
 	inc/csuit/config.h \
