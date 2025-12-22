@@ -19,7 +19,8 @@ LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \
 	-Xlinker --wrap=suit_store_callback \
 	-Xlinker --wrap=suit_invoke_callback \
-	-Xlinker --wrap=suit_condition_callback
+	-Xlinker --wrap=suit_condition_callback \
+	-Xlinker --wrap=suit_report_callback
 
 SRCS = \
 	../suit_examples_common.c \

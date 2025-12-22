@@ -570,6 +570,23 @@ out:
     return result;
 }
 
+suit_err_t __real_suit_report_callback(suit_report_args_t report_args);
+suit_err_t __wrap_suit_report_callback(suit_report_args_t report_args)
+{
+    suit_err_t result = __real_suit_report_callback(report_args);
+    if (result != SUIT_SUCCESS) {
+        result = SUIT_ERR_WHILE_REPORTING;
+        goto out;
+    }
+
+    // NOTE: may send the SUIT Report to the Status Tracker Server
+    printf("callback : try to send this SUIT Report to the server ... ");
+    printf("done.\n\n");
+
+out:
+    return result;
+}
+
 void display_help(const char *argv0, bool on_error)
 {
     fprintf((on_error) ? stderr : stdout, "Usage: %s <manifest_filename> [ -p <prefix> ] [ -u <URL> [-f <filename> | -b <binary_in_hex>] ] ...\n", argv0);
