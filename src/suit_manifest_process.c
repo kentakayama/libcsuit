@@ -660,13 +660,37 @@ suit_err_t suit_process_invoke(suit_processor_context_t *processor_context,
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
 
+        memset(&processor_context->parameter_value, 0, sizeof(suit_union_parameter_t));
+        memset(processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
+
         suit_invoke_args_t invoke = {0};
         invoke.report_policy = report_policy;
         invoke.component_identifier = *processor_context->component;
         invoke.args_len = parameters[processor_context->component_index].invoke_args.len;
         if (invoke.args_len > 0) {
             memcpy(invoke.args, parameters[processor_context->component_index].invoke_args.ptr, invoke.args_len);
+            processor_context->parameter_keys[0] = SUIT_PARAMETER_INVOKE_ARGS;
+            processor_context->parameter_value.str = parameters[processor_context->component_index].invoke_args;
         }
+
+#ifdef LIBCSUIT_REPORT_ON_INVOKE_PENDING
+        if (processor_context->reporting_engine != NULL) {
+            suit_report_finalize(
+                processor_context->reporting_engine,
+                processor_context->final_state,
+                SUIT_REPORT_REASON_INVOKE_PENDING,
+                processor_context->dependency_tree,
+                processor_context->manifest_key,
+                processor_context->section_offset,
+                processor_context->parameter_keys,
+                &processor_context->parameter_value
+            );
+            suit_report_args_t args = {0};
+            args.suit_report = processor_context->reporting_engine->suit_report;
+            suit_report_callback(args);
+        }
+#endif /* LIBCSUIT_REPORT_ON_INVOKE_PENDING */
+
         result = suit_invoke_callback(invoke);
         if (result != SUIT_SUCCESS) {
             return result;
@@ -2077,7 +2101,7 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
     return (verified) ? SUIT_SUCCESS : SUIT_ERR_FAILED_TO_VERIFY;
 }
 
-suit_err_t suit_extract_common(suit_processor_context_t *processor_context, 
+suit_err_t suit_extract_common(suit_processor_context_t *processor_context,
                                QCBORDecodeContext *context,
                                suit_extracted_t *extracted)
 {
@@ -2532,7 +2556,7 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
     suit_digest_t manifest_digest;
     suit_extracted_t extracted = {0};
 
-    if (!processor_context->initialized || 
+    if (!processor_context->initialized ||
         !processor_context->manifest_loaded ||
         !processor_context->recipient_key_loaded) {
         result = SUIT_ERR_NOT_INITIALIZED;
@@ -2935,7 +2959,7 @@ suit_err_t suit_processor_add_recipient_key(
     case CBOR_TAG_COSE_ENCRYPT:
         break;
     // draft-ietf-suit-firmware-encryption does not mention this
-    // case CBOR_TAG_COSE_ENCRYPT0: 
+    // case CBOR_TAG_COSE_ENCRYPT0:
     default:
         return SUIT_ERR_NOT_IMPLEMENTED;
     }
