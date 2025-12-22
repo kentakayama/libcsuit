@@ -55,7 +55,7 @@ testfiles/suit_manifest_expX.cbor
 examples/parser/suit_manifest_parser
 examples/process/suit_manifest_process
 examples/process/tmp/*
-examples/min_process/suit_manifest_process
+examples/min_process/suit_manifest_process_min
 examples/min_process/tmp/*
 examples/encrypt/suit_manifest_encrypt_aes
 examples/encrypt/suit_manifest_encrypt_esdh

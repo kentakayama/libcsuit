@@ -11,11 +11,11 @@ include ../common.mk
 
 .PHONY: build_deps
 build_deps:
-	$(MAKE) -C QCBOR
+	$(MAKE) -C QCBOR libqcbor.a
 ifeq ($(MBEDTLS), 1)
 	$(MAKE) -C mbedtls
 endif
-	$(MAKE) -C t_cose -f $(TCOSE_MAKEFILE) CRYPTO_INC="$(CRYPTO_INC)" CRYPTO_LIB="$(CRYPTO_LIB)"
+	$(MAKE) -C t_cose -f $(TCOSE_MAKEFILE) QCBOR_INC="$(QCBOR_INC)" QCBOR_LIB="$(QCBOR_LIB)" CRYPTO_INC="$(CRYPTO_INC)" CRYPTO_LIB="$(CRYPTO_LIB)" libt_cose.a
 
 .PHONY: clean
 clean:

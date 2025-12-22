@@ -37,6 +37,7 @@ ifeq ($(MBEDTLS), 1)
     CRYPTO_INC := -I/usr/local/include
     CRYPTO_LIB := -lmbedcrypto
 else
+    CRYPTO_INC := -I/usr/local/include
     CRYPTO_LIB := -lcrypto
 endif
 else
@@ -51,9 +52,10 @@ ifeq ($(MBEDTLS), 1)
     CRYPTO_INC := -I$(CRYPTO_PATH)/include
     CRYPTO_LIB := -L$(CRYPTO_PATH)/library -lmbedcrypto
 else
+    CRYPTO_INC := -I/usr/local/include
     CRYPTO_LIB := -lcrypto
 endif
 endif
 
-CFLAGS += $(QCBOR_INC) $(TCOSE_INC) $(CRYPTO_INC)
+INC += $(QCBOR_INC) $(TCOSE_INC) $(CRYPTO_INC)
 LDFLAGS += $(QCBOR_LIB) $(TCOSE_LIB) $(CRYPTO_LIB)

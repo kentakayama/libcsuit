@@ -9,8 +9,6 @@ RUN apt-get -y install curl git clang make xxd libcunit1-dev libssl-dev ruby
 RUN gem install cbor-diag
 
 COPY . .
-RUN make -C 3rdparty/QCBOR libqcbor.a
-RUN make -C 3rdparty/t_cose -f Makefile.ossl libt_cose.a
 RUN make build_test
 
 CMD make test

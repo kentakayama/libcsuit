@@ -14,7 +14,7 @@ WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
 LOCAL_CFLAGS := $(WARNING_CFLAGS) -fPIC -I ./inc -ffunction-sections -fdata-sections
 # link me with -Wl,--gc-sections
 
-#include common.mk
+include common.mk
 
 SRCS = \
 	src/suit_common.c \
@@ -56,7 +56,7 @@ $(NAME).so: $(OBJS)
 	$(CC) -shared $^ $(LOCAL_CFLAGS) $(CFLAGS) -o $@
 
 %.o: %.c
-	$(CC) $(LOCAL_CFLAGS) $(CFLAGS) -o $@ -c $<
+	$(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(INC) -o $@ -c $<
 
 ifeq ($(PREFIX),)
     PREFIX := /usr/local

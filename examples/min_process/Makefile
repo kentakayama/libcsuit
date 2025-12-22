@@ -6,7 +6,7 @@
 # NOTE: Uses examples/min_process/config.h via -I./ flag
 # This enables LIBCSUIT_DISABLE_XXX optimizations
 
-TARGET := ../../bin/suit_manifest_process_min
+TARGET := ./suit_manifest_process_min
 
 .PHONY: all
 all: $(TARGET)
@@ -44,7 +44,7 @@ $(TARGET): $(OBJS)
 
 .PHONY: run
 run: $(TARGET)
-	$(TARGET) ../../testfiles/suit_manifest_exp0.suit
+	$(TARGET) $(TESTFILES_DIR)/suit_manifest_exp0.suit
 
 .PHONY: clean
 clean:
