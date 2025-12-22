@@ -68,6 +68,8 @@ examples/sign/suit_manifest_delegate_sign
 .*
 *.md
 *.pdf
+src/*.o
+examples/*/*.o
 libcsuit.a
 libcsuit.so
 tmp/*
@@ -83,3 +85,6 @@ misc/calc_*.py
 misc/*.patch
 misc/*.txt
 misc/dockerfile/*
+3rdparty/QCBOR/libqcbor.*
+3rdparty/mbedtls/library/lib*
+3rdparty/t_cose/libt_cose.*
