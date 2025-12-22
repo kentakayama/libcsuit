@@ -4,45 +4,28 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS = $(CMD_C) -Wall -g
-LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
-INC = $(CMD_INC) -I ./inc -I ./examples/inc
-TARGET = ./bin/suit_manifest_encode
-SRCS = \
-	examples/suit_manifest_encode_main.c \
-	examples/suit_examples_common.c \
-	examples/suit_examples_cose.c \
-	src/suit_common.c \
-	src/suit_digest.c \
-	src/suit_cose.c \
-	src/suit_manifest_encode.c \
-	src/suit_manifest_decode.c \
-	src/suit_manifest_print.c
-OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
-
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS += -lmbedcrypto
-else
-    # use OpenSSL
-    LDFLAGS += -lcrypto
-endif
+TARGET := ./suit_manifest_encode
 
 .PHONY: all
 all: $(TARGET)
 
-$(TARGET): $(OBJS) | ./bin
+CFLAGS ?= -Wall -g
+INC ?= -I../inc -I../../inc
+LDFLAGS ?= -lt_cose -lqcbor -lm
+
+include ../common.mk
+
+SRCS = \
+	suit_manifest_encode_main.c \
+	../suit_examples_common.c
+OBJS = $(SRCS:.c=.o)
+
+$(TARGET): $(OBJS) ../../libcsuit.a
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-./obj/%.o: %.c | ./obj/src ./obj/examples
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
-
-include Makefile.common
-
-OUTPUT := ./testfiles/suit_manifest_expX.cbor
-.PHONY: test
-test: all
+OUTPUT := $(TESTFILES_DIR)/suit_manifest_expX.cbor
+.PHONY: run
+run: $(TARGET)
 	$(TARGET) $(OUTPUT)
 
 .PHONY: clean

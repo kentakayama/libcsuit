@@ -24,13 +24,5 @@ RUN ldconfig
 COPY . /root/libcsuit
 WORKDIR /root/libcsuit
 RUN make MBEDTLS=1 build_test
-RUN make -f Makefile.encode MBEDTLS=1
-RUN make -f Makefile.parser MBEDTLS=1 -B
-RUN make -f Makefile.encrypt MBEDTLS=1
-RUN make -f Makefile.process MBEDTLS=1
 
-CMD make test MBEDTLS=1 && \
-    make -f Makefile.encode MBEDTLS=1 test && \
-    make -f Makefile.parser MBEDTLS=1 test && \
-    make -f Makefile.process MBEDTLS=1 test WORKDIR="" && \
-    make -f Makefile.encrypt MBEDTLS=1 run
+CMD make test MBEDTLS=1

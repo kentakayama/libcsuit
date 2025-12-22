@@ -22,16 +22,6 @@
 extern "C" {
 #endif
 
-#ifndef SUIT_MAX_PRINT_BYTE_COUNT
-#define SUIT_MAX_PRINT_BYTE_COUNT        64
-#endif
-#ifndef SUIT_MAX_PRINT_TEXT_COUNT
-#define SUIT_MAX_PRINT_TEXT_COUNT        64
-#endif
-#ifndef SUIT_MAX_PRINT_URI_COUNT
-#define SUIT_MAX_PRINT_URI_COUNT         64
-#endif
-
 char* suit_err_to_str(suit_err_t error);
 char* suit_cbor_tag_to_str(cbor_tag_key_t tag);
 char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
@@ -45,7 +35,6 @@ suit_err_t suit_component_identifier_to_filename(const suit_component_identifier
                                                  const size_t max_filename_len,
                                                  char filename[]);
 
-suit_err_t suit_print_hex_in_max(const uint8_t *array, const size_t size, const size_t max_print_size);
 suit_err_t suit_print_hex(const uint8_t *array, size_t size);
 suit_err_t suit_print_bytestr(const uint8_t *bytes, size_t len);
 

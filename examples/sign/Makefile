@@ -4,51 +4,40 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS = $(CMD_C) -Wall -g
-LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
-INC = $(CMD_INC) -I ./inc -I ./examples/inc
-TARGET = ./bin/suit_manifest_sign
-SRCS = \
-	examples/suit_manifest_sign_main.c \
-	examples/suit_examples_common.c \
-	examples/suit_examples_cose.c \
-	src/suit_common.c \
-	src/suit_digest.c \
-	src/suit_cose.c \
-	src/suit_manifest_encode.c \
-	src/suit_manifest_decode.c \
-	src/suit_manifest_print.c
-OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
-
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    #LDFLAGS += -lmbedtls -lmbedx509
-    LDFLAGS += -lmbedcrypto
-else
-    # use OpenSSL
-    LDFLAGS += -lcrypto
-endif
-
-ifeq ($(SIGNER),TAM)
-    CFLAGS += -DSUIT_MANIFEST_SIGNER_TAM=1
-    TARGET = ./bin/suit_manifest_sign_delegate
-else ifeq ($(SIGNER),MAC)
-	CFLAGS += -DSUIT_MANIFEST_SIGNER_MAC=1
-	TARGET = ./bin/suit_manifest_mac
-else
-    CFLAGS += -DSUIT_MANIFEST_SIGNER_TRUST_ANCHOR=1
-endif
+TARGET_SIGN := ./suit_manifest_sign
+OBJ_SIGN := suit_manifest_sign_main.o
+TARGET_MAC := ./suit_manifest_mac
+OBJ_MAC := suit_manifest_sign_mac_main.o
+TARGET_TAM := ./suit_manifest_delegate_sign
+OBJ_TAM := suit_manifest_sign_delegate_main.o
 
 .PHONY: all
-all: $(TARGET)
+all: $(TARGET_SIGN) $(TARGET_MAC) $(TARGET_TAM)
 
-$(TARGET): $(OBJS) | ./bin
+CFLAGS ?= -Wall -g
+INC ?= -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
+LDFLAGS ?= ../../libcsuit.a -lt_cose -lqcbor -lm
+
+include ../common.mk
+
+$(OBJ_SIGN): suit_manifest_sign_main.c
+	$(CC) $(CFLAGS) -DSUIT_MANIFEST_SIGNER_TRUST_ANCHOR=1 $(INC) -o $@ -c $<
+
+$(TARGET_SIGN): $(OBJ_SIGN) ../suit_examples_common.o ../../libcsuit.a
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-./obj/%.o: %.c | ./obj/src ./obj/examples
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+$(OBJ_MAC): suit_manifest_sign_main.c
+	$(CC) $(CFLAGS) -DSUIT_MANIFEST_SIGNER_MAC=1 $(INC) -o $@ -c $<
+
+$(TARGET_MAC): $(OBJ_MAC) ../suit_examples_common.o ../../libcsuit.a
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(OBJ_TAM): suit_manifest_sign_main.c
+	$(CC) $(CFLAGS) -DSUIT_MANIFEST_SIGNER_TAM=1 $(INC) -o $@ -c $<
+
+$(TARGET_TAM): $(OBJ_TAM) ../suit_examples_common.o ../../libcsuit.a
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJS) $(TARGET)
+	$(RM) *.o $(TARGET_SIGN) $(TARGET_MAC) $(TARGET_TAM)

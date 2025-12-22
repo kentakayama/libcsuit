@@ -32,24 +32,34 @@ because it may install some files into your file system
 depends on the input SUIT Manifest.
 
 ```bash
+git clone --recursive https://github.com/kentakayama/libcsuit
+cd ./libcsuit
+```
+or
+```bash
 git clone https://github.com/kentakayama/libcsuit
 cd ./libcsuit
+git submodule update --init --recursive
 ```
 
 **(a) Use OpenSSL**
-```
+```bash
 docker build -t libcsuit_ossl -f ossl.Dockerfile .
-docker run -t libcsuit_ossl ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
+docker run -t libcsuit_ossl ./examples/process/suit_manifest_process ./testfiles/suit_maniefst_exp0.cbor
 ```
 
 **(b) Use Mbed TLS**
-```
+```bash
 docker build -t libcsuit_psa -f psa.Dockerfile .
-docker run -t libcsuit_psa ./bin/suit_manifest_process ./testfiles/suit_maniefst_expS1.cbor
+docker run -t libcsuit_psa ./examples/process/suit_manifest_process ./testfiles/suit_maniefst_exp0.cbor
 ```
 
-See [SUIT Manifest S1 Example](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_expS1.md) and [this tutorial](./libcsuit_progress_afterIETF116.pdf).  
-See [INSTALL.md](./INSTALL.md) for other usages.
+**(c) Build and run natively**
+```bash
+make -C examples/process
+./examples/process/suit_manifest_process ./testfiles/suit_maniefst_exp0.cbor
+```
+See [SUIT Manifest Example 0](https://github.com/kentakayama/libcsuit/blob/master/testfiles/suit_manifest_exp0.md).
 
 ## License and Copyright
 BSD 2-Clause License

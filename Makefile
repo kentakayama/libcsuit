@@ -4,21 +4,17 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-NAME = libcsuit
+NAME := libcsuit
+
+.PHONY: all
+all: $(NAME).a
+
 CFLAGS ?= -Os
 WARNING_CFLAGS ?= -Wall -Wextra -Wformat=2 -Wno-format-nonliteral
-LOCAL_CFLAGS = $(WARNING_CFLAGS) -fPIC -I ./inc
-LOCAL_CFLAGS += -ffunction-sections -fdata-sections
+LOCAL_CFLAGS := $(WARNING_CFLAGS) -fPIC -I ./inc -ffunction-sections -fdata-sections
 # link me with -Wl,--gc-sections
 
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    LOCAL_CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-else
-    # use OpenSSL
-    MBEDTLS=0
-endif
-
+#include common.mk
 
 SRCS = \
 	src/suit_common.c \
@@ -44,12 +40,7 @@ PUBLIC_INTERFACE = \
 	inc/csuit/suit_manifest_print.h \
 	inc/csuit/suit_reporting_engine.h
 
-OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
-
-.PHONY: all
-all: $(NAME).a
-
-include Makefile.common
+OBJS = $(SRCS:.c=.o)
 
 .PHONY: so
 so: $(NAME).so
@@ -64,7 +55,7 @@ $(NAME).a: $(OBJS)
 $(NAME).so: $(OBJS)
 	$(CC) -shared $^ $(LOCAL_CFLAGS) $(CFLAGS) -o $@
 
-./obj/%.o: %.c | ./obj/src
+%.o: %.c
 	$(CC) $(LOCAL_CFLAGS) $(CFLAGS) -o $@ -c $<
 
 ifeq ($(PREFIX),)
@@ -96,15 +87,27 @@ uninstall:
 	$(RM) $(addprefix $(DESTDIR)$(PREFIX)/lib/, \
 		$(NAME).a $(NAME).so $(NAME).so.1 $(NAME).so.1.0.0)
 
+.PHONY: build_deps
+build_deps:
+	$(MAKE) -C 3rdparty
+
 .PHONY: build_test
-build_test: $(NAME).a
-	$(MAKE) -C test MBEDTLS=$(MBEDTLS) CMD_INC="$(CMD_INC)" CMD_LD="$(CMD_LD)"
+build_test: build_deps $(NAME).a
+	$(MAKE) -C test MBEDTLS=$(MBEDTLS)
+	$(MAKE) -C examples MBEDTLS=$(MBEDTLS)
 
 .PHONY: test
 test: build_test
 	$(MAKE) -C test MBEDTLS=$(MBEDTLS) run
+	$(MAKE) -C examples MBEDTLS=$(MBEDTLS) run
+
+.PHONY: examples
+examples: $(NAME).a
+	$(MAKE) -C examples MBEDTLS=$(MBEDTLS)
 
 .PHONY: clean
 clean:
+	$(MAKE) -C 3rdparty clean
 	$(MAKE) -C test clean
+	$(MAKE) -C examples clean
 	$(RM) $(OBJS) $(NAME).a $(NAME).so

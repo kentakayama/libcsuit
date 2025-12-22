@@ -36,6 +36,7 @@ const unsigned char device_esp256_cose_key_public_buf[] = {
           0xF7, 0x26, 0xD3, 0x78, 0xD1, 0xB0, 0x16, 0xED,
           0x42, 0x98, 0xB2, 0x96, 0x1E, 0x25, 0x8F, 0x1B,
 };
+
 const UsefulBufC device_esp256_cose_key_public = {
     .ptr = device_esp256_cose_key_public_buf,
     .len = sizeof(device_esp256_cose_key_public_buf)

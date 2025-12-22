@@ -184,7 +184,13 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_callbac
     }
     else {
         printf("fetched : ");
-        suit_print_hex_in_max(fetch_args.ptr, fetch_ret->buf_len, 32);
+        if (fetch_ret->buf_len > 32) {
+            suit_print_hex(fetch_args.ptr, 32);
+            printf("..\n");
+        }
+        else {
+            suit_print_hex(fetch_args.ptr, fetch_ret->buf_len);
+        }
         printf("\ncallback : %s SUCCESS\n\n", suit_command_sequence_key_to_str(SUIT_DIRECTIVE_FETCH));
     }
     return result;
@@ -242,13 +248,13 @@ suit_err_t suit_condition_image_match(const suit_component_identifier_t *dst,
     }
 
     if (image_size == 0) {
-        buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
+        buf.ptr = malloc(BUFFER_SIZE);
         if (buf.ptr == NULL) {
             result = SUIT_ERR_NO_MEMORY;
             ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
             goto out;
         }
-        buf.len = read_from_file(filename, buf.ptr, SUIT_MAX_DATA_SIZE);
+        buf.len = read_from_file(filename, buf.ptr, BUFFER_SIZE);
     }
     else {
         ret->parameter_keys[0] = SUIT_PARAMETER_IMAGE_SIZE;
@@ -386,8 +392,8 @@ suit_err_t store_component(const char *dst,
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
     if (!UsefulBuf_IsNULLOrEmptyC(encryption_info)) {
         ret->on_src = true;
-        decrypted_payload_buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
-        decrypted_payload_buf.len = SUIT_MAX_DATA_SIZE;
+        decrypted_payload_buf.ptr = malloc(BUFFER_SIZE);
+        decrypted_payload_buf.len = BUFFER_SIZE;
         UsefulBufC tmp = NULLUsefulBufC;
         for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
             result = suit_decrypt_cose_encrypt(src, encryption_info, decrypted_payload_buf, &mechanisms[i], &tmp);
@@ -427,13 +433,13 @@ suit_err_t copy_component(const char *dst,
     suit_err_t result = SUIT_SUCCESS;
     UsefulBuf buf;
     ret->on_src = true;
-    buf.ptr = malloc(SUIT_MAX_DATA_SIZE);
+    buf.ptr = malloc(BUFFER_SIZE);
     if (buf.ptr == NULL) {
         result = SUIT_ERR_NO_MEMORY;
         ret->reason = SUIT_REPORT_REASON_COMPONENT_UNSUPPORTED;
         goto out;
     }
-    buf.len = SUIT_MAX_DATA_SIZE;
+    buf.len = BUFFER_SIZE;
     size_t len = read_from_file(src, buf.ptr, buf.len);
     if (len >= buf.len) {
         result = SUIT_ERR_NO_MEMORY;
@@ -728,7 +734,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("\nSUIT Report : ");
-    suit_print_hex_in_max(reporting_engine->suit_report.ptr, reporting_engine->suit_report.len, reporting_engine->suit_report.len);
+    suit_print_hex(reporting_engine->suit_report.ptr, reporting_engine->suit_report.len);
     printf("\n");
 
 out:

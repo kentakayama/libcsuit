@@ -8,25 +8,9 @@ RUN apt-get update
 RUN apt-get -y install curl git clang make xxd libcunit1-dev libssl-dev ruby
 RUN gem install cbor-diag
 
-RUN git clone --depth 1 https://github.com/laurencelundblade/QCBOR.git /root/QCBOR
-WORKDIR /root/QCBOR
-RUN make libqcbor.a install
-
-RUN git clone --depth 1 --branch dev-deterministic-ecdsa https://github.com/kentakayama/t_cose.git /root/t_cose
-WORKDIR /root/t_cose
-RUN make -f Makefile.ossl libt_cose.a install
-
-RUN ldconfig
-COPY . /root/libcsuit
-WORKDIR /root/libcsuit
+COPY . .
+RUN make -C 3rdparty/QCBOR libqcbor.a
+RUN make -C 3rdparty/t_cose -f Makefile.ossl libt_cose.a
 RUN make build_test
-RUN make -f Makefile.encode
-RUN make -f Makefile.parser -B
-RUN make -f Makefile.encrypt
-RUN make -f Makefile.process
 
-CMD make test && \
-    make -f Makefile.encode test && \
-    make -f Makefile.parser test && \
-    make -f Makefile.process test WORKDIR="" && \
-    make -f Makefile.encrypt run
+CMD make test

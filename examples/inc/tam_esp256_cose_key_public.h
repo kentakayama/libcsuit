@@ -36,6 +36,7 @@ const unsigned char tam_esp256_cose_key_public_buf[] = {
           0x16, 0x4D, 0x49, 0xAD, 0x35, 0x51, 0xD7, 0x1D,
           0x31, 0x4B, 0x27, 0x49, 0xEE, 0x42, 0xD2, 0x9A,
 };
+
 const UsefulBufC tam_esp256_cose_key_public = {
     .ptr = tam_esp256_cose_key_public_buf,
     .len = sizeof(tam_esp256_cose_key_public_buf)

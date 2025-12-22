@@ -6,26 +6,17 @@
 # NOTE: Uses examples/min_process/config.h via -I./ flag
 # This enables LIBCSUIT_DISABLE_XXX optimizations
 
-TARGET = ../../bin/suit_manifest_process_min
+TARGET := ../../bin/suit_manifest_process_min
 
 .PHONY: all
 all: $(TARGET)
 
-include ../common.mk
-
 #CC = musl-gcc
-CFLAGS = $(CMD_C) -Os -s -fno-ident -fno-asynchronous-unwind-tables
-INC = $(CMD_INC) -I./ -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
-LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm -Wl,--gc-sections
+CFLAGS ?= -Os -s -fno-ident -fno-asynchronous-unwind-tables
+INC ?= -I./ -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
+LDFLAGS ?= -lt_cose -lqcbor -lm -Wl,--gc-sections
 
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS += -lmbedcrypto
-else
-    # use OpenSSL
-    LDFLAGS += -lcrypto
-endif
+include ../common.mk
 
 LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \

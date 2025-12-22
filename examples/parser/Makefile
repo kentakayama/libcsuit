@@ -4,51 +4,28 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-DIAG2CBOR=diag2cbor.rb
-
-CFLAGS = $(CMD_C) -Wall -g -DSUIT_MAX_PRINT_BYTE_COUNT=1024 -DSUIT_MAX_PRINT_TEXT_COUNT=1024 -DSUIT_MAX_PRINT_URI_COUNT=1024
-LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
-INC = $(CMD_INC) -I ./inc -I ./examples/inc
-TARGET = ./bin/suit_manifest_parser
-SRCS = \
-	examples/suit_manifest_parser_main.c \
-	examples/suit_examples_common.c \
-	examples/suit_examples_cose.c \
-	src/suit_common.c \
-	src/suit_digest.c \
-	src/suit_cose.c \
-	src/suit_manifest_encode.c \
-	src/suit_manifest_decode.c \
-	src/suit_manifest_print.c
-OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
-
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    #LDFLAGS += -lmbedtls -lmbedx509
-    LDFLAGS += -lmbedcrypto
-else
-    # use OpenSSL
-    LDFLAGS += -lcrypto
-endif
-
-ifeq ($(DEBUG),1)
-    CFLAGS += -DSKIP_ERROR=1
-endif
+TARGET := ./suit_manifest_parser
 
 .PHONY: all
 all: $(TARGET)
 
-include Makefile.common
+CFLAGS ?= -Wall -g
+INC ?= -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
+LDFLAGS ?= ../../libcsuit.a -lt_cose -lqcbor -lm
+SRCS = \
+	suit_manifest_parser_main.c \
+	../suit_examples_common.c
+OBJS = $(notdir $(SRCS:.c=.o))
 
-$(TARGET): $(OBJS) | ./bin
-	$(CC) -o $@ $^ $(LDFLAGS)
+DIAG2CBOR=diag2cbor.rb
 
-./obj/%.o: %.c | ./obj/src ./obj/examples
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+include ../common.mk
+
+$(TARGET): $(OBJS) ../../libcsuit.a
+	$(CC) $(LDWRAP) -o $@ $(OBJS) $(LDFLAGS)
 
 TEST_NUM := 0 1 2A 2B 3 4 5 U I D AF AFS AW EW ED S0 S2 S3 U0 U1
-EXPS := $(foreach num,$(TEST_NUM),./testfiles/suit_manifest_exp$(num).suit)
+EXPS := $(foreach num,$(TEST_NUM),${TESTFILES_DIR}/suit_manifest_exp$(num).suit)
 define test-one
 	$(TARGET) $1 2 | tee tmp.result
 	@grep '^    ' tmp.result | $(DIAG2CBOR) > tmp.printed.cbor
@@ -58,8 +35,8 @@ define test-one
 
 endef
 
-.PHONY: test
-test: all
+.PHONY: run
+run: $(TARGET)
 	$(foreach exp,$(EXPS),$(call test-one,$(exp)))
 
 .PHONY: clean

@@ -1,10 +1,6 @@
 # DoxyGen directory
 html/
 
-# Build directory
-build/
-bin/
-
 # parser output directory
 tmp/
 
@@ -52,11 +48,18 @@ tmp/
 *.idb
 *.pdb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# binaries and their derivetives
+test/libcsuit_test
+examples/encode/suit_manifest_encode
+testfiles/suit_manifest_expX.cbor
+examples/parser/suit_manifest_parser
+examples/process/suit_manifest_process
+examples/process/tmp/*
+examples/min_process/suit_manifest_process
+examples/min_process/tmp/*
+examples/encrypt/suit_manifest_encrypt_aes
+examples/encrypt/suit_manifest_encrypt_esdh
+examples/encrypt/suit_manifest_decrypt
+examples/sign/suit_manifest_sign
+examples/sign/suit_manifest_mac
+examples/sign/suit_manifest_delegate_sign

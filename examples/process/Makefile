@@ -4,25 +4,16 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-TARGET = ./suit_manifest_process
+TARGET := ./suit_manifest_process
 
 .PHONY: all
 all: $(TARGET)
 
+CFLAGS ?= -Wall -g
+INC ?= -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
+LDFLAGS ?= ../../libcsuit.a -lt_cose -lqcbor -lm
+
 include ../common.mk
-
-CFLAGS = $(CMD_C) -Wall -g
-INC = $(CMD_INC) -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
-LDFLAGS = $(CMD_LD) ../../libcsuit.a -lt_cose -lqcbor -lm
-
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS += -lmbedcrypto
-else
-    # use OpenSSL
-    LDFLAGS += -lcrypto
-endif
 
 LDWRAP = \
 	-Xlinker --wrap=suit_fetch_callback \
@@ -42,13 +33,13 @@ $(TARGET): $(OBJS) ../../libcsuit.a
 define test-one
 	$(TARGET) ../../testfiles/suit_manifest_exp$(1).suit \
 		-p "./tmp" \
-		-u "https://cdn.example/example3.bin" -f "./testfiles/raw_image.bin" \
-		-u "http://example.com/file.bin" -f "./testfiles/raw_image.bin" \
-		-u "http://example.com/dependent.suit" -f "./testfiles/suit_manifest_expS0.suit" \
+		-u "https://cdn.example/example3.bin" -f "${TESTFILES_DIR}/raw_image.bin" \
+		-u "http://example.com/file.bin" -f "${TESTFILES_DIR}/raw_image.bin" \
+		-u "http://example.com/dependent.suit" -f "${TESTFILES_DIR}/suit_manifest_expS0.suit" \
 		-u "coaps://example.com/encrypted-firmware" -b "758c4b7bbae2c4c1d462423e0f0dc3164ffa7b85bb94d4bd6d7ed26ab32feb063385d4d3465927ec82cb5e198a59" \
-		-u "https://example.org/8d82573a-926d-4754-9353-32dc29997f74.suit" -f "./testfiles/suit_manifest_expU.suit" \
-		-u "https://example.org/8d82573a-926d-4754-9353-32dc29997f74.ta" -f "./testfiles/8d82573a-926d-4754-9353-32dc29997f74.ta" \
-		-u "https://example.org/config.json" -f "./testfiles/config.json" || exit 1
+		-u "https://example.org/8d82573a-926d-4754-9353-32dc29997f74.suit" -f "${TESTFILES_DIR}/suit_manifest_expU.suit" \
+		-u "https://example.org/8d82573a-926d-4754-9353-32dc29997f74.ta" -f "${TESTFILES_DIR}/8d82573a-926d-4754-9353-32dc29997f74.ta" \
+		-u "https://example.org/config.json" -f "${TESTFILES_DIR}/config.json" || exit 1
 
 endef
 

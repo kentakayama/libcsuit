@@ -7,6 +7,8 @@
 [submodule "t_cose"]
 	path = 3rdparty/t_cose
 	url = https://github.com/kentakayama/t_cose
+	ignore = dirty
 [submodule "3rdparty/mbedtls"]
 	path = 3rdparty/mbedtls
 	url = https://github.com/Mbed-TLS/mbedtls
+	ignore = dirty

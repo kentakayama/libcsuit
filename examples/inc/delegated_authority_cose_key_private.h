@@ -42,6 +42,7 @@ const unsigned char delegated_authority_esp256_cose_key_private_buf[] = {
           0x77, 0xD2, 0x3D, 0x2A, 0xC5, 0xBF, 0x2B, 0x6B,
           0x2D, 0x83, 0x79, 0x43, 0x2A, 0x1F, 0xEA, 0x98,
 };
+
 const UsefulBufC delegated_authority_esp256_cose_key_private = {
     .ptr = delegated_authority_esp256_cose_key_private_buf,
     .len = sizeof(delegated_authority_esp256_cose_key_private_buf)

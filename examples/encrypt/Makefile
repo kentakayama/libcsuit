@@ -4,67 +4,46 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-CFLAGS = $(CMD_C) -Wall -g
-LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
-INC = $(CMD_INC) -I ./inc -I ./examples/inc
-TARGET_AES = ./bin/suit_manifest_encrypt_aes
-SRC_AES = examples/suit_manifest_encrypt_aes_main.c
-TARGET_ESDH = ./bin/suit_manifest_encrypt_esdh
-SRC_ESDH = examples/suit_manifest_encrypt_esdh_main.c
-TARGET_DECRYPT = ./bin/suit_manifest_decrypt
-SRC_DECRYPT = examples/suit_manifest_decrypt_main.c
-
-SRCS = \
-	examples/suit_examples_common.c \
-	src/suit_common.c \
-	src/suit_digest.c \
-	src/suit_cose.c \
-	src/suit_manifest_encode.c \
-	src/suit_manifest_decode.c \
-	src/suit_manifest_print.c
-OBJS = $(addprefix ./obj/,$(patsubst %.c,%.o,$(SRCS)))
-
-ifeq ($(MBEDTLS),1)
-    # use MbedTLS
-    CFLAGS += -DLIBCSUIT_PSA_CRYPTO_C=1
-    LDFLAGS += -lmbedcrypto
-else
-    # use OpenSSL
-    LDFLAGS += -lcrypto
-endif
+TARGET_AES = ./suit_manifest_encrypt_aes
+TARGET_ESDH = ./suit_manifest_encrypt_esdh
+TARGET_DECRYPT = ./suit_manifest_decrypt
 
 .PHONY: all
 all: $(TARGET_AES) $(TARGET_ESDH) $(TARGET_DECRYPT)
 
-include Makefile.common
+CFLAGS ?= -Wall -g
+INC ?= -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
+LDFLAGS ?= ../../libcsuit.a -lt_cose -lqcbor -lm
 
-./obj/%.o: %.c | ./obj/src ./obj/examples
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+SRC_AES = suit_manifest_encrypt_aes_main.c
+SRC_ESDH = suit_manifest_encrypt_esdh_main.c
+SRC_DECRYPT = suit_manifest_decrypt_main.c
 
-$(TARGET_AES): $(OBJS) ./obj/examples/suit_manifest_encrypt_aes_main.o | ./bin
+include ../common.mk
+
+$(TARGET_AES): ../suit_examples_common.o suit_manifest_encrypt_aes_main.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(TARGET_ESDH): $(OBJS) ./obj/examples/suit_manifest_encrypt_esdh_main.o | ./bin
+$(TARGET_ESDH): ../suit_examples_common.o suit_manifest_encrypt_esdh_main.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(TARGET_DECRYPT): $(OBJS) ./obj/examples/suit_manifest_decrypt_main.o | ./bin
+$(TARGET_DECRYPT): ../suit_examples_common.o suit_manifest_decrypt_main.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 .PHONY: run
 run: $(TARGET_AES) $(TARGET_ESDH)
-	$(TARGET_AES) ./testfiles/raw_image.bin ./testfiles/encrypted_image_aes.bin ./testfiles/encryption_info_aes.cose
-	$(TARGET_AES) ./testfiles/config.json ./testfiles/encrypted_config_aes.bin ./testfiles/encryption_info_config_aes.cose
-	$(TARGET_ESDH) ./testfiles/raw_image.bin ./testfiles/encrypted_image_esdh.bin ./testfiles/encryption_info_esdh.cose
-	$(TARGET_ESDH) ./testfiles/config.json ./testfiles/encrypted_config_esdh.bin ./testfiles/encryption_info_config_esdh.cose
+	$(TARGET_AES) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_aes.bin $(TESTFILES_DIR)/encryption_info_aes.cose
+	$(TARGET_AES) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_aes.bin $(TESTFILES_DIR)/encryption_info_config_aes.cose
+	$(TARGET_ESDH) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_esdh.bin $(TESTFILES_DIR)/encryption_info_esdh.cose
+	$(TARGET_ESDH) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_esdh.bin $(TESTFILES_DIR)/encryption_info_config_esdh.cose
 
 .PHONY: test
 test: $(TARGET_DECRYPT)
-	$(TARGET_DECRYPT) ./testfiles/raw_image.bin ./testfiles/encrypted_image_aes.bin ./testfiles/encryption_info_aes.cose
-	$(TARGET_DECRYPT) ./testfiles/config.json ./testfiles/encrypted_config_aes.bin ./testfiles/encryption_info_config_aes.cose
-	$(TARGET_DECRYPT) ./testfiles/raw_image.bin ./testfiles/encrypted_image_esdh.bin ./testfiles/encryption_info_esdh.cose
-	$(TARGET_DECRYPT) ./testfiles/config.json ./testfiles/encrypted_config_esdh.bin ./testfiles/encryption_info_config_esdh.cose
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_aes.bin $(TESTFILES_DIR)/encryption_info_aes.cose
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_aes.bin $(TESTFILES_DIR)/encryption_info_config_aes.cose
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_esdh.bin $(TESTFILES_DIR)/encryption_info_esdh.cose
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_esdh.bin $(TESTFILES_DIR)/encryption_info_config_esdh.cose
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJS) $(TARGET_AES) $(TARGET_ESDH)
-
+	$(RM) *.o $(TARGET_AES) $(TARGET_ESDH) $(TARGET_DECRYPT)

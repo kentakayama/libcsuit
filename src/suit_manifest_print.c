@@ -699,24 +699,9 @@ suit_err_t suit_print_tstr(const char *text,
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_print_tstr_in_max(const char *text,
-                                  const size_t size,
-                                  const size_t size_max)
-{
-    suit_err_t result = SUIT_SUCCESS;
-    if (size <= size_max) {
-        result = suit_print_tstr(text, size);
-    }
-    else {
-        result = suit_print_tstr(text, size_max);
-        printf("..");
-    }
-    return result;
-}
-
 suit_err_t suit_print_string(UsefulBufC string)
 {
-    return suit_print_tstr_in_max((const char *)string.ptr, string.len, SUIT_MAX_PRINT_TEXT_COUNT);
+    return suit_print_tstr((const char *)string.ptr, string.len);
 }
 
 suit_err_t suit_print_hex(const uint8_t *array, const size_t size)
@@ -741,21 +726,6 @@ suit_err_t suit_print_hex(const uint8_t *array, const size_t size)
         printf("'");
     }
     return SUIT_SUCCESS;
-}
-
-suit_err_t suit_print_hex_in_max(const uint8_t *array,
-                                 const size_t size,
-                                 const size_t size_max)
-{
-    suit_err_t result = SUIT_SUCCESS;
-    if (size <= size_max) {
-        result = suit_print_hex(array, size);
-    }
-    else {
-        result = suit_print_hex(array, size_max);
-        printf("..");
-    }
-    return result;
 }
 
 suit_err_t suit_print_uuid(UsefulBufC buf)
@@ -2287,7 +2257,7 @@ suit_err_t suit_print_integrated_payload(const suit_payloads_t *payloads,
 
     for (size_t i = 0; i < payloads->len; i++) {
         printf("%*s\"%.*s\" : ", indent_space, "", (int)payloads->payload[i].key.len, (char *)payloads->payload[i].key.ptr);
-        suit_print_hex_in_max(payloads->payload[i].bytes.ptr, payloads->payload[i].bytes.len, SUIT_MAX_PRINT_BYTE_COUNT);
+        suit_print_hex(payloads->payload[i].bytes.ptr, payloads->payload[i].bytes.len);
         if (i + 1 < payloads->len) {
             printf(",\n");
         }
@@ -2374,7 +2344,7 @@ suit_err_t suit_print_envelope(const suit_envelope_t *envelope,
             printf(",\n");
         }
         printf("%*s/ coswid(%s) / 14: ", indent_space + indent_delta, "", suit_str_member_is_verified(envelope->manifest.sev_man_mem.coswid_status));
-        result = suit_print_hex_in_max(envelope->manifest.sev_man_mem.coswid.ptr, envelope->manifest.sev_man_mem.coswid.len, SUIT_MAX_PRINT_BYTE_COUNT);
+        result = suit_print_hex(envelope->manifest.sev_man_mem.coswid.ptr, envelope->manifest.sev_man_mem.coswid.len);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -2503,7 +2473,7 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
         printf("\n");
     }
     printf("  src-buf : ");
-    suit_print_hex_in_max(store_args.src_buf.ptr, store_args.src_buf.len, SUIT_MAX_PRINT_BYTE_COUNT);
+    suit_print_hex(store_args.src_buf.ptr, store_args.src_buf.len);
     printf("\n");
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
     if (!UsefulBuf_IsNULLOrEmptyC(store_args.encryption_info)) {
