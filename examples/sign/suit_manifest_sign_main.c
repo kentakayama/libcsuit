@@ -11,27 +11,23 @@
 #include "csuit/suit_manifest_print.h"
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
-#if defined(SUIT_MANIFEST_SIGNER_TRUST_ANCHOR)
-#include "trust_anchor_esp256_cose_key_private.h"
-UsefulBufC private_key = trust_anchor_esp256_cose_key_private;
-UsefulBufC public_key = NULLUsefulBufC;
-cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
-#elif defined(SUIT_MANIFEST_SIGNER_TAM)
+
+#if defined(SUIT_MANIFEST_SIGNER_TAM)
 #include "tam_esp256_cose_key_private.h"
-UsefulBufC private_key = tam_esp256_cose_key_private;
 #include "trust_anchor_esp256_cose_key_public.h"
-UsefulBufC public_key = trust_anchor_esp256_cose_key_public;
+#define PRIVATE_KEY tam_esp256_cose_key_private
+#define PUBLIC_KEY trust_anchor_esp256_cose_key_public
 cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
 #elif defined(SUIT_MANIFEST_SIGNER_MAC)
 #include "trust_anchor_hmac256_cose_key_secret.h"
-UsefulBufC private_key = trust_anchor_hmac256_cose_key_secret;
-UsefulBufC public_key = NULLUsefulBufC;
+#define PRIVATE_KEY trust_anchor_hmac256_cose_key_secret
+#define PUBLIC_KEY NULLUsefulBufC
 cbor_tag_key_t cose_tag = CBOR_TAG_COSE_MAC0;
 #else
-#error Signing key is not specified
-UsefulBufC private_key = NULLUsefulBufC;
-UsefulBufC public_key = NULLUsefulBufC;
-cbor_tag_key_t cose_tag = 0;
+#include "trust_anchor_esp256_cose_key_private.h"
+#define PRIVATE_KEY trust_anchor_esp256_cose_key_private
+#define PUBLIC_KEY NULLUsefulBufC
+cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
 #endif
 
 #define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
@@ -54,7 +50,7 @@ int main(int argc,
     UsefulBuf manifest;
     uint8_t *encode_buf = NULL;
 
-    result = suit_set_suit_key_from_cose_key(private_key, &mechanisms[0].key);
+    result = suit_set_suit_key_from_cose_key(PRIVATE_KEY, &mechanisms[0].key);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to create signing key. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
@@ -62,8 +58,8 @@ int main(int argc,
     mechanisms[0].cose_tag = cose_tag;
     mechanisms[0].use = true;
 
-    if (!UsefulBuf_IsNULLOrEmptyC(public_key)) {
-        result = suit_set_suit_key_from_cose_key(public_key, &mechanisms[1].key);
+    if (!UsefulBuf_IsNULLOrEmptyC(PUBLIC_KEY)) {
+        result = suit_set_suit_key_from_cose_key(PUBLIC_KEY, &mechanisms[1].key);
         if (result != SUIT_SUCCESS) {
             printf("main : Failed to create verification key of trust anchor. %s(%d)\n", suit_err_to_str(result), result);
             return EXIT_FAILURE;
@@ -74,12 +70,12 @@ int main(int argc,
 
     // Read manifest file.
     printf("main : Read Manifest file.\n");
-    manifest.ptr = malloc(SUIT_MAX_DATA_SIZE);
+    manifest.ptr = malloc(MAX_FILE_BUFFER_SIZE);
     if (manifest.ptr == NULL) {
         printf("main : Failed to allocate memory.\n");
         goto out;
     }
-    manifest.len = read_from_file(input_file, manifest.ptr, SUIT_MAX_DATA_SIZE);
+    manifest.len = read_from_file(input_file, manifest.ptr, MAX_FILE_BUFFER_SIZE);
     if (manifest.len == 0) {
         printf("main : Failed to read Manifest file.\n");
         goto out;
@@ -105,12 +101,12 @@ int main(int argc,
     }
 
     // Encode manifest.
-    encode_buf = malloc(SUIT_MAX_DATA_SIZE);
+    encode_buf = malloc(MAX_FILE_BUFFER_SIZE);
     if (encode_buf == NULL) {
         printf("main : Failed to allocate memory.\n");
         goto out;
     }
-    size_t encode_len = SUIT_MAX_DATA_SIZE;
+    size_t encode_len = MAX_FILE_BUFFER_SIZE;
     uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
     result = suit_encode_envelope(&envelope, mechanisms, &ret_pos, &encode_len);
@@ -118,7 +114,7 @@ int main(int argc,
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
+    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, MAX_FILE_BUFFER_SIZE);
 
     write_to_file(output_file, ret_pos, encode_len);
     ret = EXIT_SUCCESS;

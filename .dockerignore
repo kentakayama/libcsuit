@@ -1,20 +1,83 @@
+# DoxyGen directory
+html/
+
+# parser output directory
+tmp/
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# binaries and their derivetives
+test/libcsuit_test
+examples/encode/suit_manifest_encode
+testfiles/suit_manifest_expX.cbor
+examples/parser/suit_manifest_parser
+examples/process/suit_manifest_process
+examples/process/tmp/*
+examples/min_process/suit_manifest_process_min
+examples/min_process/tmp/*
+examples/encrypt/suit_manifest_encrypt_aes
+examples/encrypt/suit_manifest_encrypt_esdh
+examples/encrypt/suit_manifest_decrypt
+examples/sign/suit_manifest_sign
+examples/sign/suit_manifest_mac
+examples/sign/suit_manifest_delegate_sign
+
+# .dockerignore specific files
 .*
 *.md
+*.pdf
 libcsuit.a
 libcsuit.so
-bin/*
 tmp/*
 test/libcsuit_test
 test/result.txt
 CMakeLists.txt
-obj
 *Dockerfile
 Doxyfile
 html
 tags
-*.pdf
-*.md
-misc/*.md
 misc/calc_*.sh
 misc/calc_*.py
 misc/*.patch

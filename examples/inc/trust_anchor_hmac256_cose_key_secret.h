@@ -28,6 +28,7 @@ const unsigned char trust_anchor_hmac256_cose_key_secret_buf[] = {
           0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x61,
           0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x61,
 }; // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
 const UsefulBufC trust_anchor_hmac256_cose_key_secret = {
     .ptr = trust_anchor_hmac256_cose_key_secret_buf,
     .len = sizeof(trust_anchor_hmac256_cose_key_secret_buf)

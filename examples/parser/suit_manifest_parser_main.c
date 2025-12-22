@@ -89,13 +89,13 @@ int main(int argc,
     // Read manifest file.
     printf("main : Read Manifest file.\n");
     UsefulBuf manifest;
-    manifest.ptr = malloc(SUIT_MAX_DATA_SIZE);
+    manifest.ptr = malloc(MAX_FILE_BUFFER_SIZE);
     if (manifest.ptr == NULL) {
         printf("main : Failed to allocate memory.\n");
         exit_code = EXIT_FAILURE;
         goto end;
     }
-    manifest.len = read_from_file(manifest_file, manifest.ptr, SUIT_MAX_DATA_SIZE);
+    manifest.len = read_from_file(manifest_file, manifest.ptr, MAX_FILE_BUFFER_SIZE);
     if (manifest.len == 0) {
         printf("main : Failed to read Manifest file.\n");
         exit_code = EXIT_FAILURE;
@@ -124,13 +124,13 @@ int main(int argc,
     }
 
     // Encode manifest.
-    uint8_t *encode_buf = malloc(SUIT_MAX_DATA_SIZE);
+    uint8_t *encode_buf = malloc(MAX_FILE_BUFFER_SIZE);
     if (encode_buf == NULL) {
         printf("main : Failed to allocate memory.\n");
         exit_code = EXIT_FAILURE;
         goto end;
     }
-    size_t encode_len = SUIT_MAX_DATA_SIZE;
+    size_t encode_len = MAX_FILE_BUFFER_SIZE;
     uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
     result = suit_encode_envelope(envelope, mechanisms, &ret_pos, &encode_len);
@@ -144,7 +144,7 @@ int main(int argc,
         exit_code = EXIT_FAILURE;
         goto end;
     }
-    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, SUIT_MAX_DATA_SIZE);
+    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, MAX_FILE_BUFFER_SIZE);
 
     if (output != NULL) {
         write_to_file(output, ret_pos, encode_len);
@@ -153,9 +153,9 @@ int main(int argc,
     if (manifest.len != encode_len) {
         printf("main : The manifest length is changed %ld => %ld\n", manifest.len, encode_len);
         printf("#### ORIGINAL ####\n");
-        suit_print_hex_in_max(manifest.ptr, manifest.len, manifest.len);
+        suit_print_hex(manifest.ptr, manifest.len);
         printf("\n#### ENCODED ####\n");
-        suit_print_hex_in_max(ret_pos, encode_len, encode_len);
+        suit_print_hex(ret_pos, encode_len);
         printf("\n\n");
         exit_code = EXIT_FAILURE;
         goto end;
@@ -166,9 +166,9 @@ int main(int argc,
             memcmp((uint8_t *)manifest.ptr + (signature_pos + 64), &ret_pos[signature_pos + 64], manifest.len - (signature_pos + 64)) != 0) {
             printf("main : encoded binary is differ from original\n");
             printf("#### ORIGINAL ####\n");
-            suit_print_hex_in_max(manifest.ptr, manifest.len, manifest.len);
+            suit_print_hex(manifest.ptr, manifest.len);
             printf("\n#### ENCODED ####\n");
-            suit_print_hex_in_max(ret_pos, encode_len, encode_len);
+            suit_print_hex(ret_pos, encode_len);
             printf("\n\n");
             exit_code = EXIT_FAILURE;
             goto end;

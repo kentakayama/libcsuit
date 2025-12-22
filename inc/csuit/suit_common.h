@@ -115,10 +115,6 @@ typedef union {
 #define SUIT_MAX_ARGS_LENGTH            64
 #endif
 
-#ifndef SUIT_MAX_DATA_SIZE
-#define SUIT_MAX_DATA_SIZE              (8 * 1024 * 1024)
-#endif
-
 typedef enum cbor_tag_key {
     COSE_TAG_INVALID        = 0,
     COSE_SIGN_TAG           = 98,
