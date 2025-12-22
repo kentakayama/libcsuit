@@ -3,6 +3,13 @@
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
+# NOTE: Uses examples/min_process/config.h via -I./ flag
+# This enables LIBCSUIT_DISABLE_XXX optimizations
+
+TARGET = ../../bin/suit_manifest_process_min
+
+.PHONY: all
+all: $(TARGET)
 
 include ../common.mk
 
@@ -26,7 +33,6 @@ LDWRAP = \
 	-Xlinker --wrap=suit_invoke_callback \
 	-Xlinker --wrap=suit_condition_callback
 
-TARGET = ../../bin/suit_manifest_process_min
 SRCS = \
 	../suit_examples_common.c \
 	../../src/suit_common.c \
@@ -40,9 +46,6 @@ SRCS = \
 	../../src/suit_manifest_print.c \
 	suit_manifest_process_main.c
 OBJS = $(notdir $(SRCS:.c=.o))
-
-.PHONY: all
-all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CC) $(LDWRAP) -o $@ $(OBJS) $(LDFLAGS)

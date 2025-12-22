@@ -16,3 +16,6 @@ T_COSE_DIR ?= ../../3rdparty/t_cose
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INC) $(CMD_LINE) -o $@ -c $<
+
+../../libcsuit.a:
+	$(MAKE) -C ../../ MBEDTLS=$(MBEDTLS) libcsuit.a

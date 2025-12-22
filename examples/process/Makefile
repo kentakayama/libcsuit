@@ -4,11 +4,16 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
+TARGET = ./suit_manifest_process
+
+.PHONY: all
+all: $(TARGET)
+
 include ../common.mk
 
 CFLAGS = $(CMD_C) -Wall -g
 INC = $(CMD_INC) -I../inc -I../../inc #-I../../../3rdparty/QCBOR/inc -I../../../3rdparty/t_cose/inc -I../../../3rdparty/mbedtls/inc
-LDFLAGS = $(CMD_LD) -lt_cose -lqcbor -lm
+LDFLAGS = $(CMD_LD) ../../libcsuit.a -lt_cose -lqcbor -lm
 
 ifeq ($(MBEDTLS),1)
     # use MbedTLS
@@ -25,25 +30,13 @@ LDWRAP = \
 	-Xlinker --wrap=suit_invoke_callback \
 	-Xlinker --wrap=suit_condition_callback
 
-TARGET = ./suit_manifest_process
 SRCS = \
 	../suit_examples_common.c \
-	../../src/suit_common.c \
-	../../src/suit_digest.c \
-	../../src/suit_cose.c \
-	../../src/suit_manifest_process.c \
-	../../src/suit_reporting_engine.c \
-	../../src/suit_manifest_callbacks.c \
-	../../src/suit_manifest_decode.c \
-	../../src/suit_manifest_encode.c \
-	../../src/suit_manifest_print.c \
 	suit_manifest_process_main.c
 OBJS = $(notdir $(SRCS:.c=.o))
 
-.PHONY: all
-all: $(TARGET)
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) ../../libcsuit.a
 	$(CC) $(LDWRAP) -o $@ $(OBJS) $(LDFLAGS)
 
 define test-one
