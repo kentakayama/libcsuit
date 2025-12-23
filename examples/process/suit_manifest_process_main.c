@@ -356,6 +356,7 @@ suit_err_t __wrap_suit_invoke_callback(suit_invoke_args_t invoke_args)
     char command[SUIT_MAX_NAME_LENGTH];
     snprintf(command, invoke_args.args_len + 1, "%s", (char *)invoke_args.args);
 
+    fflush(NULL);
     pid_t pid = fork();
     if (pid == 0) {
         /* child */

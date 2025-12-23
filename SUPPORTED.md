@@ -34,11 +34,11 @@ decode | :red_square: |  |  |  |
 encode | :red_square: |  |  |  | 
 process | :red_square: |  |  |  | 
 ### SUIT Report
-Operation | Metadata | Capabilities
+Operation | Report | Capabilities
 ---|---|---
-decode | :red_square::red_square::red_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
-encode | :red_square::red_square::red_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
-process | :red_square::red_square::red_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
+decode | :green_square::green_square::green_square::green_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
+encode | :green_square::green_square::green_square::green_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
+process | :green_square::green_square::green_square::green_square::red_square: | :red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square::red_square:
 
 ## NOTE: How to read the Supported Features Tables
 **IN**: which document
@@ -160,7 +160,6 @@ Component Slot | 5 | suit-parameter-component-slot | SUIT Manifest | N/M | RWX
 Strict Order | 12 | suit-parameter-strict-order | SUIT Manifest | N/M | RWX
 Soft Failure | 13 | suit-parameter-soft-failure | SUIT Manifest | N/M | RWX
 Image Size | 14 | suit-parameter-image-size | SUIT Manifest | N/M | RWX
-Fetch Arguments | 16? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | RWX
 Content | 18 | suit-parameter-content | SUIT Manifest | N/M | RWX
 Encryption Info (AES-KW) | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
 Encryption Info (ECDH)   | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
@@ -169,6 +168,7 @@ URI | 21 | suit-parameter-uri | SUIT Manifest | N/M | RWX
 Source Component | 22 | suit-parameter-source-component | SUIT Manifest | N/M | RWX
 Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RWX
 Device ID | 24 | suit-parameter-device-identifier | SUIT Manifest | N/M | RWX
+Fetch Args | 25 | suit-parameter-fetch-args | SUIT Manifest | N/M | RWX
 Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management | N/M | RWX
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RWX
 Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX
@@ -226,24 +226,23 @@ Creator | 8 | suit-meta-creator | SUIT Update Management | N/M | RWX
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
-Reference | ? | suit-reference | SUIT Report | N/M | ---
-Nonce | ? | suit-report-nonce | SUIT Report | N/M | ---
-Result | ? | suit-report-result | SUIT Report | N/M | ---
-Extensions | ? | suit-report-extensions | SUIT Report | N/M | ---
+Reference | 99 | suit-reference | SUIT Report | N/M | RWX
+Nonce | 2 | suit-report-nonce | SUIT Report | N/M | RWX
+Record | 3 | suit-report-record | SUIT Report | N/M | RWX
+Result | 4 | suit-report-result | SUIT Report | N/M | RWX
+Capability Report | 8 | suit-report-capability-report | SUIT Report | N/M | ---
 
 ### SUIT Capability Reporting
 
 Name | Label | CDDL Structure | IN | IS | Supported?
 ---|---|---|---|---|---
-Component | ? | suit-component-capabilities | SUIT Report | N/M | ---
-Command | ? | suit-command-capabilities | SUIT Report | N/M | ---
-Parameters | ? | suit-parameters-capabilities | SUIT Report | N/M | ---
-Crypt Algo | ? | suit-crypt-algo-capabilities | SUIT Report | N/M | ---
-Envelope | ? | suit-envelope-capabilities | SUIT Report | N/M | ---
-Manifest | ? | suit-manivest-capabilities | SUIT Report | N/M | ---
-Common | ? | suit-common-capabilities | SUIT Report | N/M | ---
-Text Component | ? | suit-text-component-capabilities | SUIT Report | N/M | ---
-Text | ? | suit-text-capabilities | SUIT Report | N/M | ---
-Dependency | ? | suit-dependency-capabilities | SUIT Report | N/M | ---
-Extensions | ? | suit-capability-report-extensions | SUIT Report | N/M | ---
-
+Component | 1 | suit-component-capabilities | SUIT Report | N/M | ---
+Command | 2 | suit-command-capabilities | SUIT Report | N/M | ---
+Parameters | 3 | suit-parameters-capabilities | SUIT Report | N/M | ---
+Crypt Algo | 4 | suit-crypt-algo-capabilities | SUIT Report | N/M | ---
+Envelope | 5 | suit-envelope-capabilities | SUIT Report | N/M | ---
+Manifest | 6 | suit-manivest-capabilities | SUIT Report | N/M | ---
+Common | 7 | suit-common-capabilities | SUIT Report | N/M | ---
+Text | 8 | suit-text-capabilities | SUIT Report | N/M | ---
+Text Component | 9 | suit-text-component-capabilities | SUIT Report | N/M | ---
+Dependency | 10 | suit-dependency-capabilities | SUIT Report | N/M | ---

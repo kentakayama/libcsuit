@@ -92,7 +92,6 @@ Component Slot | 5 | suit-parameter-component-slot | SUIT Manifest | N/M | RWX
 Strict Order | 12 | suit-parameter-strict-order | SUIT Manifest | N/M | RWX
 Soft Failure | 13 | suit-parameter-soft-failure | SUIT Manifest | N/M | RWX
 Image Size | 14 | suit-parameter-image-size | SUIT Manifest | N/M | RWX
-Fetch Arguments | 16? | suit-parameter-fetch-arguments | SUIT Manifest | N/M | RWX
 Content | 18 | suit-parameter-content | SUIT Manifest | N/M | RWX
 Encryption Info (AES-KW) | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
 Encryption Info (ECDH)   | 19 | suit-parameter-encryption-info | SUIT Encrypted Payload | N/M | RWX
@@ -101,6 +100,7 @@ URI | 21 | suit-parameter-uri | SUIT Manifest | N/M | RWX
 Source Component | 22 | suit-parameter-source-component | SUIT Manifest | N/M | RWX
 Invoke Args | 23 | suit-parameter-invoke-args | SUIT Manifest | N/M | RWX
 Device ID | 24 | suit-parameter-device-identifier | SUIT Manifest | N/M | RWX
+Fetch Args | 25 | suit-parameter-fetch-args | SUIT Manifest | N/M | RWX
 Minimum Battery | 26 | suit-parameter-minimum-battery | SUIT Update Management | N/M | RWX
 Update Priority | 27 | suit-parameter-update-priority | SUIT Update Management | N/M | RWX
 Version | 28 | suit-parameter-version | SUIT Update Management | N/M | RWX

@@ -10,7 +10,7 @@ because it may install some files into your file system
 depends on the input SUIT Manifest.
 
 ```bash
-git clone https://github.com/kentakayama/libcsuit
+git clone --recursive https://github.com/kentakayama/libcsuit
 cd ./libcsuit
 ```
 
@@ -26,46 +26,13 @@ docker build -t libcsuit_psa -f psa.Dockerfile .
 docker run -t libcsuit_psa
 ```
 
-**(c) Use OpenSSL 3**
-```
-docker build -t libcsuit_ossl3 -f ossl3.Dockerfile .
-docker run -t libcsuit_ossl3
-```
-
 ### Using Makefiles
 
 ```bash
-git clone --recurse-submodules https://github.com/kentakayama/libcsuit
-cd ./libcsuit/QCBOR
-make install
-cd ../t_cose
-make -f Makefile.ossl install
+git clone --recursive https://github.com/kentakayama/libcsuit
+make MBEDTLS=1 build_test
+make MBEDTLS=1 test
 ```
-
-Make and run sample codes you need.
-
-- suit_manifest_parser (extract values and print it, and then re-generate the same binary)
-```bash
-make -f Makefile.parser test
-```
-
-- suit_manifest_encoder (generate a manifest)
-```bash
-make -f Makefile.encode test
-# generates ./testfiles/suit_manifest_expX.cbor
-```
-
-- suit_manifest_encrypt (generate encrypted payload)
-```bash
-make -f Makefile.cncrypt run
-```
-
-- suit_manifest_process (extract values and call appropriate callbacks)
-```bash
-make -f Makefile.process test
-```
-
-
 
 To install libcsuit.a use the following command:
 ```

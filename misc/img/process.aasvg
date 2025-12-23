@@ -1,0 +1,37 @@
++--App------------------------------+
+| main() {                          |
+|   report_key = init_signing_key() |                                                       +--libcsuit SUIT Reporting Engine--+
+|   suit_report_engine_init(rkey)   +======================================================>| suit_report_engine_init() {}     |
+|                                   |<======================================================+                                  |
+|   recipient_keys = init_keys()    |                                                       |                                  |
+|   m = get_manifest()              |    +--libcsuit SUIT Manifest Processor-----------+    |                                  |
+|   suit_processor_init()           +===>| suit_processor_init() {}                    |    |                                  |
+|   suit_process_envelope(m, keys)  +===>| suit_process_envelope() {                   |    |                                  |
+|   }                               |    |   check_digests(keys, m)                    +===>| suit_report_manifest_digest() {} |
+| }                                 |    |   install(m) {                              |<===+                                  |
+|                                   |    |     p = extract_params(m.shared, m.install) |    |                                  |
+| suit_fetch_callback() {           |<===+     suit_fetch_callback(p.dst, p.uri)       |    |                                  |
+|   http_get(uri, ptr)              |    |                                             |    |                                  |
+|   return SUIT_SUCCESS             +===>|     if (p.report == REPORT_ON_SUCCESS) {    |    |                                  |
+| }                                 |    |       suit_extend_parameter(err, at)        +===>| suit_extend_parameter() {}       |
+|                                   |    |     }                                       |<===+                                  |
+| suit_condition_callback() {       |<===+     suit_condition_callback(p.class_id)     |    |                                  |
+|   class_id = get_class_id()       |    |                                             |    |                                  |
+|   consumed(class_id)              |    |                                             |    |                                  |
+|   if (class_id != p.class_id) {   |    |                                             |    |                                  |
+|     return SUIT_ERR_CONDITION     +===>|     if (err) {suit_extend_record() }        +===>| suit_extend_record() {}          |
+|   }                               |    |                                             |<===+                                  |
+|   return SUIT_SUCCESS             |    |     else {suit_extend_parameter() }         +===>| suit_extend_parameter() {}       |
+| }                                 |    |                                             |<===+                                  |
+|                                   |    |  }                                          |    |                                  |
+|                                   |    |  invoke(m) {                                |    |                                  |
+|                                   |    |    p = extract_params(m.shared, m.invoke)   |    |                                  |
+|                                   |    |    suit_report_finalize()                   +===>| suit_report_finalize() {         |
+| suit_report_callback() {          |<===+    suit_report_callback()                   |<===+   add_result(); sign()           |
+|   http_post(uri, suit_report)     +===>|                                             |    | }                                |
+| }                                 |    |                                             |    +----------------------------------+
+| suit_invoke_callback() {          |<===+    suit_invoke_callback(p.dst, p.args)      |
+|   return system(args)             |    |  }                                          |
+| }                                 |    +---------------------------------------------+
+|                                   |
++-----------------------------------+
