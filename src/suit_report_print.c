@@ -442,10 +442,10 @@ void suit_print_usefulbufc_report(UsefulBufC suit_report,
                     printf(",\n");
                 }
                 printf("%*s/ suit-report-records / 3: [", indent_space + indent_delta, "");
-                printf("\n%*s", indent_space + indent_delta * 2, "");
                 size_t array_size = item.val.uCount;
                 bool comma_l2 = false;
                 for (size_t i = 0; i < array_size; i++) {
+                    printf("\n%*s", indent_space + indent_delta * 2, "");
                     QCBORDecode_GetNext(&context, &item);
                     switch (item.uDataType) {
                     case QCBOR_TYPE_ARRAY:
@@ -464,6 +464,8 @@ void suit_print_usefulbufc_report(UsefulBufC suit_report,
                         suit_print_system_property_claims_from_item(&context, &item, indent_space + indent_delta * 2, indent_delta);
                         comma_l2 = true;
                         break;
+                    default:
+                        return;
                     }
                 }
                 printf("\n%*s]", indent_space + indent_delta, "");

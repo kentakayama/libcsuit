@@ -257,7 +257,7 @@ suit_err_t suit_condition_image_match(const suit_component_identifier_t *dst,
         buf.len = read_from_file(filename, buf.ptr, BUFFER_SIZE);
     }
     else {
-        ret->parameter_keys[0] = SUIT_PARAMETER_IMAGE_SIZE;
+        ret->consumed_parameter_keys[0] = SUIT_PARAMETER_IMAGE_SIZE;
         buf.ptr = malloc(image_size + 1);
         if (buf.ptr == NULL) {
             result = SUIT_ERR_NO_MEMORY;
@@ -271,7 +271,7 @@ suit_err_t suit_condition_image_match(const suit_component_identifier_t *dst,
             goto out;
         }
     }
-    ret->parameter_keys[1] = SUIT_PARAMETER_IMAGE_DIGEST;
+    ret->consumed_parameter_keys[1] = SUIT_PARAMETER_IMAGE_DIGEST;
     result = suit_verify_digest(UsefulBuf_Const(buf), image_digest);
     if (result == SUIT_ERR_FAILED_TO_VERIFY) {
         result = SUIT_ERR_CONDITION_MISMATCH;
@@ -295,16 +295,19 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
     switch (condition_args.condition) {
     /* bstr */
     case SUIT_CONDITION_VENDOR_IDENTIFIER:
-        condition_ret->parameter_keys[0] = SUIT_PARAMETER_VENDOR_IDENTIFIER;
+        condition_ret->consumed_parameter_keys[0] = SUIT_PARAMETER_VENDOR_IDENTIFIER;
         result = SUIT_ERR_NOT_IMPLEMENTED;
+        break;
     case SUIT_CONDITION_CLASS_IDENTIFIER:
-        condition_ret->parameter_keys[0] = SUIT_PARAMETER_CLASS_IDENTIFIER;
+        condition_ret->consumed_parameter_keys[0] = SUIT_PARAMETER_CLASS_IDENTIFIER;
         result = SUIT_ERR_NOT_IMPLEMENTED;
+        break;
     case SUIT_CONDITION_DEVICE_IDENTIFIER:
-        condition_ret->parameter_keys[0] = SUIT_PARAMETER_DEVICE_IDENTIFIER;
+        condition_ret->consumed_parameter_keys[0] = SUIT_PARAMETER_DEVICE_IDENTIFIER;
         result = SUIT_ERR_NOT_IMPLEMENTED;
+        break;
     case SUIT_CONDITION_CHECK_CONTENT:
-        condition_ret->parameter_keys[0] = SUIT_PARAMETER_CONTENT;
+        condition_ret->consumed_parameter_keys[0] = SUIT_PARAMETER_CONTENT;
         result = suit_condition_check_content(&condition_args.dst, condition_args.expected.str);
         break;
 
@@ -373,11 +376,11 @@ suit_err_t __wrap_suit_invoke_callback(suit_invoke_args_t invoke_args)
         int status;
         waitpid(pid, &status, 0);
         if (WIFEXITED(status)) {
-            printf("<callback> Command exited with %d\n", WEXITSTATUS(status));
+            printf("<callback> Command exited with %d\n\n", WEXITSTATUS(status));
             return SUIT_SUCCESS;
         }
         else {
-            printf("<callback> Command terminated %u\n", status);
+            printf("<callback> Command terminated %u\n\n", status);
             return SUIT_ERR_FATAL;
         }
     }
@@ -580,8 +583,7 @@ suit_err_t __wrap_suit_report_callback(suit_report_args_t report_args)
     }
 
     // NOTE: may send the SUIT Report to the Status Tracker Server
-    printf("callback : try to send this SUIT Report to the server ... ");
-    printf("done.\n\n");
+    printf("callback : (You can send this SUIT Report to the server here.)\n\n");
 
 out:
     return result;
@@ -685,7 +687,8 @@ int main(int argc, char *argv[]) {
     suit_report_start_encoding(reporting_engine, nonce);
 
     UsefulBuf manifest_buf;
-    suit_processor_init(processor_context, BUFFER_SIZE, reporting_engine, &manifest_buf);
+    bool report_invoke_pending = true;
+    suit_processor_init(processor_context, BUFFER_SIZE, reporting_engine, report_invoke_pending, &manifest_buf);
 
     printf("\nmain : Read Manifest file.\n");
     

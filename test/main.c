@@ -14,6 +14,7 @@
 
 #define REPORT_SIZE 1024
 
+void test_sizeof(void);
 void test_csuit_rollback(void);
 void test_csuit_get_digest(void);
 void test_component_identifier_to_filename(void);
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
     CU_pSuite suite;
     CU_initialize_registry();
     suite = CU_add_suite("SUIT", NULL, NULL);
+    CU_add_test(suite, "test_sizeof", test_sizeof);
     CU_add_test(suite, "test_csuit_rollback", test_csuit_rollback);
     CU_add_test(suite, "test_csuit_get_digest", test_csuit_get_digest);
     CU_add_test(suite, "test_component_identifier_to_filename", test_component_identifier_to_filename);
@@ -42,6 +44,11 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
+}
+
+void test_sizeof(void)
+{
+    CU_ASSERT_EQUAL(sizeof(((suit_processor_context_t *)0)->u), 1);
 }
 
 size_t test_csuit_rollback_buf(const uint8_t *buf, const size_t len)
