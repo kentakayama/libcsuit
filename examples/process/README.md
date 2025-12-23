@@ -3,6 +3,8 @@
 SUIT Manifest Processor, which behavior is defined in [draft-ietf-suit-manifest](https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest-34#section-6), processes a SUIT Manifest.
 It triggers SUIT Reporting Engine to generate a [SUIT Report](https://datatracker.ietf.org/doc/html/draft-ietf-suit-report) if it is initialized and set.
 
+![How sample program and libcsuit works](../../misc/img/process.svg)
+
 ## Sample Code
 
 The example program initializes libcsuit:
