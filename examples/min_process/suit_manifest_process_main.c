@@ -85,7 +85,7 @@ int main(void)
     }
 
     UsefulBuf manifest;
-    suit_processor_init(processor_context, 300, NULL, &manifest);
+    suit_processor_init(processor_context, 300, NULL, false, &manifest);
     manifest.len = ______testfiles_suit_manifest_exp0_suit_len;
     memcpy(manifest.ptr, ______testfiles_suit_manifest_exp0_suit, ______testfiles_suit_manifest_exp0_suit_len);
     suit_process_flag_t process_flags;

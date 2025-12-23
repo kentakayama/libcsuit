@@ -268,7 +268,7 @@ typedef struct suit_callback_ret {
 
     suit_report_reason_t reason;
     // currently, up to two parameters are consumed by one callback    
-    suit_parameter_key_t parameter_keys[LIBCSUIT_MAX_REPORT_PRAMETER_NUM];
+    suit_parameter_key_t consumed_parameter_keys[LIBCSUIT_MAX_REPORT_PRAMETER_NUM];
     bool on_src;
 } suit_callback_ret_t;
 
@@ -316,9 +316,12 @@ typedef struct suit_processor_context {
             uint8_t manifest_loaded: 1;
             uint8_t recipient_key_loaded: 1;
             uint8_t processing: 1;
+            uint8_t reported: 1;
             uint8_t done: 1;
+            uint8_t padding: 1;
+            uint8_t report_invoke_pending: 1;
         };
-    };
+    } u;
 
     /* a pointer to the SUIT Reporting Engine, can be NULL */
     suit_report_context_t *reporting_engine;
@@ -465,10 +468,11 @@ suit_err_t suit_process_envelope(
 /*!
     \brief      Initializes the SUIT Manifest Processor
 
-    \param[in]  processr_context    Pointer to the SUIT Manifest Processor itself.
-    \param[in]  buf_size            Allocated buffer size for the SUIT Manifest Processor while processing.
-    \param[in]  report_context      Pointer to the SUIT Reporting Engine. No SUIT Report will be produced on NULL.
-    \param[out] manifest            The buffer to be used for the SUIT Manifest.
+    \param[in]  processr_context        Pointer to the SUIT Manifest Processor itself.
+    \param[in]  buf_size                Allocated buffer size for the SUIT Manifest Processor while processing.
+    \param[in]  report_context          Pointer to the SUIT Reporting Engine. No SUIT Report will be produced on NULL.
+    \param[in]  report_invoke_pending   Whether finalize and report just before the suit-directive-fetch.
+    \param[out] manifest                The buffer to be used for the SUIT Manifest.
 
     Call this function first to process a SUIT Manifest.
     The size of processor_context must be sizeof(suit_processor_context_t) + buf_size.
@@ -478,6 +482,7 @@ suit_err_t suit_processor_init(
     suit_processor_context_t *processor_context,
     size_t buf_size,
     suit_report_context_t *report_context,
+    bool report_invoke_pending,
     UsefulBuf *manifest);
 
 /*!

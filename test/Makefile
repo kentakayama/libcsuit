@@ -22,7 +22,7 @@ $(TARGET): main.c ../libcsuit.a
 	$(MAKE) -C ../ MBEDTLS=$(MBEDTLS)
 
 .PHONY: run
-run:
+run: $(TARGET)
 	$(TARGET)
 
 .PHONY: clean

@@ -358,6 +358,8 @@ suit_err_t suit_report_finalize(
     if (cbor_error != QCBOR_SUCCESS) {
         return SUIT_ERR_WHILE_REPORTING;
     }
+
+    report_context->state = SUIT_REPORTING_ENGINE_FINALIZED;
     return SUIT_SUCCESS;
 }
 
