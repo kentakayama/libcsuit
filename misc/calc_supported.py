@@ -94,7 +94,7 @@ def calc_suit_report():
     ret_str = ""
     for i in range(len(documents)):
         ret_str += f"### {documents[i]}\n"
-        ret_str += "Operation | Metadata | Capabilities\n"
+        ret_str += "Operation | Report | Capabilities\n"
         ret_str += "---|---|---\n"
         ret_str += "decode"
         for level in range(len(pos_list)):

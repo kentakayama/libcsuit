@@ -1,0 +1,110 @@
+
+main : Read Manifest file.
+
+main : Read public keys.
+
+main : Read secret keys.
+
+main : Read secret keys for AES-KW.
+
+main : Load private keys for ES-ECDH.
+
+main : Process Manifest file.
+condition callback : {
+  operation : condition-vendor-identifier
+  expected : h'FA6B4A53D5AD5FDFBE9DE663E4D41FFE'
+  suit_rep_policy_t : RecPass1 RecFail1 SysPass1 SysFail1
+}
+
+callback : error = SUIT_ERR_NOT_IMPLEMENTED(15)
+callback : suppress it for testing.
+
+condition callback : {
+  operation : condition-class-identifier
+  expected : h'1492AF1425695E48BF429B2D51F2AB45'
+  suit_rep_policy_t : RecPass1 RecFail1 SysPass1 SysFail1
+}
+
+callback : error = SUIT_ERR_NOT_IMPLEMENTED(15)
+callback : suppress it for testing.
+
+condition callback : {
+  operation : condition-image-match
+  dst-component-identifier : [h'00']
+  expected : {
+    image_size : 34768
+    image_digest : [
+      / algorithm-id: / -16 / SHA-256 /,
+      / digest-bytes: / h'00112233445566778899AABBCCDDEEFF0123456789ABCDEFFEDCBA9876543210'
+    ]
+  }
+  suit_rep_policy_t : RecPass1 RecFail1 SysPass1 SysFail1
+}
+
+callback : error = SUIT_ERR_CONDITION_MISMATCH(21)
+callback : suppress it for testing.
+
+condition callback : {
+  operation : condition-vendor-identifier
+  expected : h'FA6B4A53D5AD5FDFBE9DE663E4D41FFE'
+  suit_rep_policy_t : RecPass1 RecFail1 SysPass1 SysFail1
+}
+
+callback : error = SUIT_ERR_NOT_IMPLEMENTED(15)
+callback : suppress it for testing.
+
+condition callback : {
+  operation : condition-class-identifier
+  expected : h'1492AF1425695E48BF429B2D51F2AB45'
+  suit_rep_policy_t : RecPass1 RecFail1 SysPass1 SysFail1
+}
+
+callback : error = SUIT_ERR_NOT_IMPLEMENTED(15)
+callback : suppress it for testing.
+
+report callback :
+    / COSE_Sign1_Tagged = / 18([
+      / protected: / << {
+        / alg / 1: -9 / ESP256 /
+      } >>,
+      / unprotected: / {
+        / kid / 4: h'E96788B10B1610ABE478F9CE8DCFE2304C0911DD8CFEADDE25EC30CCB5A7B5AF'
+      },
+      / payload: / {
+        / suit-reference / 99: [
+          / suit-report-manifest-uri: / "",
+          / suit-report-manifest-digest: / [
+            / algorithm-id: / -16 / SHA-256 /,
+            / digest-bytes: / h'6658EA560262696DD1F13B782239A064DA7C6C5CBAF52FDED428A6FC83C7E5AF'
+          ]
+        ],
+        / suit-report-records / 3: [
+          {
+            / system-component-id / 0: [h'00'],
+            / vendor-id / 1: h'FA6B4A53D5AD5FDFBE9DE663E4D41FFE',
+            / class-id / 2: h'1492AF1425695E48BF429B2D51F2AB45',
+            / image-size / 14: 34768,
+            / vendor-id / 1: h'FA6B4A53D5AD5FDFBE9DE663E4D41FFE',
+            / class-id / 2: h'1492AF1425695E48BF429B2D51F2AB45'
+          }
+        ],
+        / suit-report-result / 4: true
+      }
+      / signatre: / h'5EFD96CE60E54889913FA0ADAACE337872ED15BF46099D410BBDF5A20EF00B2B1260771346515D996683F36936EA6D2C4932AF74E5BBD6E9E1BEE0C00B666B28'
+    ])
+
+callback : print SUIT Report SUCCESS
+
+callback : (You can send this SUIT Report to the server here.)
+
+invoke callback : {
+  component-identifier : [h'00']
+  argument(len=0) : h''
+  suit_rep_policy_t : RecPass0 RecFail1 SysPass0 SysFail0
+}
+
+<callback>$ cd ./tmp
+<callback>$ 
+
+<callback> Command exited with 0
+

@@ -1,81 +1,26 @@
-## Getting started
+## Install
 
 This library uses two build systems, namely cmake and classical makefiles.
-To build with makefile you can use docker environment and we recommend you to use it.
-
-### Using Docker(RECOMMENDED)
-
-We recommend you to execute examples with docker
-because it may install some files into your file system
-depends on the input SUIT Manifest.
-
-```bash
-git clone https://github.com/kentakayama/libcsuit
-cd ./libcsuit
-```
-
-**(a) Use OpenSSL**
-```
-docker build -t libcsuit_ossl -f ossl.Dockerfile .
-docker run -t libcsuit_ossl
-```
-
-**(b) Use Mbed TLS**
-```
-docker build -t libcsuit_psa -f psa.Dockerfile .
-docker run -t libcsuit_psa
-```
-
-**(c) Use OpenSSL 3**
-```
-docker build -t libcsuit_ossl3 -f ossl3.Dockerfile .
-docker run -t libcsuit_ossl3
-```
+If you want to install libcsuit, 
 
 ### Using Makefiles
 
+**(a) Use OpenSSL**
+
 ```bash
-git clone --recurse-submodules https://github.com/kentakayama/libcsuit
-cd ./libcsuit/QCBOR
-make install
-cd ../t_cose
-make -f Makefile.ossl install
-```
-
-Make and run sample codes you need.
-
-- suit_manifest_parser (extract values and print it, and then re-generate the same binary)
-```bash
-make -f Makefile.parser test
-```
-
-- suit_manifest_encoder (generate a manifest)
-```bash
-make -f Makefile.encode test
-# generates ./testfiles/suit_manifest_expX.cbor
-```
-
-- suit_manifest_encrypt (generate encrypted payload)
-```bash
-make -f Makefile.cncrypt run
-```
-
-- suit_manifest_process (extract values and call appropriate callbacks)
-```bash
-make -f Makefile.process test
-```
-
-
-
-To install libcsuit.a use the following command:
-```
+make
 make install
 ```
 
-To install libcsuit.so use the following command:
+**(b) Use MbedTLS**
+
+```bash
+make MBEDTLS=1
+make MBEDTLS=1 install
 ```
-make install_so
-```
+
+> [!NOTE]
+> QCBOR, t_cose and OpenSSL or MbedTLS are also required to be installed.
 
 To generate Doxygen document use the following command:
 ```
