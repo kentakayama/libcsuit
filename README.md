@@ -10,13 +10,13 @@ For more information on how the IETF SUIT manifest is used to protect firmware u
 Supported features are:
 - Processing & Reporting: Parse and Execute a SUIT Manifest, and Generate a SUIT Report (see [examples/process](https://github.com/kentakayama/libcsuit/tree/master/examples/process))
 - Parsing: Parse and Print a SUIT Manifest (see [examples/parser](https://github.com/kentakayama/libcsuit/tree/master/examples/parser))
-- Signing Manifest: Sing/Mac a SUIT Manifest (see [examples/sign](https://github.com/kentakayama/libcsuit/tree/master/examples/sign))
+- Signing Manifest: Sign/MAC a SUIT Manifest (see [examples/sign](https://github.com/kentakayama/libcsuit/tree/master/examples/sign))
 - Encrypting & Decrypting a Payload: Encrypt a payload to generate a `SUIT_Encryption_Info` and ciphertext (see [examples/encrypt](https://github.com/kentakayama/libcsuit/tree/master/examples/encrypt))
 - Encoding: Encode a (signed) SUIT Manifest (see [examples/encode](https://github.com/kentakayama/libcsuit/tree/master/examples/encode))
 
 See [SUPPORTED.md](./SUPPORTED.md) for each supported fundamental functions.
 
-Tested SUIT Manifests are found in [testfiles/README.md](testfiles/README.md)
+Tested SUIT Manifests are found in [testfiles/README.md](./testfiles/README.md)
 
 ## Overview
 
@@ -50,17 +50,18 @@ git submodule update --init --recursive
 ```
 
 We recommend option **(a)** and **(b)**, using docker not to modify your system.
+The [process](./examples/process/) sample program is expected to be run on IoT devices and TEE environments.
 
 **(a) Use OpenSSL**
 ```bash
 docker build -t libcsuit_ossl -f ossl.Dockerfile .
-docker run -t libcsuit_ossl ./examples/process/suit_manifest_process ./testfiles/suit_maniefst_exp0.cbor
+docker run -t libcsuit_ossl ./examples/process/suit_manifest_process ./testfiles/suit_manifest_exp0.cbor
 ```
 
 **(b) Use Mbed TLS**
 ```bash
 docker build -t libcsuit_psa -f psa.Dockerfile .
-docker run -t libcsuit_psa ./examples/process/suit_manifest_process ./testfiles/suit_maniefst_exp0.cbor
+docker run -t libcsuit_psa ./examples/process/suit_manifest_process ./testfiles/suit_manifest_exp0.cbor
 ```
 
 **(c) Build and run natively**
@@ -70,7 +71,7 @@ make -C examples/process
 ```
 See [SUIT Manifest Example 0](./testfiles/suit_manifest_exp0.md) and [SUIT Manifest Processor's output](./misc/process_example0.txt).
 
-
+If you want to install libcsuit to your system, see [INSTALL.md](INSTALL.md)
 
 ## License and Copyright
 BSD 2-Clause License

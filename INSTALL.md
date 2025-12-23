@@ -1,48 +1,26 @@
-## Getting started
+## Install
 
 This library uses two build systems, namely cmake and classical makefiles.
-To build with makefile you can use docker environment and we recommend you to use it.
-
-### Using Docker(RECOMMENDED)
-
-We recommend you to execute examples with docker
-because it may install some files into your file system
-depends on the input SUIT Manifest.
-
-```bash
-git clone --recursive https://github.com/kentakayama/libcsuit
-cd ./libcsuit
-```
-
-**(a) Use OpenSSL**
-```
-docker build -t libcsuit_ossl -f ossl.Dockerfile .
-docker run -t libcsuit_ossl
-```
-
-**(b) Use Mbed TLS**
-```
-docker build -t libcsuit_psa -f psa.Dockerfile .
-docker run -t libcsuit_psa
-```
+If you want to install libcsuit, 
 
 ### Using Makefiles
 
-```bash
-git clone --recursive https://github.com/kentakayama/libcsuit
-make MBEDTLS=1 build_test
-make MBEDTLS=1 test
-```
+**(a) Use OpenSSL**
 
-To install libcsuit.a use the following command:
-```
+```bash
+make
 make install
 ```
 
-To install libcsuit.so use the following command:
+**(b) Use MbedTLS**
+
+```bash
+make MBEDTLS=1
+make MBEDTLS=1 install
 ```
-make install_so
-```
+
+> [!NOTE]
+> QCBOR, t_cose and OpenSSL or MbedTLS are also required to be installed.
 
 To generate Doxygen document use the following command:
 ```
