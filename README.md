@@ -1,4 +1,7 @@
 # [libcsuit](https://github.com/kentakayama/libcsuit/)
+
+![OTA Update using libcsuit](misc/img/libcsuit.svg)
+
 **libcsuit** is a C library for encoding and decoding [IETF SUIT manifests](https://datatracker.ietf.org/doc/html/draft-ietf-suit-manifest).
 The manifest contains meta-data about the firmware image. The manifest is protected against modification and provides information
 about the software/firmware author.
@@ -15,6 +18,8 @@ Supported features are:
 - Encoding: Encode a (signed) SUIT Manifest (see [examples/encode](https://github.com/kentakayama/libcsuit/tree/master/examples/encode))
 
 See [SUPPORTED.md](./SUPPORTED.md) for each supported fundamental functions.
+
+For encoding and signing SUIT Manifests, try [suit-manifest-generator](https://github.com/kentakayama/suit-manifest-generator) which is much kind to human being.
 
 Tested SUIT Manifests are found in [testfiles/README.md](./testfiles/README.md)
 
