@@ -819,6 +819,9 @@ suit_err_t suit_key_init_hmac512_secret_key(const unsigned char *secret_key,
 
 suit_err_t suit_free_key(const suit_key_t *key)
 {
+    if (key == NULL) {
+        return SUIT_SUCCESS;
+    }
     switch (key->cose_algorithm_id) {
     case T_COSE_ALGORITHM_A128KW:
     case T_COSE_ALGORITHM_A192KW:

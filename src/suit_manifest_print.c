@@ -21,6 +21,8 @@ const char* suit_err_to_str(suit_err_t error)
         return "SUIT_SUCCESS";
     case SUIT_ERR_NOT_INITIALIZED:
         return "SUIT_ERR_NOT_INITIALIZED";
+    case SUIT_ERR_INITIALIZED_AGAIN:
+        return "SUIT_ERR_INITIALIZED_AGAIN";
     case SUIT_ERR_FATAL:
         return "SUIT_ERR_FATAL";
     case SUIT_ERR_NOT_A_SUIT_MANIFEST:

@@ -29,7 +29,7 @@ EXPS := $(foreach num,$(TEST_NUM),${TESTFILES_DIR}/suit_manifest_exp$(num).suit)
 define test-one
 	$(TARGET) $1 2 | tee tmp.result
 	@grep '^    ' tmp.result | $(DIAG2CBOR) > tmp.printed.cbor
-	@diff $1 tmp.printed.cbor
+	@diff $1 tmp.printed.cbor || exit 1
 	@echo "[SUCCESS] Succcessfully parsed and printed $1"
 	@$(RM) tmp.result tmp.printed.cbor
 
