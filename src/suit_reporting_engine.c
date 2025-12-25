@@ -528,7 +528,7 @@ suit_err_t suit_report_add_sender_key(
     case SUIT_REPORTING_ENGINE_NOT_INITIALIZED:
         return SUIT_ERR_NOT_INITIALIZED;
     case SUIT_REPORTING_ENGINE_KEY_LOADED:
-        return SUIT_ERR_REDUNDANT;
+        return SUIT_ERR_INITIALIZED_AGAIN;
     case SUIT_REPORTING_ENGINE_INITIALIZED:
         break;
     default:

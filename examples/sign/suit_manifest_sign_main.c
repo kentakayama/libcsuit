@@ -12,6 +12,9 @@
 #include "csuit/suit_cose.h"
 #include "suit_examples_common.h"
 
+#define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
+#define ENCODE_BUFFER_SIZE 4096
+
 #if defined(SUIT_MANIFEST_SIGNER_TAM)
 #include "tam_esp256_cose_key_private.h"
 #include "trust_anchor_esp256_cose_key_public.h"
@@ -29,8 +32,6 @@ cbor_tag_key_t cose_tag = CBOR_TAG_COSE_MAC0;
 #define PUBLIC_KEY NULLUsefulBufC
 cbor_tag_key_t cose_tag = CBOR_TAG_COSE_SIGN1;
 #endif
-
-#define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
 
 int main(int argc,
          char *argv[])
@@ -101,22 +102,34 @@ int main(int argc,
     }
 
     // Encode manifest.
-    encode_buf = malloc(MAX_FILE_BUFFER_SIZE);
-    if (encode_buf == NULL) {
-        printf("main : Failed to allocate memory.\n");
-        goto out;
+    suit_encoder_context_t *encoder_context = malloc(sizeof(suit_encoder_context_t) + ENCODE_BUFFER_SIZE);
+    if (encoder_context == NULL) {
+        printf("main : Failed to allocate encoder context. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
     }
-    size_t encode_len = MAX_FILE_BUFFER_SIZE;
-    uint8_t *ret_pos = encode_buf;
+    result = suit_encode_init(encoder_context, ENCODE_BUFFER_SIZE);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to initialize encoder context. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+    result = suit_encode_add_sender_key(encoder_context, mechanisms[0].cose_tag, T_COSE_ALGORITHM_RESERVED, &mechanisms[0].key);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to assign a signing key. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+
     printf("\nmain : Encode Manifest.\n");
-    result = suit_encode_envelope(&envelope, mechanisms, &ret_pos, &encode_len);
+    UsefulBufC encoded_manifest;
+    result = suit_encode_envelope(encoder_context, &envelope, &encoded_manifest);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, MAX_FILE_BUFFER_SIZE);
+    printf("main : Total buffer memory usage was %ld/%d bytes\n",
+        (uint8_t *)encoded_manifest.ptr + encoded_manifest.len - ((uint8_t *)encoder_context + sizeof(suit_encoder_context_t)),
+        ENCODE_BUFFER_SIZE);
 
-    write_to_file(output_file, ret_pos, encode_len);
+    write_to_file(output_file, encoded_manifest.ptr, encoded_manifest.len);
     ret = EXIT_SUCCESS;
 out:
     if (manifest.ptr != NULL) {

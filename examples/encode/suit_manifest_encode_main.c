@@ -12,7 +12,7 @@
 #include "suit_examples_common.h"
 #include "trust_anchor_esp256_cose_key_private.h"
 
-#define MAX_FILE_BUFFER_SIZE            4096
+#define ENCODE_BUFFER_SIZE 4096
 
 int main(int argc, char *argv[]) {
     // check arguments.
@@ -22,15 +22,30 @@ int main(int argc, char *argv[]) {
     }
     char *manifest_file = argv[1];
 
-    suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM] = {0};
+    suit_key_t signing_key;
     UsefulBufC private_key = trust_anchor_esp256_cose_key_private;
-    suit_err_t result = suit_set_suit_key_from_cose_key(private_key, &mechanisms[0].key);
+    suit_err_t result = suit_set_suit_key_from_cose_key(private_key, &signing_key);
     if (result != SUIT_SUCCESS) {
-        printf("main : Failed to create ES256 key pair. %s(%d)\n", suit_err_to_str(result), result);
+        printf("main : Failed to create ESP256 key pair. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    mechanisms[0].cose_tag = CBOR_TAG_COSE_SIGN1;
-    mechanisms[0].use = true;
+
+    // Initialize manifest encoder.
+    suit_encoder_context_t *encoder_context = malloc(sizeof(suit_encoder_context_t) + ENCODE_BUFFER_SIZE);
+    if (encoder_context == NULL) {
+        printf("main : Failed to allocate encoder context. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+    result = suit_encode_init(encoder_context, ENCODE_BUFFER_SIZE);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to initialize encoder context. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
+    result = suit_encode_add_sender_key(encoder_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ESP256, &signing_key);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to assign a signing key. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
+    }
 
     // Generate manifest
     suit_envelope_t envelope = {0};
@@ -107,24 +122,23 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    // Encode manifest.
-    uint8_t encode_buf[MAX_FILE_BUFFER_SIZE];
-    size_t encode_len = MAX_FILE_BUFFER_SIZE;
-    uint8_t *ret_pos = encode_buf;
     printf("\nmain : Encode Manifest.\n");
-    result = suit_encode_envelope(&envelope, mechanisms, &ret_pos, &encode_len);
+    UsefulBufC encoded_manifest;
+    result = suit_encode_envelope(encoder_context, &envelope, &encoded_manifest);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         return EXIT_FAILURE;
     }
-    printf("main : Total buffer memory usage was %ld/%ld bytes\n", ret_pos + encode_len - encode_buf, sizeof(encode_buf));
+    printf("main : Total buffer memory usage was %ld/%d bytes\n",
+        (uint8_t *)encoded_manifest.ptr + encoded_manifest.len - ((uint8_t *)encoder_context + sizeof(suit_encoder_context_t)),
+        ENCODE_BUFFER_SIZE);
 
-    size_t w_len = write_to_file(manifest_file, ret_pos, encode_len);
-    if (w_len != encode_len) {
+    size_t w_len = write_to_file(manifest_file, encoded_manifest.ptr, encoded_manifest.len);
+    if (w_len != encoded_manifest.len) {
         printf("main : Failed to write to %s\n", manifest_file);
     }
     printf("main : Wrote SUIT manifest to %s.\n", manifest_file);
 
-    suit_free_key(&mechanisms[0].key);
+    suit_free_key(&signing_key);
     return EXIT_SUCCESS;
 }

@@ -26,7 +26,7 @@ $(TARGET): $(OBJS) ../../libcsuit.a
 OUTPUT := $(TESTFILES_DIR)/suit_manifest_expX.cbor
 .PHONY: run
 run: $(TARGET)
-	$(TARGET) $(OUTPUT)
+	$(TARGET) $(OUTPUT) || exit 1
 
 .PHONY: clean
 clean:

@@ -692,7 +692,7 @@ suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
             fetch.args = processor_context->parameters[processor_context->component_index].fetch_args;
 
             fetch.buf_len = buf_size;
-            fetch.ptr = processor_context->allocated.ptr + (processor_context->allocated.len - processor_context->left_len);
+            fetch.ptr = (uint8_t *)processor_context->allocated.ptr + (processor_context->allocated.len - processor_context->left_len);
 
             fetch.report_policy = report_policy;
 
@@ -2964,7 +2964,7 @@ suit_err_t suit_processor_add_manifest(
         return SUIT_ERR_NOT_INITIALIZED;
     }
     if (processor_context->u.manifest_loaded) {
-        return SUIT_ERR_REDUNDANT;
+        return SUIT_ERR_INITIALIZED_AGAIN;
     }
     if (manifest.ptr != processor_context->manifest.ptr) {
         return SUIT_ERR_INVALID_VALUE;
