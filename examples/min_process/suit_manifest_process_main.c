@@ -95,7 +95,11 @@ int main(void)
     if (suit_processor_add_manifest(processor_context, UsefulBuf_Const(manifest), process_flags) != SUIT_SUCCESS) {
         goto out;
     }
-    if (suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ESP256, trust_anchor_esp256_cose_key_public) != SUIT_SUCCESS) {
+    suit_key_t key;
+    if (suit_set_suit_key_from_cose_key(trust_anchor_esp256_cose_key_public, &key) != SUIT_SUCCESS) {
+        goto out;
+    }
+    if (suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ESP256, &key) != SUIT_SUCCESS) {
         goto out;
     }
     if (suit_process_envelope(processor_context) != SUIT_SUCCESS) {
