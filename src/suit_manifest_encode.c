@@ -1378,8 +1378,20 @@ suit_err_t suit_encode_add_sender_key(
     suit_encoder_context_t *encoder_context,
     const int cose_tag,
     int cose_algorithm_id,
-    suit_key_t *sender_key)
+    suit_key_t *cose_key)
 {
+    switch (cose_tag) {
+    case CBOR_TAG_COSE_SIGN1:
+    case CBOR_TAG_COSE_SIGN:
+    case CBOR_TAG_COSE_MAC0:
+    case CBOR_TAG_COSE_MAC:
+    case CBOR_TAG_COSE_ENCRYPT:
+        break;
+    // draft-ietf-suit-firmware-encryption does not mention this
+    // case CBOR_TAG_COSE_ENCRYPT0:
+    default:
+        return SUIT_ERR_NOT_IMPLEMENTED;
+    }
 
     size_t i = 0;
     for (; i < SUIT_MAX_KEY_NUM; i++) {
@@ -1391,8 +1403,11 @@ suit_err_t suit_encode_add_sender_key(
         return SUIT_ERR_NO_MEMORY;
     }
 
-    encoder_context->mechanisms[i].key = *sender_key;
+    encoder_context->mechanisms[i].key = *cose_key;
     if (encoder_context->mechanisms[i].key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+        if (cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+            return SUIT_ERR_INVALID_KEY;
+        }
         encoder_context->mechanisms[i].key.cose_algorithm_id = cose_algorithm_id;
     }
     encoder_context->mechanisms[i].use = true;

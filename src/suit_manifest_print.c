@@ -2300,6 +2300,9 @@ suit_err_t suit_print_delegation(const suit_delegation_t *delegation,
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_print.h
+ */
 suit_err_t suit_print_envelope(const suit_envelope_t *envelope,
                                const uint32_t indent_space,
                                const uint32_t indent_delta)

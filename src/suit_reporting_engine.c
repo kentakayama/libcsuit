@@ -9,7 +9,7 @@
 
     \brief  This implements SUIT Report encoder
 
-    Call suit_reporting_engine_init() and pass it to the suit_process_init().
+    Call suit_report_init_engine() and pass it to the suit_processor_init().
  */
 
 #include "csuit/suit_manifest_encode.h"
@@ -500,6 +500,9 @@ suit_err_t suit_report_manifest_digest(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_reporting_engine.h
+ */
 suit_err_t suit_report_start_encoding(
     suit_report_context_t *report_context,
     UsefulBufC nonce)
@@ -518,6 +521,9 @@ suit_err_t suit_report_start_encoding(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_reporting_engine.h
+ */
 suit_err_t suit_report_add_sender_key(
     suit_report_context_t *report_context,
     const int cose_tag,
@@ -578,6 +584,9 @@ suit_err_t suit_report_add_sender_key(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_reporting_engine.h
+ */
 suit_err_t suit_report_init_engine(
     suit_report_context_t *report_context,
     const size_t buf_size)
