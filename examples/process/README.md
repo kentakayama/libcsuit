@@ -31,17 +31,24 @@ The example program initializes libcsuit:
     // Add SUIT Manifest
     suit_processor_add_manifest(processor_context, UsefulBuf_Const(manifest_buf), process_flags);
 
-    // Assign the SUIT Manifest Signer's Public Key
-    suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ES256, trust_anchor_esp256_cose_key_public);
+    // Load the SUIT Manifest Signer's key from COSE_Key
+    suit_key_t key;
+    suit_set_suit_key_from_cose_key(trust_anchor_esp256_cose_key_public, &key);
+    // Assign it to the Processor Context
+    suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ES256, key);
 
     // Execute
     suit_process_envelope(processor_context);
 
     // Free resources
     suit_processor_free(processor_context);
+    suit_free_key(&key);
     free(processor_context);
     free(reporting_engine);
 ```
+
+> [!NOTE]
+> Error handlings are excluded. See actual codes.
 
 ## Callback Functions
 

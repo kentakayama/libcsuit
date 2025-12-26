@@ -514,7 +514,7 @@ suit_err_t suit_processor_add_recipient_key(
     suit_processor_context_t *processor_context,
     int cose_tag,
     int cose_algorithm_id,
-    UsefulBufC cose_key);
+    suit_key_t *cose_key);
 
 /*!
     \brief      Terminates the the SUIT Manifest Processor

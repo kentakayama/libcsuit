@@ -2955,6 +2955,9 @@ report:
     return result;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 suit_err_t suit_processor_add_manifest(
     suit_processor_context_t *processor_context,
     UsefulBufC manifest,
@@ -2981,11 +2984,14 @@ suit_err_t suit_processor_add_manifest(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 suit_err_t suit_processor_add_recipient_key(
     suit_processor_context_t *processor_context,
     int cose_tag,
     int cose_algorithm_id,
-    UsefulBufC cose_key)
+    suit_key_t *cose_key)
 {
     if (!processor_context->u.initialized) {
         return SUIT_ERR_NOT_INITIALIZED;
@@ -3014,11 +3020,11 @@ suit_err_t suit_processor_add_recipient_key(
         return SUIT_ERR_NO_MEMORY;
     }
 
-    suit_err_t result = suit_set_suit_key_from_cose_key(cose_key, &processor_context->mechanisms[i].key);
-    if (result != SUIT_SUCCESS) {
-        return result;
-    }
+    processor_context->mechanisms[i].key = *cose_key;
     if (processor_context->mechanisms[i].key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+        if (cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+            return SUIT_ERR_INVALID_KEY;
+        }
         processor_context->mechanisms[i].key.cose_algorithm_id = cose_algorithm_id;
     }
     processor_context->mechanisms[i].use = true;
@@ -3029,6 +3035,9 @@ suit_err_t suit_processor_add_recipient_key(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 suit_err_t suit_processor_init(
     suit_processor_context_t *processor_context,
     size_t buf_size,
@@ -3062,14 +3071,13 @@ suit_err_t suit_processor_init(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 void suit_processor_free(suit_processor_context_t *processor_context)
 {
     if (processor_context == NULL) {
         return;
-    }
-    for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
-        suit_free_key(&processor_context->mechanisms[i].key);
-        processor_context->mechanisms[i] = (suit_mechanism_t){0};
     }
     processor_context->u.status = 0;
 }
