@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN apt-get -y install curl git clang make xxd libcunit1-dev libssl-dev ruby
+RUN apt-get -y install clang make libcunit1-dev libssl-dev ruby
 RUN gem install cbor-diag
 
 COPY . .

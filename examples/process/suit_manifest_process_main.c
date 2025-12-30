@@ -598,6 +598,7 @@ void display_help(const char *argv0, bool on_error)
 
 int main(int argc, char *argv[]) {
     int exit_code = EXIT_SUCCESS;
+    size_t num_keys = 0;
     suit_report_context_t *reporting_engine = NULL;
     suit_processor_context_t *processor_context = NULL;
     suit_err_t suit_err = 0;
@@ -709,7 +710,6 @@ int main(int argc, char *argv[]) {
         goto out;
     }
 
-    size_t num_keys = 0;
     suit_key_t keys[SUIT_MAX_KEY_NUM] = {0};
     printf("\nmain : Read public keys.\n");
     for (int i = 0; i < NUM_PUBLIC_KEYS_FOR_ECDSA; i++) {

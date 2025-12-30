@@ -9,7 +9,6 @@ all:
 	$(MAKE) -C encode MBEDTLS=$(MBEDTLS)
 	$(MAKE) -C parser MBEDTLS=$(MBEDTLS)
 	$(MAKE) -C process MBEDTLS=$(MBEDTLS)
-	$(MAKE) -C min_process MBEDTLS=$(MBEDTLS)
 	$(MAKE) -C encrypt MBEDTLS=$(MBEDTLS)
 	$(MAKE) -C sign MBEDTLS=$(MBEDTLS)
 
@@ -25,6 +24,5 @@ clean:
 	$(MAKE) -C encode MBEDTLS=$(MBEDTLS) clean
 	$(MAKE) -C parser MBEDTLS=$(MBEDTLS) clean
 	$(MAKE) -C process MBEDTLS=$(MBEDTLS) clean
-	$(MAKE) -C min_process MBEDTLS=$(MBEDTLS) clean
 	$(MAKE) -C encrypt MBEDTLS=$(MBEDTLS) clean
 	$(MAKE) -C sign MBEDTLS=$(MBEDTLS) clean

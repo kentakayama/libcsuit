@@ -5,7 +5,7 @@ FROM python:3.11-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN apt-get -y install curl git gcc make xxd libcunit1-dev ruby python3 python3-pip
+RUN apt-get -y install gcc make libcunit1-dev ruby python3 python3-pip
 RUN gem install cbor-diag
 
 COPY . .
