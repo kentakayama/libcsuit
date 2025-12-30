@@ -25,7 +25,7 @@ TCOSE_PATH := $(realpath ../../3rdparty/t_cose)
 TCOSE_INC := $(TCOSE_PATH)/inc
 TCOSE_LIB := $(TCOSE_PATH)/libt_cose.a
 
-INC := -include config.h -include crypto_config.h -include mbedtls_config.h -I./ -I../inc -I../../inc -I$(CRYPTO_INC) -I$(QCBOR_INC) -I$(TCOSE_INC)
+INC := -include config.h -I./ -I../inc -I../../inc -I$(CRYPTO_INC) -I$(QCBOR_INC) -I$(TCOSE_INC)
 LDFLAGS := -Wl,--gc-sections
 
 LDWRAP = \
@@ -68,11 +68,11 @@ t_cose:
 
 $(TARGET): mbedtls QCBOR t_cose $(OBJS)
 	$(CC) $(LDWRAP) -o $@ $(OBJS) $(TCOSE_LIB) $(QCBOR_LIB) $(CRYPTO_LIB) $(LDFLAGS)
-	size $(TARGET)
-	ls -lh $(TARGET)
 
 .PHONY: run
 run: $(TARGET)
+	size $(TARGET)
+	ls -lh $(TARGET)
 	$(TARGET)
 
 .PHONY: clean

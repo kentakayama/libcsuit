@@ -22,5 +22,7 @@ clean:
 	$(MAKE) -C QCBOR clean
 ifeq ($(MBEDTLS), 1)
 	$(MAKE) -C mbedtls clean
+	cd mbedtls && git checkout .
 endif
-	$(MAKE) -C t_cose -f $(TCOSE_MAKEFILE) clean
+	$(MAKE) -C t_cose -f Makefile.ossl clean
+	$(MAKE) -C t_cose -f Makefile.psa clean
