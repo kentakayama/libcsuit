@@ -118,6 +118,7 @@ int main(int argc,
     // Print manifest.
     printf("\nmain : Print Manifest.\n");
     result = suit_print_envelope(envelope, indent, tabstop);
+    printf("\n\n");
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to print Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         exit_code = EXIT_FAILURE;
@@ -133,11 +134,12 @@ int main(int argc,
     }
     for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
         if (mechanisms[i].use) {
-            result = suit_encode_add_sender_key(encoder_context, mechanisms[i].cose_tag, T_COSE_ALGORITHM_RESERVED, &mechanisms->key);
+            result = suit_encode_add_sender_key(encoder_context, mechanisms[i].cose_tag, T_COSE_ALGORITHM_RESERVED, &mechanisms[i].key);
             if (result != SUIT_SUCCESS) {
                 printf("main : Failed to assign a signing key. %s(%d)\n", suit_err_to_str(result), result);
                 return EXIT_FAILURE;
             }
+            printf("main : Assigned %s with %s key.", suit_cose_alg_to_str(mechanisms[i].key.cose_algorithm_id), suit_cbor_tag_to_str(mechanisms[i].cose_tag));
         }
     }
 
@@ -175,8 +177,8 @@ int main(int argc,
     else if (memcmp(manifest.ptr, encoded_manifest.ptr, manifest.len) != 0) {
         size_t signature_pos = (envelope->tagged ? 2 : 0) + 55;
         if (memcmp((uint8_t *)manifest.ptr + 0, (uint8_t *)encoded_manifest.ptr + 0, signature_pos) != 0 ||
-            memcmp((uint8_t *)manifest.ptr + (signature_pos + 64), (uint8_t *)encoded_manifest.ptr + 64, manifest.len - (signature_pos + 64)) != 0) {
-            printf("main : encoded binary is differ from original\n");
+            memcmp((uint8_t *)manifest.ptr + (signature_pos + 64), (uint8_t *)encoded_manifest.ptr + (signature_pos + 64), manifest.len - (signature_pos + 64)) != 0) {
+            printf("main : encoded binary is differ from the original one\n");
             printf("#### ORIGINAL ####\n");
             suit_print_hex(manifest.ptr, manifest.len);
             printf("\n#### ENCODED ####\n");

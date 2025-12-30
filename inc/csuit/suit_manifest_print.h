@@ -42,6 +42,8 @@ suit_err_t suit_print_envelope(
 
 const char* suit_err_to_str(suit_err_t error);
 const char* suit_cbor_tag_to_str(cbor_tag_key_t tag);
+const char* suit_cose_alg_to_str(int64_t id);
+
 const char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
 const char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
 const char* suit_common_key_to_str(suit_common_key_t common_key);
