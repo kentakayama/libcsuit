@@ -1,5 +1,8 @@
-# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+#
+# Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
+#
 # SPDX-License-Identifier: BSD-2-Clause
+#
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive

@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+# Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
-# NOTE: Uses examples/min_process/config.h via -I./ flag
+# NOTE: Uses examples/min_process/config.h via -include config.h flag
 # This enables LIBCSUIT_DISABLE_XXX optimizations
 
 TARGET := ./suit_manifest_process_min
