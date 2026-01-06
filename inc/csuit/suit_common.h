@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -32,6 +32,7 @@ extern size_t LIBCSUIT_SUPPORTED_VERSIONS_LEN;
 typedef enum {
     SUIT_SUCCESS = 0,                   /*! success */
     SUIT_ERR_NOT_INITIALIZED,           /*! the processor context is not initialized */
+    SUIT_ERR_INITIALIZED_AGAIN,         /*! the initialization function called more than expected */
 
     SUIT_ERR_FATAL,                     /*! unknown error, e.g. occurred out of SUIT */
 
@@ -773,28 +774,6 @@ typedef struct suit_envelope {
     suit_payloads_t                     payloads;
     suit_manifest_t                     manifest;
 } suit_envelope_t;
-
-typedef struct suit_encode {
-    UsefulBufC manifest;
-    // SUIT_SeverableMembers
-    UsefulBufC dependency_resolution;
-    suit_digest_t dependency_resolution_digest;
-    UsefulBufC payload_fetch;
-    suit_digest_t payload_fetch_digest;
-    UsefulBufC candidate_verification;
-    suit_digest_t candidate_verification_digest;
-    UsefulBufC install;
-    suit_digest_t install_digest;
-    UsefulBufC text;
-    suit_digest_t text_digest;
-    UsefulBufC coswid;
-    suit_digest_t coswid_digest;
-
-    uint8_t *buf;
-    size_t pos;
-    size_t cur_pos;
-    const size_t max_pos;
-} suit_encode_t;
 
 /*!
  *  \brief  Describes SUIT_Rep_Policy

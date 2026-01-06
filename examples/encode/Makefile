@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+# Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -26,7 +26,7 @@ $(TARGET): $(OBJS) ../../libcsuit.a
 OUTPUT := $(TESTFILES_DIR)/suit_manifest_expX.cbor
 .PHONY: run
 run: $(TARGET)
-	$(TARGET) $(OUTPUT)
+	$(TARGET) $(OUTPUT) || exit 1
 
 .PHONY: clean
 clean:

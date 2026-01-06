@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,6 +12,7 @@
 #include "../examples/inc/trust_anchor_esp256_cose_key_private.h"
 #include "../examples/inc/device_esp256_cose_key_private.h"
 
+#define ENCODER_BUFFER_SIZE 4096
 #define REPORT_SIZE 1024
 
 void test_sizeof(void);
@@ -38,10 +39,11 @@ int main(int argc, char *argv[])
     CU_add_test(suite, "test_csuit_cose_key", test_csuit_cose_key);
     CU_add_test(suite, "test_csuit_report_example0_success_report", test_csuit_report_example0_success_report);
     CU_add_test(suite, "test_csuit_report_example0_failure_report", test_csuit_report_example0_failure_report);
-    CU_ErrorCode err = CU_basic_run_tests();
+    CU_basic_run_tests();
+    unsigned int err = CU_get_number_of_failures();
     CU_cleanup_registry();
-    if (err != CUE_SUCCESS) {
-        return EXIT_FAILURE;
+    if (err != 0) {
+        exit(EXIT_FAILURE);
     }
     return EXIT_SUCCESS;
 }
@@ -235,40 +237,31 @@ void test_component_identifier_to_filename(void)
 
 void test_csuit_suit_encode_buf(void)
 {
-    suit_err_t result;
-    UsefulBuf_MAKE_STACK_UB(buf, 16);
-    suit_encode_t suit_encode = {
-        .max_pos = buf.len,
-        .buf = buf.ptr,
-    };
+    suit_encoder_context_t *encoder_context = malloc(sizeof(suit_encoder_context_t) + 16);
+    CU_ASSERT_EQUAL_FATAL(suit_encode_init(encoder_context, 16), SUIT_SUCCESS);
 
     /* memory usage layout test */
     UsefulBuf buf1;
-    suit_use_suit_encode_buf(&suit_encode, 2, &buf1);
+    CU_ASSERT_EQUAL_FATAL(suit_use_suit_encode_buf(encoder_context, 2, &buf1), SUIT_SUCCESS);
     memset(buf1.ptr, '1', sizeof(char) * buf1.len);
-    suit_fix_suit_encode_buf(&suit_encode, buf1.len);
+    CU_ASSERT_EQUAL_FATAL(suit_fix_suit_encode_buf(encoder_context, buf1.len), SUIT_SUCCESS);
     UsefulBuf buf2;
-    suit_use_suit_encode_buf(&suit_encode, 3, &buf2);
+    CU_ASSERT_EQUAL_FATAL(suit_use_suit_encode_buf(encoder_context, 3, &buf2), SUIT_SUCCESS);
     memset(buf2.ptr, '2', sizeof(char) * buf2.len);
-    suit_fix_suit_encode_buf(&suit_encode, buf2.len);
-    CU_ASSERT_NSTRING_EQUAL(buf.ptr, "11222", 5);
+    CU_ASSERT_EQUAL_FATAL(suit_fix_suit_encode_buf(encoder_context, buf2.len), SUIT_SUCCESS);
+    CU_ASSERT_NSTRING_EQUAL(encoder_context->buf, "11222", 5);
 
     /* cause SUIT_ERR_NO_MEMORY on double allocate buf */
-    suit_use_suit_encode_buf(&suit_encode, 2, &buf1);
-    result = suit_use_suit_encode_buf(&suit_encode, 3, &buf2);
-    CU_ASSERT_EQUAL(result, SUIT_ERR_NO_MEMORY);
-    result = suit_fix_suit_encode_buf(&suit_encode, buf1.len);
-    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_use_suit_encode_buf(encoder_context, 2, &buf1), SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_use_suit_encode_buf(encoder_context, 3, &buf2), SUIT_ERR_NO_MEMORY);
+    CU_ASSERT_EQUAL_FATAL(suit_fix_suit_encode_buf(encoder_context, buf1.len), SUIT_SUCCESS);
 
     /* cause SUIT_ERR_NO_MEMORY on buffer overflow */
     // NOTE: cur_pos == pos == 7
     UsefulBuf buf3;
-    result = suit_use_suit_encode_buf(&suit_encode, 10, &buf3);
-    CU_ASSERT_EQUAL(result, SUIT_ERR_NO_MEMORY);
-    result = suit_use_suit_encode_buf(&suit_encode, 9, &buf3);
-    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
-    result = suit_fix_suit_encode_buf(&suit_encode, buf3.len);
-    CU_ASSERT_EQUAL(result, SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_use_suit_encode_buf(encoder_context, 10, &buf3), SUIT_ERR_NO_MEMORY);
+    CU_ASSERT_EQUAL_FATAL(suit_use_suit_encode_buf(encoder_context, 9, &buf3), SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_fix_suit_encode_buf(encoder_context, buf3.len), SUIT_SUCCESS);
 }
 
 void test_csuit_without_authentication_wrapper(void)
@@ -594,7 +587,7 @@ void test_csuit_report_example0_failure_report(void)
     //         ]
     //     ],
     //     / suit-report-result / 4: {
-    //         / result-code / 5: 21 / libcsuit error: SUIT_ERR_CONDITION_MISMATCH /,
+    //         / result-code / 5: 22 / libcsuit error: SUIT_ERR_CONDITION_MISMATCH /,
     //         / result-record / 6: [
     //             / manifest-id: / []
     //             / manifest-section: / 7 / SUIT_VALIDATE /,
@@ -616,7 +609,7 @@ void test_csuit_report_example0_failure_report(void)
         0x2D, 0x51, 0xF2, 0xAB, 0x45, 0x85, 0x80, 0x07, 0x00, 0x00, 0xA1, 0x03, 0x58, 0x24, 0x82, 0x2F,
         0x58, 0x20, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD,
         0xEE, 0xFF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54,
-        0x32, 0x10, 0x04, 0xA3, 0x05, 0x15, 0x06, 0x85, 0x80, 0x07, 0x00, 0x00, 0xA1, 0x03, 0x58, 0x24,
+        0x32, 0x10, 0x04, 0xA3, 0x05, 0x16, 0x06, 0x85, 0x80, 0x07, 0x00, 0x00, 0xA1, 0x03, 0x58, 0x24,
         0x82, 0x2F, 0x58, 0x20, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB,
         0xCC, 0xDD, 0xEE, 0xFF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98,
         0x76, 0x54, 0x32, 0x10, 0x07, 0x0A,

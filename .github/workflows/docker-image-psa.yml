@@ -1,11 +1,14 @@
-# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+#
+# Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
+#
 # SPDX-License-Identifier: BSD-2-Clause
+#
 
 name: Docker Image CI for libcsuit with Mbed TLS
 
 on:
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
 
 jobs:
   build-psa:

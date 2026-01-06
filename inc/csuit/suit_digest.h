@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
- *
  */
 
 #ifndef SUIT_DIGEST_H
@@ -12,14 +11,6 @@
 struct suit_digest;
 
 #define SHA256_DIGEST_LENGTH 32
-#if defined(LIBCSUIT_PSA_CRYPTO_C)
-#include "psa/crypto.h"
-#include "mbedtls/md.h"
-#define SHA256_DIGEST_WORK_SPACE_LENGTH MBEDTLS_MD_MAX_SIZE
-#else /* LIBCSUIT_PSA_CRYPTO_C */
-#include "openssl/evp.h"
-#define SHA256_DIGEST_WORK_SPACE_LENGTH SHA256_DIGEST_LENGTH
-#endif /* LIBCSUIT_PSA_CRYPTO_C */
 
 /*!
     \file   suit_digest.h
@@ -82,8 +73,9 @@ suit_err_t suit_generate_digest(UsefulBufC buf,
                                 UsefulBuf digest_buf,
                                 suit_digest_t *digest);
 
-suit_err_t suit_generate_digest_using_encode_buf(UsefulBufC buf,
-                                                 suit_encode_t *suit_encode,
+struct suit_encoder_context;
+suit_err_t suit_generate_digest_using_encode_buf(struct suit_encoder_context *encoder_context,
+                                                 UsefulBufC buf,
                                                  suit_digest_t *digest);
 
 suit_err_t suit_decode_digest_from_item(QCBORDecodeContext *context,

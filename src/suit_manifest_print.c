@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -21,6 +21,8 @@ const char* suit_err_to_str(suit_err_t error)
         return "SUIT_SUCCESS";
     case SUIT_ERR_NOT_INITIALIZED:
         return "SUIT_ERR_NOT_INITIALIZED";
+    case SUIT_ERR_INITIALIZED_AGAIN:
+        return "SUIT_ERR_INITIALIZED_AGAIN";
     case SUIT_ERR_FATAL:
         return "SUIT_ERR_FATAL";
     case SUIT_ERR_NOT_A_SUIT_MANIFEST:
@@ -2298,6 +2300,9 @@ suit_err_t suit_print_delegation(const suit_delegation_t *delegation,
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_print.h
+ */
 suit_err_t suit_print_envelope(const suit_envelope_t *envelope,
                                const uint32_t indent_space,
                                const uint32_t indent_delta)

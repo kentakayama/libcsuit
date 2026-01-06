@@ -20,7 +20,7 @@ endif
 .PHONY: clean
 clean:
 	$(MAKE) -C QCBOR clean
-ifeq ($(MBEDTLS), 1)
 	$(MAKE) -C mbedtls clean
-endif
-	$(MAKE) -C t_cose -f $(TCOSE_MAKEFILE) clean
+	cd mbedtls && git checkout .
+	$(MAKE) -C t_cose -f Makefile.ossl clean
+	$(MAKE) -C t_cose -f Makefile.psa clean

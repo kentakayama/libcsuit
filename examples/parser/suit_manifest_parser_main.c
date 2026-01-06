@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -16,6 +16,7 @@
 #include "trust_anchor_hmac256_cose_key_secret.h"
 
 #define MAX_FILE_BUFFER_SIZE            (8 * 1024 * 1024)
+#define ENCODE_BUFFER_SIZE 4096
 
 int main(int argc,
          char *argv[])
@@ -117,23 +118,34 @@ int main(int argc,
     // Print manifest.
     printf("\nmain : Print Manifest.\n");
     result = suit_print_envelope(envelope, indent, tabstop);
+    printf("\n\n");
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to print Manifest file. %s(%d)\n", suit_err_to_str(result), result);
         exit_code = EXIT_FAILURE;
         goto end;
     }
 
-    // Encode manifest.
-    uint8_t *encode_buf = malloc(MAX_FILE_BUFFER_SIZE);
-    if (encode_buf == NULL) {
-        printf("main : Failed to allocate memory.\n");
-        exit_code = EXIT_FAILURE;
-        goto end;
+    // Initialize manifest encoder.
+    suit_encoder_context_t *encoder_context = malloc(sizeof(suit_encoder_context_t) + ENCODE_BUFFER_SIZE);
+    result = suit_encode_init(encoder_context, ENCODE_BUFFER_SIZE);
+    if (result != SUIT_SUCCESS) {
+        printf("main : Failed to initialize encoder context. %s(%d)\n", suit_err_to_str(result), result);
+        return EXIT_FAILURE;
     }
-    size_t encode_len = MAX_FILE_BUFFER_SIZE;
-    uint8_t *ret_pos = encode_buf;
+    for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
+        if (mechanisms[i].use) {
+            result = suit_encode_add_sender_key(encoder_context, mechanisms[i].cose_tag, T_COSE_ALGORITHM_RESERVED, &mechanisms[i].key);
+            if (result != SUIT_SUCCESS) {
+                printf("main : Failed to assign a signing key. %s(%d)\n", suit_err_to_str(result), result);
+                return EXIT_FAILURE;
+            }
+            printf("main : Assigned %s with %s key.", suit_cose_alg_to_str(mechanisms[i].key.cose_algorithm_id), suit_cbor_tag_to_str(mechanisms[i].cose_tag));
+        }
+    }
+
     printf("\nmain : Encode Manifest.\n");
-    result = suit_encode_envelope(envelope, mechanisms, &ret_pos, &encode_len);
+    UsefulBufC encoded_manifest;
+    result = suit_encode_envelope(encoder_context, envelope, &encoded_manifest);
     if (result != SUIT_SUCCESS) {
         printf("main : Failed to encode. %s(%d)\n", suit_err_to_str(result), result);
         if (mechanisms[1].use) {
@@ -144,31 +156,33 @@ int main(int argc,
         exit_code = EXIT_FAILURE;
         goto end;
     }
-    printf("main : Total buffer memory usage was %ld/%d bytes\n", ret_pos + encode_len - encode_buf, MAX_FILE_BUFFER_SIZE);
+    printf("main : Total buffer memory usage was %ld/%d bytes\n",
+        (uint8_t *)encoded_manifest.ptr + encoded_manifest.len - ((uint8_t *)encoder_context + sizeof(suit_encoder_context_t)),
+        ENCODE_BUFFER_SIZE);
 
     if (output != NULL) {
-        write_to_file(output, ret_pos, encode_len);
+        write_to_file(output, encoded_manifest.ptr, encoded_manifest.len);
     }
 
-    if (manifest.len != encode_len) {
-        printf("main : The manifest length is changed %ld => %ld\n", manifest.len, encode_len);
+    if (manifest.len != encoded_manifest.len) {
+        printf("main : The manifest length is changed %ld => %ld\n", manifest.len, encoded_manifest.len);
         printf("#### ORIGINAL ####\n");
         suit_print_hex(manifest.ptr, manifest.len);
         printf("\n#### ENCODED ####\n");
-        suit_print_hex(ret_pos, encode_len);
+        suit_print_hex(encoded_manifest.ptr, encoded_manifest.len);
         printf("\n\n");
         exit_code = EXIT_FAILURE;
         goto end;
     }
-    else if (memcmp(manifest.ptr, ret_pos, manifest.len) != 0) {
+    else if (memcmp(manifest.ptr, encoded_manifest.ptr, manifest.len) != 0) {
         size_t signature_pos = (envelope->tagged ? 2 : 0) + 55;
-        if (memcmp((uint8_t *)manifest.ptr + 0, &ret_pos[0], signature_pos) != 0 ||
-            memcmp((uint8_t *)manifest.ptr + (signature_pos + 64), &ret_pos[signature_pos + 64], manifest.len - (signature_pos + 64)) != 0) {
-            printf("main : encoded binary is differ from original\n");
+        if (memcmp((uint8_t *)manifest.ptr + 0, (uint8_t *)encoded_manifest.ptr + 0, signature_pos) != 0 ||
+            memcmp((uint8_t *)manifest.ptr + (signature_pos + 64), (uint8_t *)encoded_manifest.ptr + (signature_pos + 64), manifest.len - (signature_pos + 64)) != 0) {
+            printf("main : encoded binary is differ from the original one\n");
             printf("#### ORIGINAL ####\n");
             suit_print_hex(manifest.ptr, manifest.len);
             printf("\n#### ENCODED ####\n");
-            suit_print_hex(ret_pos, encode_len);
+            suit_print_hex(encoded_manifest.ptr, encoded_manifest.len);
             printf("\n\n");
             exit_code = EXIT_FAILURE;
             goto end;
@@ -190,6 +204,8 @@ end:
         free(envelope);
         envelope = NULL;
     }
-    suit_free_key(&mechanisms[0].key);
+    for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
+        suit_free_key(&mechanisms[i].key);
+    }
     return exit_code;
 }

@@ -49,6 +49,7 @@ tmp/
 *.pdb
 
 # binaries and their derivetives
+build/
 test/libcsuit_test
 examples/encode/suit_manifest_encode
 testfiles/suit_manifest_expX.cbor

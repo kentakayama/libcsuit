@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-name: Docker Image CI for libcsuit with OpenSSL
+name: Docker Image CI for libcsuit Minimum Processor with Mbed TLS
 
 on:
   pull_request:
     branches: [ "master", "dev" ]
 
 jobs:
-  build-ossl:
+  build-psa:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -20,5 +20,5 @@ jobs:
         fetch-depth: 0
     - name: Build the Docker image
       run: |
-        docker build -t libcsuit_ossl -f ossl.Dockerfile .
-        docker run -t libcsuit_ossl
+        docker build -t libcsuit_min -f min.Dockerfile .
+        docker run -t libcsuit_min

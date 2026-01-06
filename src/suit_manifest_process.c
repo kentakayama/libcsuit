@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -688,11 +688,11 @@ suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
             memcpy(fetch.uri, processor_context->parameters[processor_context->component_index].uri.ptr, processor_context->parameters[processor_context->component_index].uri.len);
             fetch.uri[processor_context->parameters[processor_context->component_index].uri.len] = '\0';
             fetch.uri_len = processor_context->parameters[processor_context->component_index].uri.len + 1;
-
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
             fetch.args = processor_context->parameters[processor_context->component_index].fetch_args;
-
+#endif /* LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
             fetch.buf_len = buf_size;
-            fetch.ptr = processor_context->allocated.ptr + (processor_context->allocated.len - processor_context->left_len);
+            fetch.ptr = (uint8_t *)processor_context->allocated.ptr + (processor_context->allocated.len - processor_context->left_len);
 
             fetch.report_policy = report_policy;
 
@@ -733,9 +733,11 @@ suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
             if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
                 store.component_metadata_buf = processor_context->parameters[processor_context->component_index].component_metadata_buf;
             }
+#if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
             if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) {
                 store.fetch_args = processor_context->parameters[processor_context->component_index].fetch_args;
             }
+#endif /* LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
             result = suit_store_callback(store, &ret);
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
             suit_set_consumed_parameters(processor_context, &ret);
@@ -1596,6 +1598,7 @@ suit_err_t suit_process_copy_params(suit_processor_context_t *processor_context,
 }
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_COPY_PARAMS */
 
+#if !defined(LIBCSUIT_DISABLE_DIRECTIVE_PROCESS_DEPENDENCY)
 suit_err_t suit_process_dependency(suit_processor_context_t *processor_context,
                                    suit_extracted_t *extracted,
                                    const suit_index_t *suit_index,
@@ -1682,6 +1685,7 @@ report:
 
     return result;
 }
+#endif /* LIBCSUIT_DISABLE_DIRECTIVE_PROCESS_DEPENDENCY */
 
 suit_err_t suit_process_command_sequence_buf(suit_processor_context_t *processor_context,
                                              suit_extracted_t *extracted,
@@ -2005,24 +2009,32 @@ suit_err_t suit_process_common_and_command_sequence(suit_processor_context_t *pr
 
     UsefulBufC command_buf;
     switch (processor_context->manifest_key) {
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION)
     case SUIT_DEPENDENCY_RESOLUTION:
         command_buf = extracted->dependency_resolution;
         break;
+#endif /* LIBCSUIT_DISABLE_MANIFEST_DEPENDENCY_RESOLUTION */
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH)
     case SUIT_PAYLOAD_FETCH:
         command_buf = extracted->payload_fetch;
         break;
+#endif /* LIBCSUIT_DISABLE_MANIFEST_PAYLOAD_FETCH */
     case SUIT_INSTALL:
         command_buf = extracted->install;
         break;
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_UNINSTALL)
     case SUIT_UNINSTALL:
         command_buf = extracted->uninstall;
         break;
+#endif /* LIBCSUIT_DISABLE_MANIFEST_UNINSTALL */
     case SUIT_VALIDATE:
         command_buf = extracted->validate;
         break;
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_LOAD)
     case SUIT_LOAD:
         command_buf = extracted->load;
         break;
+#endif /* LIBCSUIT_DISABLE_MANIFEST_LOAD */
     case SUIT_INVOKE:
         command_buf = extracted->invoke;
         break;
@@ -2205,7 +2217,9 @@ suit_err_t suit_extract_common(suit_processor_context_t *processor_context,
             result = SUIT_ERR_NOT_IMPLEMENTED;
         }
         if (result != SUIT_SUCCESS) {
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
             processor_context->reason = suit_report_reason_from_suit_err(result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
             return result;
         }
     }
@@ -2791,7 +2805,7 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
 #endif
 
     /* set-version */
-#if !defined(LIBCSUIT_DISABLE_SET_VERSION)
+#if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
     if (processor_context->process_flags.set_version) {
         processor_context->manifest_key = SUIT_SET_VERSION;
         if (extracted.set_version.len > 0) {
@@ -2955,6 +2969,9 @@ report:
     return result;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 suit_err_t suit_processor_add_manifest(
     suit_processor_context_t *processor_context,
     UsefulBufC manifest,
@@ -2964,7 +2981,7 @@ suit_err_t suit_processor_add_manifest(
         return SUIT_ERR_NOT_INITIALIZED;
     }
     if (processor_context->u.manifest_loaded) {
-        return SUIT_ERR_REDUNDANT;
+        return SUIT_ERR_INITIALIZED_AGAIN;
     }
     if (manifest.ptr != processor_context->manifest.ptr) {
         return SUIT_ERR_INVALID_VALUE;
@@ -2981,11 +2998,14 @@ suit_err_t suit_processor_add_manifest(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 suit_err_t suit_processor_add_recipient_key(
     suit_processor_context_t *processor_context,
     int cose_tag,
     int cose_algorithm_id,
-    UsefulBufC cose_key)
+    suit_key_t *cose_key)
 {
     if (!processor_context->u.initialized) {
         return SUIT_ERR_NOT_INITIALIZED;
@@ -3014,11 +3034,11 @@ suit_err_t suit_processor_add_recipient_key(
         return SUIT_ERR_NO_MEMORY;
     }
 
-    suit_err_t result = suit_set_suit_key_from_cose_key(cose_key, &processor_context->mechanisms[i].key);
-    if (result != SUIT_SUCCESS) {
-        return result;
-    }
+    processor_context->mechanisms[i].key = *cose_key;
     if (processor_context->mechanisms[i].key.cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+        if (cose_algorithm_id == T_COSE_ALGORITHM_RESERVED) {
+            return SUIT_ERR_INVALID_KEY;
+        }
         processor_context->mechanisms[i].key.cose_algorithm_id = cose_algorithm_id;
     }
     processor_context->mechanisms[i].use = true;
@@ -3029,6 +3049,9 @@ suit_err_t suit_processor_add_recipient_key(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 suit_err_t suit_processor_init(
     suit_processor_context_t *processor_context,
     size_t buf_size,
@@ -3062,14 +3085,13 @@ suit_err_t suit_processor_init(
     return SUIT_SUCCESS;
 }
 
+/*
+    Public function. See suit_manifest_process.h
+ */
 void suit_processor_free(suit_processor_context_t *processor_context)
 {
     if (processor_context == NULL) {
         return;
-    }
-    for (size_t i = 0; i < SUIT_MAX_KEY_NUM; i++) {
-        suit_free_key(&processor_context->mechanisms[i].key);
-        processor_context->mechanisms[i] = (suit_mechanism_t){0};
     }
     processor_context->u.status = 0;
 }

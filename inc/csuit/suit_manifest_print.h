@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -22,8 +22,28 @@
 extern "C" {
 #endif
 
+
+/*!
+    \brief      Pretty-prints a (Tagged_)SUIT_Envelope with indentation and
+                includes human-readable annotations for SUIT Manifest CBOR keys.
+
+    \param[in]  envelope        Pointer to the encoded or constructed SUIT Envelope.
+    \param[in]  indent_space    Initial indentation (number of spaces) applied to the first line.
+                                For example, set to 4 for an initial indent of four spaces.
+    \param[in]  indent_delta    Additional indentation (number of spaces) added for each nested
+                                level inside a map or array. This controls how much deeper
+                                structures are indented relative to their parent.
+    \return                     This returns one of the error codes defined by \ref suit_err_t.
+ */
+suit_err_t suit_print_envelope(
+    const suit_envelope_t *envelope,
+    const uint32_t indent_space,
+    const uint32_t indent_delta);
+
 const char* suit_err_to_str(suit_err_t error);
 const char* suit_cbor_tag_to_str(cbor_tag_key_t tag);
+const char* suit_cose_alg_to_str(int64_t id);
+
 const char* suit_envelope_key_to_str(suit_envelope_key_t envelope_key);
 const char* suit_manifest_key_to_str(suit_manifest_key_t manifest_key);
 const char* suit_common_key_to_str(suit_common_key_t common_key);
@@ -42,7 +62,6 @@ suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_
 suit_err_t suit_print_cmd_seq(const suit_command_sequence_t *cmd_seq, const uint32_t indent_space, const uint32_t indent_delta);
 suit_err_t suit_print_component_identifier(const suit_component_identifier_t *identifier);
 suit_err_t suit_print_digest(const suit_digest_t *digest, const uint32_t indent_space, const uint32_t indent_delta);
-suit_err_t suit_print_envelope(const suit_envelope_t *envelope, const uint32_t indent_space, const uint32_t indent_delta);
 
 suit_err_t suit_print_component_metadata(const suit_component_metadata_t *component_metadata,
                                          const uint32_t indent_space,
@@ -61,6 +80,7 @@ suit_err_t suit_print_signature(UsefulBufC signature,
                                 const uint32_t indent_space,
                                 const uint32_t indent_delta,
                                 void (*suit_print_bstr_fp)(UsefulBufC, uint32_t, uint32_t));
+
 /*!
     \brief  Print SUIT fetch callback
 

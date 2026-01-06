@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -598,6 +598,7 @@ void display_help(const char *argv0, bool on_error)
 
 int main(int argc, char *argv[]) {
     int exit_code = EXIT_SUCCESS;
+    size_t num_keys = 0;
     suit_report_context_t *reporting_engine = NULL;
     suit_processor_context_t *processor_context = NULL;
     suit_err_t suit_err = 0;
@@ -709,46 +710,75 @@ int main(int argc, char *argv[]) {
         goto out;
     }
 
+    suit_key_t keys[SUIT_MAX_KEY_NUM] = {0};
     printf("\nmain : Read public keys.\n");
     for (int i = 0; i < NUM_PUBLIC_KEYS_FOR_ECDSA; i++) {
-        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ES256, public_keys_for_ecdsa[i]);
+        suit_err = suit_set_suit_key_from_cose_key(public_keys_for_ecdsa[i], &keys[num_keys]);
         if (suit_err != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
             exit_code = EXIT_FAILURE;
             goto out;
         }
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_ES256, &keys[num_keys]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
+        }
+        num_keys++;
     }
 
 #ifndef LIBCSUIT_DISABLE_MAC
     printf("\nmain : Read secret keys.\n");
     for (int i = 0; i < NUM_SECRET_KEYS_FOR_MAC; i++) {
-        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_MAC0, T_COSE_ALGORITHM_HMAC256, secret_keys_for_mac[i]);
+        suit_err = suit_set_suit_key_from_cose_key(secret_keys_for_mac[i], &keys[num_keys]);
         if (suit_err != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
             exit_code = EXIT_FAILURE;
             goto out;
         }
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_MAC0, T_COSE_ALGORITHM_HMAC256, &keys[num_keys]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
+        }
+        num_keys++;
     }
 #endif /* LIBCSUIT_DISABLE_MAC */
 
 #ifndef LIBCSUIT_DISABLE_ENCRYPTION
     printf("\nmain : Read secret keys for AES-KW.\n");
     for (size_t i = 0; i < NUM_SECRET_KEYS_FOR_AESKW; i++) {
-        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_ENCRYPT, T_COSE_ALGORITHM_A128KW, secret_keys_for_aeskw[i]);
+        suit_err = suit_set_suit_key_from_cose_key( secret_keys_for_aeskw[i], &keys[num_keys]);
         if (suit_err != SUIT_SUCCESS) {
-            printf("\nmain : Failed to initialize sycret key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
             exit_code = EXIT_FAILURE;
             goto out;
         }
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_ENCRYPT, T_COSE_ALGORITHM_A128KW, &keys[num_keys]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize secret key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
+        }
+        num_keys++;
     }
     printf("\nmain : Load private keys for ES-ECDH.\n");
     for (size_t i = 0; i < NUM_PRIVATE_KEYS_FOR_ESDH; i++) {
-        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_ENCRYPT, T_COSE_ALGORITHM_ECDH_ES_A128KW, private_keys_for_esdh[i]);
+        suit_err = suit_set_suit_key_from_cose_key(private_keys_for_esdh[i], &keys[num_keys]);
         if (suit_err != SUIT_SUCCESS) {
             printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
             exit_code = EXIT_FAILURE;
             goto out;
         }
+        suit_err = suit_processor_add_recipient_key(processor_context, CBOR_TAG_COSE_ENCRYPT, T_COSE_ALGORITHM_ECDH_ES_A128KW, &keys[num_keys]);
+        if (suit_err != SUIT_SUCCESS) {
+            printf("\nmain : Failed to initialize public key. %s(%d)\n", suit_err_to_str(suit_err), suit_err);
+            exit_code = EXIT_FAILURE;
+            goto out;
+        }
+        num_keys++;
     }
 #endif
 
@@ -762,7 +792,9 @@ int main(int argc, char *argv[]) {
 
 out:
     suit_processor_free(processor_context);
-
+    for (size_t i = 0; i < num_keys; i++) {
+        suit_free_key(&keys[i]);
+    }
     free(processor_context);
     processor_context = NULL;
     free(reporting_engine);

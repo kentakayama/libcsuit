@@ -34,31 +34,27 @@ The cmake file allows building code for OpenSSL and for Mbed TLS based on a para
 If you decide to use OpenSSL then you need to download and install it before building this library.
 The OpenSSL library and the include files need to be included in the search path.
 
-First, create a directory for the entire project. Inside this directory put the code of qcbor, t_cose,
-mbedtls (if used), and libcsuit.
+First, create a directory for the entire project. Inside this directory put the code to build mbedtls (if used), qcbor, t_cose and libcsuit.
 
-Here are the commands:
+**(a) Use OpenSSL**
 
 ```
-git clone https://github.com/laurencelundblade/QCBOR.git
-git clone https://github.com/laurencelundblade/t_cose.git
-git clone https://github.com/ARMmbed/mbedtls.git
-git clone https://github.com/kentakayama/libcsuit.git
-cd QCBOR
+make -C 3rdparty/QCBOR/ libqcbor.a
+QCBOR_INC=-I../QCBOR/inc QCBOR_LIB=../QCBOR/libqcbor.a -C make -C 3rdparty/t_cose/ -f Makefile.ossl libt_cose.a
+mkdir build
+cd build
+cmake ..
 make
-sudo make install
-cd ../libcsuit
 ```
 
-Next, build the code using cmake
+**(b) Use MbedTLS**
 
 ```
+make -C 3rdparty/mbedtls/
+make -C 3rdparty/QCBOR/ libqcbor.a
+CRYPTO_INC=-I../mbedtls/include CRYPTO_LIB=../mbedtls/library/libmbedcrypto.a QCBOR_INC=-I../QCBOR/inc QCBOR_LIB=../QCBOR/libqcbor.a make -C 3rdparty/t_cose/ -f Makefile.psa libt_cose.a
 mkdir build
 cd build
 cmake -DMBEDTLS=1 ..
 make
 ```
-
-If you want to build the code for OpenSSL then omit the '-DMBEDTLS=1' parameter from the cmake invocation.
-
-

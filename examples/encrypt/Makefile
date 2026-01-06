@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+# Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -32,17 +32,17 @@ $(TARGET_DECRYPT): ../suit_examples_common.o suit_manifest_decrypt_main.o
 
 .PHONY: run
 run: $(TARGET_AES) $(TARGET_ESDH)
-	$(TARGET_AES) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_aes.bin $(TESTFILES_DIR)/encryption_info_aes.cose
-	$(TARGET_AES) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_aes.bin $(TESTFILES_DIR)/encryption_info_config_aes.cose
-	$(TARGET_ESDH) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_esdh.bin $(TESTFILES_DIR)/encryption_info_esdh.cose
-	$(TARGET_ESDH) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_esdh.bin $(TESTFILES_DIR)/encryption_info_config_esdh.cose
+	$(TARGET_AES) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_aes.bin $(TESTFILES_DIR)/encryption_info_aes.cose || exit 1
+	$(TARGET_AES) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_aes.bin $(TESTFILES_DIR)/encryption_info_config_aes.cose || exit 1
+	$(TARGET_ESDH) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_esdh.bin $(TESTFILES_DIR)/encryption_info_esdh.cose || exit 1
+	$(TARGET_ESDH) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_esdh.bin $(TESTFILES_DIR)/encryption_info_config_esdh.cose || exit 1
 
 .PHONY: test
 test: $(TARGET_DECRYPT)
-	$(TARGET_DECRYPT) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_aes.bin $(TESTFILES_DIR)/encryption_info_aes.cose
-	$(TARGET_DECRYPT) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_aes.bin $(TESTFILES_DIR)/encryption_info_config_aes.cose
-	$(TARGET_DECRYPT) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_esdh.bin $(TESTFILES_DIR)/encryption_info_esdh.cose
-	$(TARGET_DECRYPT) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_esdh.bin $(TESTFILES_DIR)/encryption_info_config_esdh.cose
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_aes.bin $(TESTFILES_DIR)/encryption_info_aes.cose || exit 1
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_aes.bin $(TESTFILES_DIR)/encryption_info_config_aes.cose || exit 1
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/raw_image.bin $(TESTFILES_DIR)/encrypted_image_esdh.bin $(TESTFILES_DIR)/encryption_info_esdh.cose || exit 1
+	$(TARGET_DECRYPT) $(TESTFILES_DIR)/config.json $(TESTFILES_DIR)/encrypted_config_esdh.bin $(TESTFILES_DIR)/encryption_info_config_esdh.cose || exit 1
 
 .PHONY: clean
 clean:

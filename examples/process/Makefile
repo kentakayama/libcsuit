@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+# Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -47,6 +47,7 @@ endef
 TEST_NUM := 0 1 2A 2B 3 4 5 U I D AF AFS AW EW ED S0 S2 S3 U0 U1
 .PHONY: run
 run: all
+	mkdir -p tmp
 	$(foreach num,$(TEST_NUM),$(call test-one,$(num)))
 
 .PHONY: clean

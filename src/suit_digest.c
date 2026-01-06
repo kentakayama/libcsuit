@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  *
@@ -17,7 +17,7 @@ suit_err_t suit_generate_sha256(UsefulBufC tgt, UsefulBuf digest_bytes)
 {
     psa_status_t status;
     size_t real_hash_size;
-    psa_hash_operation_t sha256_psa = PSA_HASH_OPERATION_INIT;
+    psa_hash_operation_t sha256_psa = psa_hash_operation_init();
 
     status = psa_crypto_init( );
     if( status != PSA_SUCCESS )
@@ -70,7 +70,7 @@ suit_err_t suit_verify_sha256(UsefulBufC tgt, UsefulBufC digest_bytes)
     if (digest_bytes.len != SHA256_DIGEST_LENGTH) {
         return SUIT_ERR_FATAL;
     }
-    MakeUsefulBufOnStack(hash, SHA256_DIGEST_WORK_SPACE_LENGTH);
+    MakeUsefulBufOnStack(hash, SHA256_DIGEST_LENGTH);
     suit_err_t result = suit_generate_sha256(tgt, hash);
     if (result != SUIT_SUCCESS) {
         return result;
@@ -120,26 +120,18 @@ suit_err_t suit_generate_digest(UsefulBufC buf,
     return result;
 }
 
-suit_err_t suit_generate_digest_using_encode_buf(UsefulBufC buf,
-                                                 suit_encode_t *suit_encode,
+suit_err_t suit_generate_digest_using_encode_buf(suit_encoder_context_t *encoder_context,
+                                                 UsefulBufC buf,
                                                  suit_digest_t *digest)
 {
     suit_err_t result = SUIT_SUCCESS;
 
-    size_t work_space_length;
-    size_t fixed_length;
-
-    switch (digest->algorithm_id) {
-    case SUIT_ALGORITHM_ID_SHA256:
-        work_space_length = SHA256_DIGEST_WORK_SPACE_LENGTH;
-        fixed_length = SHA256_DIGEST_LENGTH;
-        break;
-    default:
+    if (digest->algorithm_id != SUIT_ALGORITHM_ID_SHA256) {
         return SUIT_ERR_NOT_IMPLEMENTED;
     }
 
     UsefulBuf digest_buf;
-    result = suit_use_suit_encode_buf(suit_encode, work_space_length, &digest_buf);
+    result = suit_use_suit_encode_buf(encoder_context, SHA256_DIGEST_LENGTH, &digest_buf);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -147,14 +139,11 @@ suit_err_t suit_generate_digest_using_encode_buf(UsefulBufC buf,
     if (result != SUIT_SUCCESS) {
         return result;
     }
-    /* given length are working memory size, so we must overwrite it into actual hash length */
-    result = suit_fix_suit_encode_buf(suit_encode, fixed_length);
+    result = suit_fix_suit_encode_buf(encoder_context, SHA256_DIGEST_LENGTH);
     if (result != SUIT_SUCCESS) {
         return result;
     }
     digest->bytes.ptr = digest_buf.ptr;
-    digest->bytes.len = fixed_length;
+    digest->bytes.len = SHA256_DIGEST_LENGTH;
     return SUIT_SUCCESS;
 }
-
-

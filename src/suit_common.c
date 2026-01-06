@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 SECOM CO., LTD. All Rights reserved.
+ * Copyright (c) 2020-2026 SECOM CO., LTD. All Rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,6 +12,8 @@
 
 #include "csuit/suit_common.h"
 #include "csuit/suit_digest.h"
+#include "csuit/suit_cose.h"
+#include "csuit/suit_manifest_encode.h"
 
 uint64_t LIBCSUIT_SUPPORTED_VERSIONS[] = {1};
 size_t LIBCSUIT_SUPPORTED_VERSIONS_LEN = sizeof(LIBCSUIT_SUPPORTED_VERSIONS);
@@ -340,36 +342,37 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context,
     UsefulBufC buf;
     size_t cursor = UsefulInputBuf_Tell(&context->InBuf);
     buf.len = suit_qcbor_calc_rollback(item);
-    buf.ptr = (const void *)context->InBuf.UB.ptr + (cursor - buf.len);
+    buf.ptr = (const uint8_t *)context->InBuf.UB.ptr + (cursor - buf.len);
     return suit_verify_digest(buf, digest);
 }
 
-suit_err_t suit_use_suit_encode_buf(suit_encode_t *suit_encode,
+suit_err_t suit_use_suit_encode_buf(suit_encoder_context_t *encoder_context,
                                     size_t len,
                                     UsefulBuf *buf)
 {
-    if (suit_encode->pos != suit_encode->cur_pos) {
+    if (encoder_context->pos != encoder_context->cur_pos) {
         /* need to "fix" it */
         return SUIT_ERR_NO_MEMORY;
     }
     if (len == 0) {
-        len = suit_encode->max_pos - suit_encode->cur_pos;
+        // allocate as much as possible
+        len = encoder_context->max_pos - encoder_context->cur_pos;
     }
-    if (suit_encode->cur_pos + len > suit_encode->max_pos) {
+    if (encoder_context->cur_pos + len > encoder_context->max_pos) {
         return SUIT_ERR_NO_MEMORY;
     }
-    *buf = (UsefulBuf){.ptr = &suit_encode->buf[suit_encode->cur_pos], .len = len};
-    suit_encode->cur_pos = suit_encode->pos + len;
+    *buf = (UsefulBuf){.ptr = &encoder_context->buf[encoder_context->cur_pos], .len = len};
+    encoder_context->cur_pos = encoder_context->pos + len;
     return SUIT_SUCCESS;
 }
 
-suit_err_t suit_fix_suit_encode_buf(suit_encode_t *suit_encode,
+suit_err_t suit_fix_suit_encode_buf(suit_encoder_context_t *encoder_context,
                                     const size_t used_len)
 {
-    if (suit_encode->pos + used_len > suit_encode->max_pos) {
+    if (encoder_context->pos + used_len > encoder_context->max_pos) {
         return SUIT_ERR_NO_MEMORY;
     }
-    suit_encode->pos += used_len;
-    suit_encode->cur_pos = suit_encode->pos;
+    encoder_context->pos += used_len;
+    encoder_context->cur_pos = encoder_context->pos;
     return SUIT_SUCCESS;
 }
