@@ -16,6 +16,8 @@
 #include "qcbor/UsefulBuf.h"
 #include "qcbor/qcbor_encode.h"
 
+#define SUIT_MAX_DEPENDENCY_LENGTH 4
+
 #if defined(LIBCSUIT_USE_T_COSE_1)
 #include "t_cose/t_cose_common.h"
 #else
@@ -139,7 +141,7 @@ typedef enum suit_report_capability_report_key {
 
 typedef struct suit_manifest_tree {
     size_t      len;
-    uint8_t     manifest_index[SUIT_MAX_ARRAY_LENGTH];
+    uint8_t     manifest_index[SUIT_MAX_DEPENDENCY_LENGTH];
 } suit_manifest_tree_t;
 
 enum suit_report_state {
@@ -196,7 +198,7 @@ typedef struct suit_report_context {
 
     // temporal storage for the SUIT_Digest in the suit-authentication-wrapper.
     // NOTE: the actual memory should not be freed before calling suit_report_reference_uri().
-    suit_digest_t digest;
+    UsefulBufC manifest_digest;
 
     uint8_t current_index;
 
@@ -215,7 +217,7 @@ typedef struct suit_report_context {
  */
 suit_err_t suit_report_manifest_digest(
     suit_report_context_t *report_context,
-    suit_digest_t digest);
+    UsefulBufC digest);
 
 /*!
     \brief  This function should be called on suit-reference-uri.

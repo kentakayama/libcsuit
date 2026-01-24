@@ -477,7 +477,7 @@ suit_err_t suit_report_manifest_reference_uri(
     // ]
     QCBOREncode_OpenArrayInMapN(&report_context->cbor_encoder, SUIT_REPORT_REFERENCE);
     QCBOREncode_AddText(&report_context->cbor_encoder, reference_uri);
-    suit_encode_append_digest(&report_context->digest, 0, &report_context->cbor_encoder);
+    QCBOREncode_AddEncoded(&report_context->cbor_encoder, report_context->manifest_digest);
     QCBOREncode_CloseArray(&report_context->cbor_encoder);
 
     // suit-report-records => [
@@ -489,12 +489,12 @@ suit_err_t suit_report_manifest_reference_uri(
 
 suit_err_t suit_report_manifest_digest(
     suit_report_context_t *report_context,
-    suit_digest_t digest)
+    UsefulBufC manifest_digest)
 {
     if (report_context->state != SUIT_REPORTING_ENGINE_STARTED) {
         return SUIT_ERR_WHILE_REPORTING;
     }
-    report_context->digest = digest;
+    report_context->manifest_digest = manifest_digest;
     report_context->state = SUIT_REPORTING_ENGINE_SUIT_DIGEST_STORED;
 
     return SUIT_SUCCESS;

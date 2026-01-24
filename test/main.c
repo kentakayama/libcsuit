@@ -381,15 +381,16 @@ void test_csuit_report_example0_success_report(void)
     CU_ASSERT_EQUAL_FATAL(suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, &sender_key), SUIT_SUCCESS);
     UsefulBufC nonce = NULLUsefulBufC;
     suit_report_start_encoding(reporting_engine, nonce);
-    uint8_t bytes[] = {
+    uint8_t manifest_digest_bytes[] = {
+        0x82, // array(2)
+        0x2F, // negative(15) = -16, T_COSE_ALGORITHM_SHA_256
+        0x58, 0x20,
         0x66, 0x58, 0xEA, 0x56, 0x02, 0x62, 0x69, 0x6D,
         0xD1, 0xF1, 0x3B, 0x78, 0x22, 0x39, 0xA0, 0x64,
         0xDA, 0x7C, 0x6C, 0x5C, 0xBA, 0xF5, 0x2F, 0xDE,
         0xD4, 0x28, 0xA6, 0xFC, 0x83, 0xC7, 0xE5, 0xAF,
     };
-    UsefulBufC digest_bytes = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bytes);
-    suit_digest_t digest = {.algorithm_id = T_COSE_ALGORITHM_SHA_256, .bytes = digest_bytes};
-    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, digest), SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(manifest_digest_bytes)), SUIT_SUCCESS);
     CU_ASSERT_EQUAL_FATAL(suit_report_manifest_reference_uri(reporting_engine, UsefulBuf_FROM_SZ_LITERAL("http://example.com/manifest.suit")), SUIT_SUCCESS);
 
     suit_component_identifier_t component;
@@ -496,15 +497,16 @@ void test_csuit_report_example0_failure_report(void)
     CU_ASSERT_EQUAL_FATAL(suit_report_add_sender_key(reporting_engine, CBOR_TAG_COSE_SIGN1, T_COSE_ALGORITHM_RESERVED, &sender_key), SUIT_SUCCESS);
     UsefulBufC nonce = NULLUsefulBufC;
     CU_ASSERT_EQUAL_FATAL(suit_report_start_encoding(reporting_engine, nonce), SUIT_SUCCESS);
-    uint8_t bytes[] = {
+    uint8_t manifest_digest_bytes[] = {
+        0x82, // array(2)
+        0x2F, // negative(15) = -16, T_COSE_ALGORITHM_SHA_256
+        0x58, 0x20,
         0x66, 0x58, 0xEA, 0x56, 0x02, 0x62, 0x69, 0x6D,
         0xD1, 0xF1, 0x3B, 0x78, 0x22, 0x39, 0xA0, 0x64,
         0xDA, 0x7C, 0x6C, 0x5C, 0xBA, 0xF5, 0x2F, 0xDE,
         0xD4, 0x28, 0xA6, 0xFC, 0x83, 0xC7, 0xE5, 0xAF,
     };
-    UsefulBufC digest_bytes = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bytes);
-    suit_digest_t digest = {.algorithm_id = T_COSE_ALGORITHM_SHA_256, .bytes = digest_bytes};
-    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, digest), SUIT_SUCCESS);
+    CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(manifest_digest_bytes)), SUIT_SUCCESS);
     CU_ASSERT_EQUAL_FATAL(suit_report_manifest_reference_uri(reporting_engine, UsefulBuf_FROM_SZ_LITERAL("http://example.com/manifest.suit")), SUIT_SUCCESS);
 
     suit_component_identifier_t component;

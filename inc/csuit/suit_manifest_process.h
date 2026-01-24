@@ -162,6 +162,7 @@ typedef struct suit_report_args {
     suit-directive-unlink and suit-directive-fetch (only for integrated payloads).
  */
 typedef struct suit_invoke_args {
+    UsefulBufC manifest_digest; // as an identifier of SUIT Manifests
     suit_component_identifier_t component_identifier;
     /* basically byte-string value, so may not '\0' terminated */
     uint8_t args[SUIT_MAX_ARGS_LENGTH];
@@ -184,6 +185,10 @@ typedef enum suit_store_key {
    suit-directive-unlink and suit-directive-fetch (only for integrated payloads).
  */
 typedef struct suit_store_args {
+    UsefulBufC manifest_digest; // as an identifier of SUIT Manifests
+    uint64_t manifest_sequence_number;
+    bool is_manifest_itself;
+
     suit_rep_policy_t report_policy;
 
     /*! Destination SUIT_Component_Identifier */
@@ -217,6 +222,9 @@ typedef struct suit_store_args {
  * Used on suit-directive-fetch.
  */
 typedef struct suit_fetch_args {
+    UsefulBufC manifest_digest; // as an identifier of SUIT Manifests
+    uint64_t manifest_sequence_number;
+
     suit_rep_policy_t report_policy;
 
     /*! Destination SUIT_Component_Identifier */
@@ -276,6 +284,8 @@ typedef struct suit_callback_ret {
  *  \brief  Parameters to request checking condition.
  */
 typedef struct suit_condition_args {
+    UsefulBufC manifest_digest; // as an identifier of SUIT Manifests
+
     suit_rep_policy_t report_policy;
 
     /*! Destination SUIT_Component_Identifier */
@@ -309,6 +319,19 @@ typedef struct suit_condition_args {
     You don't need to free it.
  */
 typedef struct suit_processor_context {
+    /*
+     * these fields should be backed up and recovered after dependency-resolution
+     */
+    struct suit_processor_context_backup {
+        UsefulBufC manifest;
+        UsefulBufC manifest_digest;
+        uint64_t manifest_sequence_number;
+        suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
+    } b;
+
+    /*
+     * following fields are shared in the dependency resolution context
+     */
     union {
         uint8_t status;
         struct {
@@ -328,10 +351,6 @@ typedef struct suit_processor_context {
 
     /* sections requested to process */
     suit_process_flag_t process_flags;
-
-    UsefulBufC manifest;
-    suit_digest_t expected_manifest_digest;
-    suit_parameter_args_t parameters[SUIT_MAX_INDEX_NUM];
 
     // size_t key_len;
     suit_mechanism_t mechanisms[SUIT_MAX_KEY_NUM];
