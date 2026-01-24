@@ -8,7 +8,7 @@ FROM python:3.11-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN apt-get -y install musl-tools make python3 python3-pip
+RUN apt-get -y install musl-tools make binutils
 
 COPY . .
 RUN python3 -m pip install --user -r ./3rdparty/mbedtls/scripts/basic.requirements.txt
