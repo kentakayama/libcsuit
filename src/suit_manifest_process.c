@@ -1638,16 +1638,14 @@ suit_err_t suit_process_dependency(suit_processor_context_t *processor_context,
         }
 
         // backup several contexts
-        UsefulBufC manifest_backup = processor_context->b.manifest;
-        UsefulBufC manifest_digest_backup = processor_context->b.manifest_digest;
-        suit_process_flag_t process_flags_backup = processor_context->process_flags;
+        struct suit_processor_context_backup backup = processor_context->b;
 
         // OK, let's dive into the dependency manifest
         processor_context->dependency_tree.manifest_index[processor_context->dependency_tree.len] = processor_context->component_index;
         processor_context->dependency_tree.len++;
         processor_context->b.manifest = payload->bytes;
         processor_context->b.manifest_digest = processor_context->b.parameters[processor_context->component_index].image_digest_buf;
-        // checks only suit-delegation and suit-authentication-wrapper
+        // checks corresponding section of the manifest
         processor_context->process_flags = suit_manifest_key_to_process_flag(processor_context->manifest_key);
 
         /*
@@ -1658,10 +1656,7 @@ suit_err_t suit_process_dependency(suit_processor_context_t *processor_context,
         result = suit_process_envelope(processor_context);
 
         // recover the context
-        processor_context->process_flags = process_flags_backup;
-        processor_context->b.manifest_digest = manifest_digest_backup;
-        processor_context->b.manifest = manifest_backup;
-        processor_context->dependency_tree.len--;
+        processor_context->b = backup;
 
 report:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
