@@ -422,16 +422,16 @@ typedef struct suit_component_identifier {
     UsefulBufC                      identifier[SUIT_MAX_ARRAY_LENGTH];
 } suit_component_identifier_t;
 
-typedef struct suit_component_with_index {
+typedef struct suit_encoded_component_with_index {
     uint8_t                         index;
-    suit_component_identifier_t     component;
-} suit_component_with_index_t;
+    UsefulBufC                      encoded_component;
+} suit_encoded_component_with_index_t;
 
 /*
  * SUIT_Dependency
  */
 typedef struct suit_dependency_metadata {
-    suit_component_identifier_t     prefix;
+    UsefulBufC                      prefix;
     //TODO:                         $$SUIT_Dependency-extensions
 } suit_dependency_metadata_t;
 
@@ -639,7 +639,7 @@ typedef struct suit_text_component {
 } suit_text_component_t;
 
 typedef struct suit_text_component_pair {
-    suit_component_identifier_t     key;
+    UsefulBufC                      key;
     suit_text_component_t           text_component;
 } suit_text_component_pair_t;
 
@@ -718,11 +718,11 @@ typedef struct suit_unseverable_members {
  * SUIT_Common
  */
 typedef struct suit_common {
-    suit_dependencies_t             dependencies;
+    suit_dependencies_t                 dependencies;
 
-    uint8_t                         components_len;
-    suit_component_with_index_t     components[SUIT_MAX_INDEX_NUM];
-    suit_command_sequence_t         shared_seq;
+    uint8_t                             components_len;
+    suit_encoded_component_with_index_t components[SUIT_MAX_INDEX_NUM];
+    suit_command_sequence_t             shared_seq;
 } suit_common_t;
 
 typedef struct suit_delegation_chain {
@@ -747,7 +747,7 @@ typedef struct suit_manifest {
     uint64_t                            sequence_number;
     suit_common_t                       common;
     UsefulBufC                          reference_uri;
-    suit_component_identifier_t         manifest_component_id;
+    UsefulBufC                          encoded_manifest_component_id;
     suit_severable_manifest_members_t   sev_man_mem;
     suit_severable_members_digests_t    sev_mem_dig;
     suit_unseverable_members_t          unsev_mem;
@@ -813,21 +813,6 @@ typedef struct suit_wait_event {
     uint64_t                    day_of_week;
 } suit_wait_event_t;
 
-/*!
- *  \brief  Parameters to request wait event.
- *
- *  Used by suit_wait_callback().
- */
-typedef struct suit_wait_args {
-    suit_rep_policy_t report_policy;
-
-    /*! Destination SUIT_Component_Identifier */
-    suit_component_identifier_t dst;
-
-    /*! SUIT_Wait_Event */
-    UsefulBufC wait_info_buf;
-} suit_wait_args_t;
-
 suit_err_t suit_error_from_qcbor_error(QCBORError error);
 bool suit_qcbor_value_is_uint64(QCBORItem *item);
 bool suit_qcbor_value_is_uint32(QCBORItem *item);
@@ -854,17 +839,6 @@ suit_err_t suit_verify_item(QCBORDecodeContext *context,
                             QCBORItem *item,
                             suit_digest_t *digest);
 size_t suit_qcbor_calc_rollback(QCBORItem *item);
-
-suit_err_t suit_decode_component_identifiers_from_item(QCBORDecodeContext *context,
-                                                       QCBORItem *item,
-                                                       bool next,
-                                                       suit_component_identifier_t *identifier);
-
-suit_err_t suit_decode_components_from_item(QCBORDecodeContext *context,
-                                            QCBORItem *item,
-                                            bool next,
-                                            suit_component_with_index_t *components,
-                                            uint8_t *num);
 
 #ifdef __cplusplus
 }

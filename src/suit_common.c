@@ -147,16 +147,14 @@ suit_err_t suit_qcbor_get(QCBORDecodeContext *message,
 
 bool suit_qcbor_value_is_uint64(QCBORItem *item)
 {
-    if (item->uDataType == QCBOR_TYPE_INT64) {
-        if (item->val.int64 < 0) {
-            return false;
-        }
-        /* there is no need to cast int64_t [0, INT32_MAX] value into uint64_t in the union */
+    if (item->uDataType == QCBOR_TYPE_UINT64) {
+        return true;
     }
-    else if (item->uDataType != QCBOR_TYPE_UINT64) {
-        return false;
+    else if (item->uDataType == QCBOR_TYPE_INT64 && item->val.int64 >= 0) {
+        // can be casted with uint64_t
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool suit_qcbor_value_is_uint32(QCBORItem *item)
