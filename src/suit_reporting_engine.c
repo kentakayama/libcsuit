@@ -404,7 +404,7 @@ suit_err_t suit_report_extend_record(
 suit_err_t suit_report_extend_system_property_claims(
     suit_report_context_t *report_context,
     const uint8_t component_index,
-    const suit_component_identifier_t *component,
+    UsefulBufC component,
     const suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value)
 {
@@ -430,7 +430,7 @@ suit_err_t suit_report_extend_system_property_claims(
             //   system-component-id
             QCBOREncode_AddUInt64(&report_context->cbor_encoder, 0);
             //   => SUIT_Component_Identifier,
-            suit_encode_append_component_identifier(component, 0, &report_context->cbor_encoder);
+            QCBOREncode_AddEncoded(&report_context->cbor_encoder, component);
             report_context->current_index = component_index;
         }
         break;
@@ -440,7 +440,7 @@ suit_err_t suit_report_extend_system_property_claims(
         //   system-component-id
         QCBOREncode_AddUInt64(&report_context->cbor_encoder, 0);
         //   => SUIT_Component_Identifier,
-        suit_encode_append_component_identifier(component, 0, &report_context->cbor_encoder);
+        QCBOREncode_AddEncoded(&report_context->cbor_encoder, component);
         report_context->current_index = component_index;
         break;
     default:

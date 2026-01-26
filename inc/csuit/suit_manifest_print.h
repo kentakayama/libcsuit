@@ -61,6 +61,7 @@ suit_err_t suit_print_bytestr(const uint8_t *bytes, size_t len);
 suit_err_t suit_print_suit_parameters_list(const suit_parameters_list_t *params_list, const uint32_t indent_space, const uint32_t indent_delta);
 suit_err_t suit_print_cmd_seq(const suit_command_sequence_t *cmd_seq, const uint32_t indent_space, const uint32_t indent_delta);
 suit_err_t suit_print_component_identifier(const suit_component_identifier_t *identifier);
+suit_err_t suit_print_encoded_component_identifier(UsefulBufC encoded_component);
 suit_err_t suit_print_digest(const suit_digest_t *digest, const uint32_t indent_space, const uint32_t indent_delta);
 
 suit_err_t suit_print_component_metadata(const suit_component_metadata_t *component_metadata,

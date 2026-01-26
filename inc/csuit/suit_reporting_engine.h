@@ -295,7 +295,7 @@ suit_err_t suit_report_extend_record(
 
     \param[in]  report_context  Pointer to the context of Repoting Engine
     \param[in]  component_index The Component Index in processing
-    \param[in]  component       Pointer to the \ref suit_component_identifier_t represents SUIT_Component_Identifier
+    \param[in]  component       Pointer and length to the encoded SUIT_Component_Identifier
     \param[in]  parameter_key   With parameter_value, this represents $$SUIT_Parameter
     \param[in]  parameter_value Pointer to the reported parameter value
 
@@ -304,7 +304,7 @@ suit_err_t suit_report_extend_record(
 suit_err_t suit_report_extend_system_property_claims(
     suit_report_context_t *report_context,
     const uint8_t component_index,
-    const suit_component_identifier_t *component,
+    UsefulBufC component,
     const suit_parameter_key_t parameter_keys[],
     const struct suit_union_parameter *parameter_value);
 

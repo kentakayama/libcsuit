@@ -15,8 +15,15 @@ LDFLAGS ?= -lt_cose -lqcbor -lcunit -lm
 
 include ../common.mk
 
-$(TARGET): main.c ../libcsuit.a
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(INC)
+LDWRAP = \
+	-Xlinker --wrap=suit_fetch_callback \
+	-Xlinker --wrap=suit_store_callback \
+	-Xlinker --wrap=suit_invoke_callback \
+	-Xlinker --wrap=suit_condition_callback \
+	-Xlinker --wrap=suit_report_callback
+
+$(TARGET): process_test.c main.c ../libcsuit.a
+	$(CC) $(LDWRAP) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(INC)
 
 ../libcsuit.a:
 	$(MAKE) -C ../ MBEDTLS=$(MBEDTLS)

@@ -24,21 +24,26 @@ void test_csuit_without_authentication_wrapper(void);
 void test_csuit_cose_key(void);
 void test_csuit_report_example0_success_report(void);
 void test_csuit_report_example0_failure_report(void);
+extern void test_process_example0(void);
 
 int main(int argc, char *argv[])
 {
-    CU_pSuite suite;
+    
     CU_initialize_registry();
-    suite = CU_add_suite("SUIT", NULL, NULL);
-    CU_add_test(suite, "test_sizeof", test_sizeof);
-    CU_add_test(suite, "test_csuit_rollback", test_csuit_rollback);
-    CU_add_test(suite, "test_csuit_get_digest", test_csuit_get_digest);
-    CU_add_test(suite, "test_component_identifier_to_filename", test_component_identifier_to_filename);
-    CU_add_test(suite, "test_csuit_suit_encode_buf", test_csuit_suit_encode_buf);
-    CU_add_test(suite, "test_csuit_without_authentication_wrapper", test_csuit_without_authentication_wrapper);
-    CU_add_test(suite, "test_csuit_cose_key", test_csuit_cose_key);
-    CU_add_test(suite, "test_csuit_report_example0_success_report", test_csuit_report_example0_success_report);
-    CU_add_test(suite, "test_csuit_report_example0_failure_report", test_csuit_report_example0_failure_report);
+    CU_pSuite basic_suite = CU_add_suite("libcsuit_basic", NULL, NULL);
+    CU_add_test(basic_suite, "test_sizeof", test_sizeof);
+    CU_add_test(basic_suite, "test_csuit_rollback", test_csuit_rollback);
+    CU_add_test(basic_suite, "test_csuit_get_digest", test_csuit_get_digest);
+    CU_add_test(basic_suite, "test_component_identifier_to_filename", test_component_identifier_to_filename);
+    CU_add_test(basic_suite, "test_csuit_suit_encode_buf", test_csuit_suit_encode_buf);
+    CU_add_test(basic_suite, "test_csuit_without_authentication_wrapper", test_csuit_without_authentication_wrapper);
+    CU_add_test(basic_suite, "test_csuit_cose_key", test_csuit_cose_key);
+    CU_add_test(basic_suite, "test_csuit_report_example0_success_report", test_csuit_report_example0_success_report);
+    CU_add_test(basic_suite, "test_csuit_report_example0_failure_report", test_csuit_report_example0_failure_report);
+
+    CU_pSuite process_suite = CU_add_suite("process_suite", NULL, NULL);
+    CU_add_test(process_suite, "test_process_example0", test_process_example0);
+
     CU_basic_run_tests();
     unsigned int err = CU_get_number_of_failures();
     CU_cleanup_registry();
@@ -393,9 +398,7 @@ void test_csuit_report_example0_success_report(void)
     CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(manifest_digest_bytes)), SUIT_SUCCESS);
     CU_ASSERT_EQUAL_FATAL(suit_report_manifest_reference_uri(reporting_engine, UsefulBuf_FROM_SZ_LITERAL("http://example.com/manifest.suit")), SUIT_SUCCESS);
 
-    suit_component_identifier_t component;
-    component.len = 1;
-    component.identifier[0] = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0x00}));
+    UsefulBufC component = UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0x81, 0x41, 0x00}));
 
     suit_union_parameter_t parameter_value;
 
@@ -403,7 +406,7 @@ void test_csuit_report_example0_success_report(void)
     suit_report_extend_system_property_claims(
         reporting_engine,
         0,
-        &component,
+        component,
         (suit_parameter_key_t []){SUIT_PARAMETER_VENDOR_IDENTIFIER, SUIT_PARAMETER_INVALID},
         &parameter_value
     );
@@ -412,7 +415,7 @@ void test_csuit_report_example0_success_report(void)
     suit_report_extend_system_property_claims(
         reporting_engine,
         0,
-        &component,
+        component,
         (suit_parameter_key_t []){SUIT_PARAMETER_CLASS_IDENTIFIER, SUIT_PARAMETER_INVALID},
         &parameter_value
     );
@@ -429,7 +432,7 @@ void test_csuit_report_example0_success_report(void)
     CU_ASSERT_EQUAL_FATAL(suit_report_extend_system_property_claims(
         reporting_engine,
         0,
-        &component,
+        component,
         (suit_parameter_key_t []){SUIT_PARAMETER_IMAGE_SIZE, SUIT_PARAMETER_IMAGE_DIGEST},
         &parameter_value
     ), SUIT_SUCCESS);
@@ -484,7 +487,7 @@ void test_csuit_report_example0_success_report(void)
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
         0x04, 0xF5,
     };
-    CU_ASSERT_EQUAL(0, UsefulBuf_Compare(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(expected), payload));
+    CU_ASSERT_EQUAL(UsefulBuf_Compare(payload, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(expected)), 0);
 }
 
 void test_csuit_report_example0_failure_report(void)
@@ -509,9 +512,7 @@ void test_csuit_report_example0_failure_report(void)
     CU_ASSERT_EQUAL_FATAL(suit_report_manifest_digest(reporting_engine, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(manifest_digest_bytes)), SUIT_SUCCESS);
     CU_ASSERT_EQUAL_FATAL(suit_report_manifest_reference_uri(reporting_engine, UsefulBuf_FROM_SZ_LITERAL("http://example.com/manifest.suit")), SUIT_SUCCESS);
 
-    suit_component_identifier_t component;
-    component.len = 1;
-    component.identifier[0] = UsefulBuf_FROM_BYTE_ARRAY_LITERAL((uint8_t []){0x00});
+    UsefulBufC component =  UsefulBuf_FROM_BYTE_ARRAY_LITERAL(((uint8_t []){0x81, 0x41, 0x00}));
     uint8_t image_digest_bstr[] = {
         0x82, 0x2F, 0x58, 0x20,
         0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
@@ -525,7 +526,7 @@ void test_csuit_report_example0_failure_report(void)
     CU_ASSERT_EQUAL_FATAL(suit_report_extend_system_property_claims(
         reporting_engine,
         0,
-        &component,
+        component,
         (suit_parameter_key_t []){SUIT_PARAMETER_VENDOR_IDENTIFIER, SUIT_PARAMETER_INVALID},
         &parameter_value
     ), SUIT_SUCCESS);
@@ -534,7 +535,7 @@ void test_csuit_report_example0_failure_report(void)
     CU_ASSERT_EQUAL_FATAL(suit_report_extend_system_property_claims(
         reporting_engine,
         0,
-        &component,
+        component,
         (suit_parameter_key_t []){SUIT_PARAMETER_CLASS_IDENTIFIER, SUIT_PARAMETER_INVALID},
         &parameter_value
     ), SUIT_SUCCESS);

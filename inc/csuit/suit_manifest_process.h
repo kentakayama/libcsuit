@@ -163,12 +163,11 @@ typedef struct suit_report_args {
  */
 typedef struct suit_invoke_args {
     UsefulBufC manifest_digest; // as an identifier of SUIT Manifests
-    suit_component_identifier_t component_identifier;
+    UsefulBufC encoded_component_identifier;
+
     /* basically byte-string value, so may not '\0' terminated */
     uint8_t args[SUIT_MAX_ARGS_LENGTH];
     size_t args_len;
-
-    suit_rep_policy_t report_policy;
 } suit_invoke_args_t;
 
 typedef enum suit_store_key {
@@ -189,12 +188,10 @@ typedef struct suit_store_args {
     uint64_t manifest_sequence_number;
     bool is_manifest_itself;
 
-    suit_rep_policy_t report_policy;
-
-    /*! Destination SUIT_Component_Identifier */
-    suit_component_identifier_t dst;
+    /*! Destination encoded SUIT_Component_Identifier */
+    UsefulBufC dst;
     /*! Used if \ref operation is SUIT_COPY or SUIT_SWAP */
-    suit_component_identifier_t src;
+    UsefulBufC src;
     /*! Pointer and length to the content to be written */
     UsefulBufC src_buf;
 
@@ -225,10 +222,8 @@ typedef struct suit_fetch_args {
     UsefulBufC manifest_digest; // as an identifier of SUIT Manifests
     uint64_t manifest_sequence_number;
 
-    suit_rep_policy_t report_policy;
-
-    /*! Destination SUIT_Component_Identifier */
-    suit_component_identifier_t dst;
+    /*! Destination encoded SUIT_Component_Identifier */
+    UsefulBufC dst;
     /*! Length of uri */
     size_t uri_len;
     /*! URI terminated with '\0' */
@@ -286,10 +281,8 @@ typedef struct suit_callback_ret {
 typedef struct suit_condition_args {
     UsefulBufC manifest_digest; // as an identifier of SUIT Manifests
 
-    suit_rep_policy_t report_policy;
-
-    /*! Destination SUIT_Component_Identifier */
-    suit_component_identifier_t dst;
+    /*! Destination encoded SUIT_Component_Identifier */
+    UsefulBufC dst;
 
     /*! suit-condition-* label */
     suit_con_dir_key_t condition;
@@ -297,6 +290,19 @@ typedef struct suit_condition_args {
     /*! To be expected values */
     suit_union_parameter_t expected;
 } suit_condition_args_t;
+
+/*!
+ *  \brief  Parameters to request wait event.
+ *
+ *  Used by suit_wait_callback().
+ */
+typedef struct suit_wait_args {
+    /*! Encoded destination SUIT_Component_Identifier */
+    UsefulBufC dst;
+
+    /*! SUIT_Wait_Event */
+    UsefulBufC wait_info_buf;
+} suit_wait_args_t;
 
 /*!
     \brief  A context for the SUIT Manifest Processor
@@ -363,7 +369,7 @@ typedef struct suit_processor_context {
     size_t section_offset;
     suit_con_dir_key_t condition_or_directive;
     uint8_t component_index;
-    const suit_component_identifier_t *component;
+    UsefulBufC encoded_component;
     // currently, up to two parameters are consumed by one callback
     suit_parameter_key_t parameter_keys[LIBCSUIT_MAX_REPORT_PRAMETER_NUM];
     suit_union_parameter_t parameter_value;
@@ -378,13 +384,13 @@ typedef struct suit_extracted {
     suit_dependencies_t dependencies;
 #endif
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
-    suit_component_identifier_t manifest_component_id;
+    UsefulBufC encoded_manifest_component_id;
 #endif
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_SET_VERSION)
     suit_int64_array_t set_version;
 #endif
     uint8_t components_len;
-    suit_component_with_index_t components[SUIT_MAX_INDEX_NUM];
+    suit_encoded_component_with_index_t encoded_components[SUIT_MAX_INDEX_NUM];
     suit_payloads_t payloads;
 
     UsefulBufC manifest;

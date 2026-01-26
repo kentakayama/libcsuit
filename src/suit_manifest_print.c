@@ -1713,6 +1713,16 @@ suit_err_t suit_print_component_identifier(const suit_component_identifier_t *id
     return SUIT_SUCCESS;
 }
 
+suit_err_t suit_print_encoded_component_identifier(UsefulBufC encoded_component)
+{
+    suit_component_identifier_t component;
+    suit_err_t result = suit_decode_component_identifier(encoded_component, &component);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    return suit_print_component_identifier(&component);
+}
+
 int32_t suit_print_dependency(const suit_dependency_t *dependency,
                               const uint32_t indent_space,
                               const uint32_t indent_delta)
@@ -1723,7 +1733,7 @@ int32_t suit_print_dependency(const suit_dependency_t *dependency,
     int32_t result = SUIT_SUCCESS;
     printf("%*s/ component-index / %d: {\n", indent_space, "", dependency->index);
     printf("%*s/ dependency-prefix / %d: ", indent_space + indent_delta, "", SUIT_DEPENDENCY_PREFIX);
-    result = suit_print_component_identifier(&dependency->dependency_metadata.prefix);
+    result = suit_print_encoded_component_identifier(dependency->dependency_metadata.prefix);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -1925,7 +1935,7 @@ suit_err_t suit_print_text_lmap(const suit_text_lmap_t *text,
             printf(",\n");
         }
         printf("%*s", indent_space + indent_delta, "");
-        result = suit_print_component_identifier(&text->component[i].key);
+        result = suit_print_encoded_component_identifier(text->component[i].key);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -2001,8 +2011,7 @@ suit_err_t suit_print_manifest(const suit_manifest_t *manifest,
         }
         printf("%*s/ components / 2: [", indent_space + 2 * indent_delta, "");
         for (size_t i = 0; i < manifest->common.components_len; i++) {
-            printf("\n%*s", indent_space + 3 * indent_delta, "");
-            result = suit_print_component_identifier(&manifest->common.components[i].component);
+            result = suit_print_encoded_component_identifier(manifest->common.components[i].encoded_component);
             if (result != SUIT_SUCCESS) {
                 return result;
             }
@@ -2035,12 +2044,12 @@ suit_err_t suit_print_manifest(const suit_manifest_t *manifest,
         comma = true;
     }
 
-    if (manifest->manifest_component_id.len > 0) {
+    if (!UsefulBuf_IsNULLOrEmptyC(manifest->encoded_manifest_component_id)) {
         if (comma) {
             printf(",\n");
         }
         printf("%*s/ manifest-component-id / 5: ", indent_space + indent_delta, "");
-        result = suit_print_component_identifier(&manifest->manifest_component_id);
+        result = suit_print_encoded_component_identifier(manifest->encoded_manifest_component_id);
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -2450,12 +2459,11 @@ suit_err_t suit_print_invoke(suit_invoke_args_t invoke_args)
 {
     printf("invoke callback : {\n");
     printf("  component-identifier : ");
-    suit_print_component_identifier(&invoke_args.component_identifier);
+    suit_print_encoded_component_identifier(invoke_args.encoded_component_identifier);
     printf("\n");
     printf("  argument(len=%ld) : ", invoke_args.args_len);
     suit_print_hex(invoke_args.args, invoke_args.args_len);
     printf("\n");
-    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", invoke_args.report_policy.record_on_success, invoke_args.report_policy.record_on_failure, invoke_args.report_policy.sysinfo_success, invoke_args.report_policy.sysinfo_failure);
     printf("}\n\n");
     return SUIT_SUCCESS;
 }
@@ -2477,11 +2485,11 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
     printf("store callback : {\n");
     printf("  operation : %s\n", suit_store_key_to_str(store_args.operation));
     printf("  dst-component-identifier : ");
-    suit_print_component_identifier(&store_args.dst);
+    suit_print_encoded_component_identifier(store_args.dst);
     printf("\n");
     if (store_args.operation == SUIT_COPY || store_args.operation == SUIT_SWAP) {
         printf("  src-component-identifier : ");
-        suit_print_component_identifier(&store_args.src);
+        suit_print_encoded_component_identifier(store_args.src);
         printf("\n");
     }
     printf("  src-buf : ");
@@ -2512,7 +2520,6 @@ suit_err_t suit_print_store(suit_store_args_t store_args)
     }
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
     printf("  ptr : %p (%ld)\n", store_args.src_buf.ptr, store_args.src_buf.len);
-    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", store_args.report_policy.record_on_success, store_args.report_policy.record_on_failure, store_args.report_policy.sysinfo_success, store_args.report_policy.sysinfo_failure);
     printf("}\n\n");
     return ret;
 }
@@ -2543,11 +2550,10 @@ suit_err_t suit_print_fetch(suit_fetch_args_t fetch_args,
     }
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA */
     printf("  dst-component-identifier : ");
-    suit_print_component_identifier(&fetch_args.dst);
+    suit_print_encoded_component_identifier(fetch_args.dst);
     printf("\n");
 
     printf("  fetch buf : %p(%ld)\n", fetch_args.ptr, fetch_args.buf_len);
-    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", fetch_args.report_policy.record_on_success, fetch_args.report_policy.record_on_failure, fetch_args.report_policy.sysinfo_success, fetch_args.report_policy.sysinfo_failure);
     printf("}\n\n");
 
     return ret;
@@ -2567,7 +2573,7 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
     case SUIT_CONDITION_IMAGE_MATCH:
     case SUIT_CONDITION_IMAGE_NOT_MATCH:
         printf("  dst-component-identifier : ");
-        suit_print_component_identifier(&condition_args.dst);
+        suit_print_encoded_component_identifier(condition_args.dst);
         printf("\n");
         break;
     default:
@@ -2631,7 +2637,6 @@ suit_err_t suit_print_condition(suit_condition_args_t condition_args)
         result = SUIT_ERR_NOT_IMPLEMENTED;
     }
 
-    printf("  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", condition_args.report_policy.record_on_success, condition_args.report_policy.record_on_failure, condition_args.report_policy.sysinfo_success, condition_args.report_policy.sysinfo_failure);
     printf("}\n\n");
 
     return result;
@@ -2656,12 +2661,11 @@ suit_err_t suit_print_wait(suit_wait_args_t wait_args)
 
     printf("wait callback : {\n");
     printf("  dst-component-identifier : ");
-    suit_print_component_identifier(&wait_args.dst);
+    suit_print_encoded_component_identifier(wait_args.dst);
     printf("\n");
     printf("  wait-info : ");
     suit_print_wait_event(&wait_info, 2, 2);
-    printf("\n  suit_rep_policy_t : RecPass%x RecFail%x SysPass%x SysFail%x\n", wait_args.report_policy.record_on_success, wait_args.report_policy.record_on_failure, wait_args.report_policy.sysinfo_success, wait_args.report_policy.sysinfo_failure);
     printf("}\n\n");
 
-    return ret;
+    return SUIT_SUCCESS;
 }
