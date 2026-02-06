@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(libcsuit
 	DESCRIPTION "C library for SUIT Manifest"
 	LANGUAGES C
-	VERSION 1.0.0)
+	VERSION 1.0.2)
 
 set(CMAKE_C_FLAGS "-Wall -O3 -pedantic")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -O0 -g -DDEBUG") # use `-DCMAKE_BUILD_TYPE=Debug'

@@ -61,9 +61,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
              QCBORDecode_GetInt64(context, &val.i64);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY;
-                    processor_context->parameters[processor_context->component_index].update_priority = val.i64;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY;
+                    processor_context->b.parameters[processor_context->component_index].update_priority = val.i64;
                 }
             }
             break;
@@ -74,9 +74,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetUInt64(context, &val.u64);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_SIZE;
-                    processor_context->parameters[processor_context->component_index].image_size = val.u64;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_SIZE;
+                    processor_context->b.parameters[processor_context->component_index].image_size = val.u64;
                 }
             }
             break;
@@ -85,9 +85,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetUInt64(context, &val.u64);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT;
-                    processor_context->parameters[processor_context->component_index].source_component = val.u64;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT;
+                    processor_context->b.parameters[processor_context->component_index].source_component = val.u64;
                 }
             }
             break;
@@ -98,9 +98,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetUInt64(context, &val.u64);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT;
-                    processor_context->parameters[processor_context->component_index].component_slot = val.u64;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT;
+                    processor_context->b.parameters[processor_context->component_index].component_slot = val.u64;
                 }
             }
             break;
@@ -111,9 +111,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetUInt64(context, &val.u64);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_USE_BEFORE) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_USE_BEFORE;
-                    processor_context->parameters[processor_context->component_index].use_before = val.u64;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_USE_BEFORE) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_USE_BEFORE;
+                    processor_context->b.parameters[processor_context->component_index].use_before = val.u64;
                 }
             }
             break;
@@ -124,9 +124,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
              QCBORDecode_GetUInt64(context, &val.u64);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY;
-                    processor_context->parameters[processor_context->component_index].minimum_battery = val.u64;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY;
+                    processor_context->b.parameters[processor_context->component_index].minimum_battery = val.u64;
                 }
             }
             break;
@@ -142,9 +142,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetBool(context, &val.b);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_SOFT_FAILURE) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOFT_FAILURE;
-                    processor_context->parameters[processor_context->component_index].soft_failure = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_SOFT_FAILURE) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOFT_FAILURE;
+                    processor_context->b.parameters[processor_context->component_index].soft_failure = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
                 }
             }
             break;
@@ -155,9 +155,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetBool(context, &val.b);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_STRICT_ORDER) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_STRICT_ORDER;
-                    processor_context->parameters[processor_context->component_index].strict_order = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_STRICT_ORDER) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_STRICT_ORDER;
+                    processor_context->b.parameters[processor_context->component_index].strict_order = (val.b) ? SUIT_PARAMETER_TRUE : SUIT_PARAMETER_FALSE;
                 }
             }
             break;
@@ -173,10 +173,10 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             }
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_URI) ||
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_URI) ||
                     directive == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
-                    processor_context->parameters[processor_context->component_index].uri = val.str;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
+                    processor_context->b.parameters[processor_context->component_index].uri = val.str;
                 }
             }
             break;
@@ -187,9 +187,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER;
-                    processor_context->parameters[processor_context->component_index].vendor_id = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER;
+                    processor_context->b.parameters[processor_context->component_index].vendor_id = val.str;
                 }
             }
             break;
@@ -199,9 +199,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER;
-                    processor_context->parameters[processor_context->component_index].class_id = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER;
+                    processor_context->b.parameters[processor_context->component_index].class_id = val.str;
                 }
             }
             break;
@@ -212,9 +212,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER;
-                    processor_context->parameters[processor_context->component_index].device_id = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER;
+                    processor_context->b.parameters[processor_context->component_index].device_id = val.str;
                 }
             }
             break;
@@ -225,9 +225,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CONTENT;
-                    processor_context->parameters[processor_context->component_index].content = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CONTENT;
+                    processor_context->b.parameters[processor_context->component_index].content = val.str;
                 }
             }
             break;
@@ -238,9 +238,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
-                    processor_context->parameters[processor_context->component_index].invoke_args = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
+                    processor_context->b.parameters[processor_context->component_index].invoke_args = val.str;
                 }
             }
             break;
@@ -251,9 +251,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_FETCH_ARGS;
-                    processor_context->parameters[processor_context->component_index].fetch_args = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_FETCH_ARGS;
+                    processor_context->b.parameters[processor_context->component_index].fetch_args = val.str;
                 }
             }
             break;
@@ -265,9 +265,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO;
-                    processor_context->parameters[processor_context->component_index].encryption_info = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO;
+                    processor_context->b.parameters[processor_context->component_index].encryption_info = val.str;
                 }
             }
             break;
@@ -278,9 +278,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
-                    processor_context->parameters[processor_context->component_index].image_digest_buf = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
+                    processor_context->b.parameters[processor_context->component_index].image_digest_buf = val.str;
                 }
             }
             break;
@@ -295,9 +295,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             if (result == SUIT_SUCCESS) {
                 for (size_t j = 0; j < suit_index->len; j++) {
                     processor_context->component_index = suit_index->index[j];
-                    if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VERSION) || override) {
-                        processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VERSION;
-                        processor_context->parameters[processor_context->component_index].version_match_buf = val.str;
+                    if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VERSION) || override) {
+                        processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VERSION;
+                        processor_context->b.parameters[processor_context->component_index].version_match_buf = val.str;
                     }
                 }
             }
@@ -310,9 +310,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_WAIT_INFO;
-                    processor_context->parameters[processor_context->component_index].wait_info_buf = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_WAIT_INFO;
+                    processor_context->b.parameters[processor_context->component_index].wait_info_buf = val.str;
                 }
             }
             break;
@@ -324,9 +324,9 @@ suit_err_t suit_set_parameters(suit_processor_context_t *processor_context,
             QCBORDecode_GetByteString(context, &val.str);
             for (size_t j = 0; j < suit_index->len; j++) {
                 processor_context->component_index = suit_index->index[j];
-                if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) || override) {
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
-                    processor_context->parameters[processor_context->component_index].component_metadata_buf = val.str;
+                if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) || override) {
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
+                    processor_context->b.parameters[processor_context->component_index].component_metadata_buf = val.str;
                 }
             }
             break;
@@ -389,18 +389,15 @@ suit_err_t suit_override_multiple(suit_processor_context_t *processor_context,
 }
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_OVERRIDE_MULTIPLE */
 
-const suit_component_identifier_t *suit_index_to_component_identifier(const suit_extracted_t *extracted,
-                                                                const uint8_t index)
+UsefulBufC suit_index_to_component_identifier(const suit_extracted_t *extracted,
+                                              const uint8_t index)
 {
     for (size_t i = 0; i < extracted->components_len; i++) {
-        if (extracted->components[i].index == index) {
-            if (extracted->components[i].component.len == 0) {
-                return NULL;
-            }
-            return &extracted->components[i].component;
+        if (extracted->encoded_components[i].index == index) {
+            return extracted->encoded_components[i].encoded_component;
         }
     }
-    return NULL;
+    return NULLUsefulBufC;
 }
 
 suit_payload_t* suit_index_to_payload(suit_extracted_t *extracted,
@@ -466,7 +463,7 @@ suit_err_t suit_set_index(QCBORDecodeContext *context,
     case QCBOR_TYPE_TRUE:
         QCBORDecode_GetBool(context, &val.b);
         for (size_t i = 0; i < extracted->components_len; i++) {
-            suit_index->index[i] = extracted->components[i].index;
+            suit_index->index[i] = extracted->encoded_components[i].index;
         }
         suit_index->len = extracted->components_len;
         break;
@@ -505,9 +502,6 @@ suit_process_flag_t suit_manifest_key_to_process_flag(const suit_manifest_key_t 
 {
     suit_process_flag_t result = {0};
     switch (key) {
-    case SUIT_MANIFEST_COMPONENT_ID:
-        result.manifest_component_id = 1;
-        break;
     case SUIT_VALIDATE:
         result.validate = 1;
         break;
@@ -549,92 +543,92 @@ void suit_set_consumed_parameters(suit_processor_context_t *processor_context,
         switch (ret->consumed_parameter_keys[0]) {
         /* int */
         case SUIT_PARAMETER_UPDATE_PRIORITY:
-            processor_context->parameter_value.i64 = processor_context->parameters[processor_context->component_index].update_priority;
+            processor_context->parameter_value.i64 = processor_context->b.parameters[processor_context->component_index].update_priority;
             break;
         /* uint */
         case SUIT_PARAMETER_IMAGE_SIZE:
-            processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].image_size;
+            processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].image_size;
             if (ret->consumed_parameter_keys[1] == SUIT_PARAMETER_IMAGE_DIGEST) {
                 processor_context->parameter_keys[1] = SUIT_PARAMETER_IMAGE_DIGEST;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].image_digest_buf;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].image_digest_buf;
             }
             break;
         case SUIT_PARAMETER_COMPONENT_SLOT:
-            processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].component_slot;
+            processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].component_slot;
             break;
         case SUIT_PARAMETER_SOURCE_COMPONENT:
-            processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].source_component;
+            processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].source_component;
             if (ret->consumed_parameter_keys[1] == SUIT_PARAMETER_ENCRYPTION_INFO) {
                 processor_context->parameter_keys[1] = SUIT_PARAMETER_ENCRYPTION_INFO;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].encryption_info;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].encryption_info;
             }
             break;
         case SUIT_PARAMETER_USE_BEFORE:
-            processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].use_before;
+            processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].use_before;
             break;
         case SUIT_PARAMETER_MINIMUM_BATTERY:
-            processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].minimum_battery;
+            processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].minimum_battery;
             break;
         /* tstr */
         case SUIT_PARAMETER_URI:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].uri;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].uri;
             break;
         /* bstr */
         case SUIT_PARAMETER_VENDOR_IDENTIFIER:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].vendor_id;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].vendor_id;
             break;
         case SUIT_PARAMETER_CLASS_IDENTIFIER:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].class_id;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].class_id;
             break;
         case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].device_id;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].device_id;
             break;
         case SUIT_PARAMETER_CONTENT:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].content;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].content;
             break;
         case SUIT_PARAMETER_INVOKE_ARGS:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].invoke_args;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].invoke_args;
             break;
         case SUIT_PARAMETER_FETCH_ARGS:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].fetch_args;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].fetch_args;
             break;
         
         /* bstr .cbor SUIT_Digest */
         case SUIT_PARAMETER_IMAGE_DIGEST:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].image_digest_buf;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].image_digest_buf;
             if (ret->consumed_parameter_keys[1] == SUIT_PARAMETER_IMAGE_SIZE) {
                 processor_context->parameter_keys[1] = SUIT_PARAMETER_IMAGE_SIZE;
-                processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].image_size;
+                processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].image_size;
             }
             break;
         /* bstr .cbor SUIT_Encryption_Info */
         case SUIT_PARAMETER_ENCRYPTION_INFO:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].encryption_info;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].encryption_info;
             if (ret->consumed_parameter_keys[1] == SUIT_PARAMETER_SOURCE_COMPONENT) {
                 processor_context->parameter_keys[1] = SUIT_PARAMETER_SOURCE_COMPONENT;
-                processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].source_component;
+                processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].source_component;
             }
             break;
 
         /* bstr .cbor SUIT_Parameter_Version_Match */
         case SUIT_PARAMETER_VERSION:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].version_match_buf;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].version_match_buf;
             break;
         /* bstr .cbor SUIT_Wait_Event */
         case SUIT_PARAMETER_WAIT_INFO:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].wait_info_buf;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].wait_info_buf;
             break;
         /* bstr .cbor SUIT_Component_Metadata */
         case SUIT_PARAMETER_COMPONENT_METADATA:
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].component_metadata_buf;
+            processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].component_metadata_buf;
             break;
 
         /* bool */
         case SUIT_PARAMETER_STRICT_ORDER:
-            processor_context->parameter_value.b = processor_context->parameters[processor_context->component_index].strict_order;
+            processor_context->parameter_value.b = processor_context->b.parameters[processor_context->component_index].strict_order;
             break;
         case SUIT_PARAMETER_SOFT_FAILURE:
-            processor_context->parameter_value.b = processor_context->parameters[processor_context->component_index].soft_failure;
+            processor_context->parameter_value.b = processor_context->b.parameters[processor_context->component_index].soft_failure;
             break;
 
         case SUIT_PARAMETER_INVALID:
@@ -642,6 +636,48 @@ void suit_set_consumed_parameters(suit_processor_context_t *processor_context,
         }
     }
 }
+
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+void suit_report_add_parameter(suit_processor_context_t *processor_context,
+                               const suit_rep_policy_t report_policy,
+                               const suit_err_t result)
+{
+    if (processor_context->reporting_engine == NULL) {
+        return;
+    }
+
+    switch (result) {
+    case SUIT_ERR_ABORT:
+        // ignored
+        break;
+    case SUIT_SUCCESS:
+        if (report_policy.record_on_success) {
+            suit_report_extend_system_property_claims(
+                processor_context->reporting_engine,
+                processor_context->component_index,
+                processor_context->encoded_component,
+                processor_context->parameter_keys,
+                &processor_context->parameter_value
+            );
+        }
+        memset(processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
+        break;
+    default:
+        // other errors
+        if (report_policy.record_on_failure) {
+            suit_report_extend_record(
+                processor_context->reporting_engine,
+                processor_context->dependency_tree,
+                processor_context->manifest_key,
+                processor_context->section_offset,
+                processor_context->parameter_keys,
+                &processor_context->parameter_value
+            );
+        }
+        memset(processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
+    }
+}
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_FETCH)
 suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
@@ -653,54 +689,57 @@ suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
 
     for (size_t i = 0; i < suit_index->len; i++) {
         processor_context->component_index = suit_index->index[i];
-        if (processor_context->parameters[processor_context->component_index].uri.len >= SUIT_MAX_NAME_LENGTH) {
+        if (processor_context->b.parameters[processor_context->component_index].uri.len >= SUIT_MAX_NAME_LENGTH) {
             return SUIT_ERR_NO_MEMORY;
         }
-        processor_context->component = suit_index_to_component_identifier(extracted, processor_context->component_index);
-        if (processor_context->component == NULL) {
+        processor_context->encoded_component = suit_index_to_component_identifier(extracted, processor_context->component_index);
+        if (UsefulBuf_IsNULLOrEmptyC(processor_context->encoded_component)) {
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
 
-        processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].uri;
-        suit_payload_t *payload = suit_key_to_payload(extracted, processor_context->parameters[processor_context->component_index].uri);
+        processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].uri;
+        suit_payload_t *payload = suit_key_to_payload(extracted, processor_context->b.parameters[processor_context->component_index].uri);
         if (payload == NULL) {
             if (extracted->payloads.len >= SUIT_MAX_ARRAY_LENGTH) {
                 return SUIT_ERR_NO_MEMORY;
             }
-            size_t buf_size = (processor_context->parameters[processor_context->component_index].image_size > 0) ? processor_context->parameters[processor_context->component_index].image_size : processor_context->left_len;
+            size_t buf_size = (processor_context->b.parameters[processor_context->component_index].image_size > 0) ? processor_context->b.parameters[processor_context->component_index].image_size : processor_context->left_len;
             if (buf_size > processor_context->left_len) {
                 return SUIT_ERR_NO_MEMORY;
             }
 
             suit_fetch_args_t fetch = {0};
             suit_callback_ret_t fret = {0};
-            fetch.dst = *processor_context->component;
+            fetch.manifest_digest = processor_context->b.manifest_digest;
+            fetch.manifest_sequence_number = processor_context->b.manifest_sequence_number;
 
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
-                fetch.encryption_info = processor_context->parameters[processor_context->component_index].encryption_info;
+            fetch.dst = processor_context->encoded_component;
+
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
+                fetch.encryption_info = processor_context->b.parameters[processor_context->component_index].encryption_info;
                 memcpy(fetch.mechanisms, processor_context->mechanisms, sizeof(fetch.mechanisms));
             }
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
-                fetch.component_metadata_buf = processor_context->parameters[processor_context->component_index].component_metadata_buf;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
+                fetch.component_metadata_buf = processor_context->b.parameters[processor_context->component_index].component_metadata_buf;
             }
 
             /* the size of uri is already checked at suit-directive-override-parameters */
-            memcpy(fetch.uri, processor_context->parameters[processor_context->component_index].uri.ptr, processor_context->parameters[processor_context->component_index].uri.len);
-            fetch.uri[processor_context->parameters[processor_context->component_index].uri.len] = '\0';
-            fetch.uri_len = processor_context->parameters[processor_context->component_index].uri.len + 1;
+            memcpy(fetch.uri, processor_context->b.parameters[processor_context->component_index].uri.ptr, processor_context->b.parameters[processor_context->component_index].uri.len);
+            fetch.uri[processor_context->b.parameters[processor_context->component_index].uri.len] = '\0';
+            fetch.uri_len = processor_context->b.parameters[processor_context->component_index].uri.len + 1;
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
-            fetch.args = processor_context->parameters[processor_context->component_index].fetch_args;
+            fetch.args = processor_context->b.parameters[processor_context->component_index].fetch_args;
 #endif /* LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
             fetch.buf_len = buf_size;
             fetch.ptr = (uint8_t *)processor_context->allocated.ptr + (processor_context->allocated.len - processor_context->left_len);
-
-            fetch.report_policy = report_policy;
 
             /* store the fetched payload into fetch.ptr */
             result = suit_fetch_callback(fetch, &fret);
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
             suit_set_consumed_parameters(processor_context, &fret);
-#endif
+            suit_report_add_parameter(processor_context, report_policy, result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+
             if (result != SUIT_SUCCESS) {
                 return result;
             }
@@ -715,27 +754,30 @@ suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
             payload->bytes.ptr = fetch.ptr;
             payload->bytes.len = fret.buf_len;
 
-            payload->key = processor_context->parameters[processor_context->component_index].uri;
+            payload->key = processor_context->b.parameters[processor_context->component_index].uri;
             payload->index = processor_context->component_index;
         }
         else {
             /* already handled with integrated-payload or integrated-dependency */
             suit_store_args_t store = {0};
-            store.report_policy = report_policy;
-            store.dst = *processor_context->component;
+            store.manifest_digest = processor_context->b.manifest_digest;
+            store.manifest_sequence_number = processor_context->b.manifest_sequence_number;
+            store.is_manifest_itself = false;
+
+            store.dst = processor_context->encoded_component;
             store.src_buf = payload->bytes;
             store.operation = SUIT_STORE;
             suit_callback_ret_t ret = {0};
 
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
-                store.encryption_info = processor_context->parameters[processor_context->component_index].encryption_info;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
+                store.encryption_info = processor_context->b.parameters[processor_context->component_index].encryption_info;
             }
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
-                store.component_metadata_buf = processor_context->parameters[processor_context->component_index].component_metadata_buf;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
+                store.component_metadata_buf = processor_context->b.parameters[processor_context->component_index].component_metadata_buf;
             }
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) {
-                store.fetch_args = processor_context->parameters[processor_context->component_index].fetch_args;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS) {
+                store.fetch_args = processor_context->b.parameters[processor_context->component_index].fetch_args;
             }
 #endif /* LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
             result = suit_store_callback(store, &ret);
@@ -745,7 +787,7 @@ suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
             if (result != SUIT_SUCCESS) {
                 return result;
             }
-            payload->key = processor_context->parameters[processor_context->component_index].uri;
+            payload->key = processor_context->b.parameters[processor_context->component_index].uri;
             payload->index = processor_context->component_index;
         }
     }
@@ -754,6 +796,35 @@ suit_err_t suit_process_fetch(suit_processor_context_t *processor_context,
 #endif /* !LIBCSUIT_DISABLE_DIRECTIVE_FETCH */
 
 #if !defined(LIBCSUIT_DISABLE_DIRECTIVE_INVOKE)
+suit_err_t suit_process_invoke_prepare_context(suit_processor_context_t *processor_context,
+                                               const suit_extracted_t *extracted,
+                                               suit_invoke_args_t *invoke)
+{
+    processor_context->encoded_component = suit_index_to_component_identifier(extracted, processor_context->component_index);
+    if (UsefulBuf_IsNULLOrEmptyC(processor_context->encoded_component)) {
+        return SUIT_ERR_COMPONENT_NOT_FOUND;
+    }
+
+    memset(&processor_context->parameter_value, 0, sizeof(suit_union_parameter_t));
+    memset(processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
+
+    memset(invoke, 0, sizeof(suit_invoke_args_t));
+    invoke->manifest_digest = processor_context->b.manifest_digest;
+    invoke->encoded_component_identifier = processor_context->encoded_component;
+
+    if (processor_context->b.parameters[processor_context->component_index].invoke_args.len > 0) {
+        if (invoke->args_len > sizeof(invoke->args)) {
+            return SUIT_ERR_NO_MEMORY;
+        }
+        invoke->args_len = processor_context->b.parameters[processor_context->component_index].invoke_args.len;
+        memcpy(invoke->args, processor_context->b.parameters[processor_context->component_index].invoke_args.ptr, invoke->args_len);
+        processor_context->parameter_keys[0] = SUIT_PARAMETER_INVOKE_ARGS;
+        processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].invoke_args;
+    }
+
+    return SUIT_SUCCESS;
+}
+
 suit_err_t suit_process_invoke(suit_processor_context_t *processor_context,
                                const suit_extracted_t *extracted,
                                const suit_rep_policy_t report_policy,
@@ -763,27 +834,15 @@ suit_err_t suit_process_invoke(suit_processor_context_t *processor_context,
 
     for (size_t i = 0; i < suit_index->len; i++) {
         processor_context->component_index = suit_index->index[i];
-
-        processor_context->component = suit_index_to_component_identifier(extracted, processor_context->component_index);
-        if (processor_context->component == NULL) {
-            return SUIT_ERR_COMPONENT_NOT_FOUND;
-        }
-
-        memset(&processor_context->parameter_value, 0, sizeof(suit_union_parameter_t));
-        memset(processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
-
-        suit_invoke_args_t invoke = {0};
-        invoke.report_policy = report_policy;
-        invoke.component_identifier = *processor_context->component;
-        invoke.args_len = processor_context->parameters[processor_context->component_index].invoke_args.len;
-        if (invoke.args_len > 0) {
-            memcpy(invoke.args, processor_context->parameters[processor_context->component_index].invoke_args.ptr, invoke.args_len);
-            processor_context->parameter_keys[0] = SUIT_PARAMETER_INVOKE_ARGS;
-            processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].invoke_args;
+        suit_invoke_args_t invoke;
+        result = suit_process_invoke_prepare_context(processor_context, extracted, &invoke);
+        if (result != SUIT_SUCCESS) {
+            goto report;
         }
 
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
         if (processor_context->reporting_engine != NULL && processor_context->u.report_invoke_pending && !processor_context->u.reported) {
+            // report unconditionally
             suit_report_finalize(
                 processor_context->reporting_engine,
                 processor_context->final_state,
@@ -802,6 +861,12 @@ suit_err_t suit_process_invoke(suit_processor_context_t *processor_context,
 #endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
 
         result = suit_invoke_callback(invoke);
+
+report:
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+        suit_report_add_parameter(processor_context, report_policy, result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -830,6 +895,7 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
                                   suit_rep_policy_t report_policy)
 {
     suit_err_t result = SUIT_SUCCESS;
+    struct suit_processor_context_backup backup;
 
     for (uint8_t i = 0; i < suit_index->len; i++) {
         processor_context->component_index = suit_index->index[i];
@@ -837,21 +903,22 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
         memset(&processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
 
         bool callback_required = true;
-        suit_condition_args_t args = {0};
-        processor_context->component = suit_index_to_component_identifier(extracted, processor_context->component_index);
-        if (processor_context->component == NULL) {
+        processor_context->encoded_component = suit_index_to_component_identifier(extracted, processor_context->component_index);
+        if (UsefulBuf_IsNULLOrEmptyC(processor_context->encoded_component)) {
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
-        args.dst = *processor_context->component;
+        suit_condition_args_t args = {0};
+        args.manifest_digest = processor_context->b.manifest_digest;
+        args.dst = processor_context->encoded_component;
         args.condition = processor_context->condition_or_directive;
 
         switch (args.condition) {
         /* uint64 */
 #if !defined(LIBCSUIT_DISABLE_CONDITION_COMPONENT_SLOT)
         case SUIT_CONDITION_COMPONENT_SLOT:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT) {
-                args.expected.u64 = processor_context->parameters[processor_context->component_index].component_slot;
-                processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].component_slot;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT) {
+                args.expected.u64 = processor_context->b.parameters[processor_context->component_index].component_slot;
+                processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].component_slot;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -861,9 +928,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_USE_BEFORE)
         case SUIT_CONDITION_USE_BEFORE:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_USE_BEFORE) {
-                args.expected.u64 = processor_context->parameters[processor_context->component_index].use_before;
-                processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].use_before;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_USE_BEFORE) {
+                args.expected.u64 = processor_context->b.parameters[processor_context->component_index].use_before;
+                processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].use_before;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -873,9 +940,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_MINIMUM_BATTERY)
         case SUIT_CONDITION_MINIMUM_BATTERY:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY) {
-                args.expected.u64 = processor_context->parameters[processor_context->component_index].minimum_battery;
-                processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].minimum_battery;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY) {
+                args.expected.u64 = processor_context->b.parameters[processor_context->component_index].minimum_battery;
+                processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].minimum_battery;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -885,9 +952,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_UPDATE_AUTHORIZED)
         case SUIT_CONDITION_UPDATE_AUTHORIZED:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY) {
-                args.expected.i64 = processor_context->parameters[processor_context->component_index].update_priority;
-                processor_context->parameter_value.i64 = processor_context->parameters[processor_context->component_index].update_priority;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY) {
+                args.expected.i64 = processor_context->b.parameters[processor_context->component_index].update_priority;
+                processor_context->parameter_value.i64 = processor_context->b.parameters[processor_context->component_index].update_priority;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -897,9 +964,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
         /* bstr */
         case SUIT_CONDITION_VENDOR_IDENTIFIER:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER) {
-                args.expected.str = processor_context->parameters[processor_context->component_index].vendor_id;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].vendor_id;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER) {
+                args.expected.str = processor_context->b.parameters[processor_context->component_index].vendor_id;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].vendor_id;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -908,9 +975,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_CLASS_IDENTIFIER)
         case SUIT_CONDITION_CLASS_IDENTIFIER:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER) {
-                args.expected.str = processor_context->parameters[processor_context->component_index].class_id;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].class_id;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER) {
+                args.expected.str = processor_context->b.parameters[processor_context->component_index].class_id;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].class_id;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -920,9 +987,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_DEVICE_IDENTIFIER)
         case SUIT_CONDITION_DEVICE_IDENTIFIER:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER) {
-                args.expected.str = processor_context->parameters[processor_context->component_index].device_id;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].device_id;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER) {
+                args.expected.str = processor_context->b.parameters[processor_context->component_index].device_id;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].device_id;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -932,9 +999,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_CHECK_CONTENT)
         case SUIT_CONDITION_CHECK_CONTENT:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT) {
-                args.expected.str = processor_context->parameters[processor_context->component_index].content;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].content;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT) {
+                args.expected.str = processor_context->b.parameters[processor_context->component_index].content;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].content;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -947,13 +1014,13 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 #if !defined(LIBCSUIT_DISABLE_CONDITION_IMAGE_NOT_MATCH)
         case SUIT_CONDITION_IMAGE_NOT_MATCH:
 #endif
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE) {
-                args.expected.u64 = processor_context->parameters[processor_context->component_index].image_size;
-                processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].image_size;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE) {
+                args.expected.u64 = processor_context->b.parameters[processor_context->component_index].image_size;
+                processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].image_size;
             }
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) {
-                args.expected.str = processor_context->parameters[processor_context->component_index].image_digest_buf;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].image_digest_buf;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST) {
+                args.expected.str = processor_context->b.parameters[processor_context->component_index].image_digest_buf;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].image_digest_buf;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -963,9 +1030,9 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
         /* draft-ietf-suit-trust-domains */
 #if !defined(LIBCSUIT_DISABLE_CONDITION_VERSION)
         case SUIT_CONDITION_VERSION:
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VERSION) {
-                args.expected.str = processor_context->parameters[processor_context->component_index].version_match_buf;
-                processor_context->parameter_value.str = processor_context->parameters[processor_context->component_index].version_match_buf;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_VERSION) {
+                args.expected.str = processor_context->b.parameters[processor_context->component_index].version_match_buf;
+                processor_context->parameter_value.str = processor_context->b.parameters[processor_context->component_index].version_match_buf;
             }
             else {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
@@ -975,13 +1042,16 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
 
 #if !defined(LIBCSUIT_DISABLE_CONDITION_DEPENDENCY_INTEGRITY)
         case SUIT_CONDITION_DEPENDENCY_INTEGRITY:
+            if (processor_context->dependency_tree.len + 1 >= SUIT_MAX_DEPENDENCY_LENGTH) {
+                return SUIT_ERR_NO_MEMORY;
+            }
             callback_required = false;
             result = suit_index_is_dependency(extracted, processor_context->component_index);
             if (result != SUIT_SUCCESS) {
                 return result;
             }
 
-            if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST)) {
+            if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST)) {
                 return SUIT_ERR_PARAMETER_NOT_FOUND;
             }
             suit_payload_t *payload = suit_index_to_payload(extracted, processor_context->component_index);
@@ -989,28 +1059,22 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
                 return SUIT_ERR_COMPONENT_NOT_FOUND;
             }
 
+            // backup several contexts
+            memcpy(&backup, &processor_context->b, sizeof(struct suit_processor_context_backup));
+
             // OK, let's dive into the dependency manifest
             processor_context->dependency_tree.manifest_index[processor_context->dependency_tree.len] = processor_context->component_index;
             processor_context->dependency_tree.len++;
-            result = suit_decode_digest(processor_context->parameters[processor_context->component_index].image_digest_buf, &processor_context->expected_manifest_digest);
-            if (result != SUIT_SUCCESS) {
-                processor_context->reason = SUIT_REPORT_REASON_CBOR_PARSE;
-                return result;
-            }
-
-            UsefulBufC manifest_backup = processor_context->manifest;
-            processor_context->manifest = payload->bytes;
-
+            processor_context->b.manifest = payload->bytes;
+            processor_context->b.manifest_digest = processor_context->b.parameters[processor_context->component_index].image_digest_buf;
+            memset(processor_context->b.parameters, 0, sizeof(processor_context->b.parameters));
             // checks only suit-delegation and suit-authentication-wrapper
-            suit_process_flag_t process_flags_backup = processor_context->process_flags;
             processor_context->process_flags.all = 0;
 
             result = suit_process_envelope(processor_context);
 
             // recover the context
-            processor_context->process_flags = process_flags_backup;
-            processor_context->manifest = manifest_backup;
-            processor_context->expected_manifest_digest.algorithm_id = 0;
+            memcpy(&processor_context->b, &backup, sizeof(struct suit_processor_context_backup));
             processor_context->dependency_tree.len--;
             break;
 
@@ -1035,7 +1099,6 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
         }
 
         if (callback_required) {
-            args.report_policy = report_policy;
             suit_callback_ret_t ret = {0};
             result = suit_condition_callback(args, &ret);
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
@@ -1044,34 +1107,8 @@ suit_err_t suit_process_condition(suit_processor_context_t *processor_context,
         }
 
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
-        if (processor_context->reporting_engine != NULL) {
-            if (result == SUIT_SUCCESS) {
-                if (report_policy.record_on_success) {
-                    suit_report_extend_system_property_claims(
-                        processor_context->reporting_engine,
-                        processor_context->component_index,
-                        processor_context->component,
-                        processor_context->parameter_keys,
-                        &processor_context->parameter_value
-                    );
-                }
-                memset(&processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
-            }
-            else if (result != SUIT_ERR_ABORT) {
-                if (report_policy.record_on_failure) {
-                    suit_report_extend_record(
-                        processor_context->reporting_engine,
-                        processor_context->dependency_tree,
-                        processor_context->manifest_key,
-                        processor_context->section_offset,
-                        processor_context->parameter_keys,
-                        &processor_context->parameter_value
-                    );
-                }
-                memset(&processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
-            }
-        }
-#endif
+        suit_report_add_parameter(processor_context, report_policy, result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
 
         if (result != SUIT_SUCCESS) {
             return result;
@@ -1092,18 +1129,22 @@ suit_err_t suit_process_wait(suit_processor_context_t *processor_context,
         processor_context->component_index = suit_index->index[i];
 
         suit_wait_args_t wait_args = {0};
-        if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO)) {
+        if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO)) {
             return SUIT_ERR_PARAMETER_NOT_FOUND;
         }
-        processor_context->component = suit_index_to_component_identifier(extracted, processor_context->component_index);
-        if (processor_context->component == NULL) {
+        processor_context->encoded_component = suit_index_to_component_identifier(extracted, processor_context->component_index);
+        if (UsefulBuf_IsNULLOrEmptyC(processor_context->encoded_component)) {
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
-        wait_args.dst = *processor_context->component;
-        wait_args.wait_info_buf = processor_context->parameters[processor_context->component_index].wait_info_buf;
-        wait_args.report_policy = report_policy;
+        wait_args.dst = processor_context->encoded_component;
+        wait_args.wait_info_buf = processor_context->b.parameters[processor_context->component_index].wait_info_buf;
 
         result = suit_wait_callback(wait_args);
+
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+        suit_report_add_parameter(processor_context, report_policy, result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -1121,29 +1162,43 @@ suit_err_t suit_process_write(suit_processor_context_t *processor_context,
     for (size_t i = 0; i < suit_index->len; i++) {
         processor_context->component_index = suit_index->index[i];
 
-        suit_store_args_t store = {0};
-        if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT)) {
-            return SUIT_ERR_PARAMETER_NOT_FOUND;
-        }
-        store.src_buf = processor_context->parameters[processor_context->component_index].content;
-        if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
-            store.encryption_info = processor_context->parameters[processor_context->component_index].encryption_info;
-            memcpy(store.mechanisms, processor_context->mechanisms, sizeof(store.mechanisms));
-        }
-        if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
-            store.component_metadata_buf = processor_context->parameters[processor_context->component_index].component_metadata_buf;
-        }
-        store.report_policy = report_policy;
-        processor_context->component = suit_index_to_component_identifier(extracted, processor_context->component_index);
-        if (processor_context->component == NULL) {
+        processor_context->encoded_component = suit_index_to_component_identifier(extracted, processor_context->component_index);
+        if (UsefulBuf_IsNULLOrEmptyC(processor_context->encoded_component)) {
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
-        store.dst = *processor_context->component;
+
+        memset(&processor_context->parameter_value, 0, sizeof(suit_union_parameter_t));
+        memset(processor_context->parameter_keys, 0, sizeof(processor_context->parameter_keys));
+
+        suit_store_args_t store = {0};
+        store.manifest_digest = processor_context->b.manifest_digest;
+        store.manifest_sequence_number = processor_context->b.manifest_sequence_number;
+        store.is_manifest_itself = false;
+
+        if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT)) {
+            return SUIT_ERR_PARAMETER_NOT_FOUND;
+        }
+        processor_context->parameter_keys[0] = SUIT_PARAMETER_CONTENT;
+        store.src_buf = processor_context->b.parameters[processor_context->component_index].content;
+        if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
+            store.encryption_info = processor_context->b.parameters[processor_context->component_index].encryption_info;
+            memcpy(store.mechanisms, processor_context->mechanisms, sizeof(store.mechanisms));
+        }
+        if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA) {
+            store.component_metadata_buf = processor_context->b.parameters[processor_context->component_index].component_metadata_buf;
+        }
+
+        store.dst = processor_context->encoded_component;
         store.operation = SUIT_STORE;
 
         suit_callback_ret_t ret = {0};
         suit_err_t result = suit_store_callback(store, &ret);
         processor_context-> reason = ret.reason;
+
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+        suit_report_add_parameter(processor_context, report_policy, result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -1164,15 +1219,17 @@ suit_err_t suit_process_copy_swap(suit_processor_context_t *processor_context,
         processor_context->component_index = suit_index->index[i];
 
         suit_store_args_t store = {0};
-        store.report_policy = report_policy;
+        store.manifest_digest = processor_context->b.manifest_digest;
+        store.manifest_sequence_number = processor_context->b.manifest_sequence_number;
+        store.is_manifest_itself = false;
 
         if (is_swap) {
             store.operation = SUIT_SWAP;
         }
         else {
             store.operation = SUIT_COPY;
-            if (processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
-                store.encryption_info = processor_context->parameters[processor_context->component_index].encryption_info;
+            if (processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO) {
+                store.encryption_info = processor_context->b.parameters[processor_context->component_index].encryption_info;
                 for (size_t j = 0; j < SUIT_MAX_KEY_NUM; j++) {
                     if (processor_context->mechanisms[j].use &&
                         (processor_context->mechanisms[j].cose_tag == CBOR_TAG_COSE_ENCRYPT ||
@@ -1183,29 +1240,32 @@ suit_err_t suit_process_copy_swap(suit_processor_context_t *processor_context,
             }
         }
 
-        processor_context->component = suit_index_to_component_identifier(extracted, processor_context->parameters[processor_context->component_index].source_component);
-        if (processor_context->component == NULL) {
+        processor_context->encoded_component = suit_index_to_component_identifier(extracted, processor_context->b.parameters[processor_context->component_index].source_component);
+        if (UsefulBuf_IsNULLOrEmptyC(processor_context->encoded_component)) {
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
-        store.src = *processor_context->component;
-        const suit_component_identifier_t *tmp = suit_index_to_component_identifier(extracted, processor_context->component_index);
-        if (tmp == NULL) {
+        store.src = processor_context->encoded_component;
+        store.dst = suit_index_to_component_identifier(extracted, processor_context->component_index);
+        if (UsefulBuf_IsNULLOrEmptyC(store.dst)) {
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
-        store.dst = *tmp;
 
         suit_callback_ret_t ret = {0};
         suit_err_t result = suit_store_callback(store, &ret);
         processor_context->reason = ret.reason;
         if (ret.on_src) {
             processor_context->parameter_keys[0] = SUIT_PARAMETER_SOURCE_COMPONENT;
-            processor_context->parameter_value.u64 = processor_context->parameters[processor_context->component_index].source_component;
+            processor_context->parameter_value.u64 = processor_context->b.parameters[processor_context->component_index].source_component;
         }
+        if (result == SUIT_ERR_FAILED_TO_DECRYPT) {
+            processor_context->parameter_keys[0] = SUIT_PARAMETER_ENCRYPTION_INFO;
+            processor_context->parameter_value.str = store.encryption_info;
+        }
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+        suit_report_add_parameter(processor_context, report_policy, result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+
         if (result != SUIT_SUCCESS) {
-            if (result == SUIT_ERR_FAILED_TO_DECRYPT) {
-                processor_context->parameter_keys[0] = SUIT_PARAMETER_ENCRYPTION_INFO;
-                processor_context->parameter_value.str = store.encryption_info;
-            }
             return result;
         }
     }
@@ -1222,18 +1282,26 @@ suit_err_t suit_process_unlink(suit_processor_context_t *processor_context,
 
     for (size_t i = 0; i < suit_index->len; i++) {
         processor_context->component_index = suit_index->index[i];
-        processor_context->component = suit_index_to_component_identifier(extracted, processor_context->component_index);
-        if (processor_context->component == NULL) {
+        processor_context->encoded_component = suit_index_to_component_identifier(extracted, processor_context->component_index);
+        if (UsefulBuf_IsNULLOrEmptyC(processor_context->encoded_component)) {
             return SUIT_ERR_COMPONENT_NOT_FOUND;
         }
         suit_store_args_t store = {0};
-        store.report_policy = report_policy;
-        store.dst = *processor_context->component;
+        store.manifest_digest = processor_context->b.manifest_digest;
+        store.manifest_sequence_number = processor_context->b.manifest_sequence_number;
+        store.is_manifest_itself = false;
+
+        store.dst = processor_context->encoded_component;
         store.operation = SUIT_UNLINK;
 
         suit_callback_ret_t ret = {0};
         suit_err_t result = suit_store_callback(store, &ret);
         processor_context->reason = ret.reason;
+
+#if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
+        suit_report_add_parameter(processor_context, report_policy, result);
+#endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+
         if (result != SUIT_SUCCESS) {
             return result;
         }
@@ -1267,10 +1335,10 @@ suit_err_t suit_process_run_sequence(suit_processor_context_t *processor_context
         tmp_suit_index.index[0] = suit_index->index[i];
 
         // soft-failure is false by default in run-sequence
-        processor_context->parameters[suit_index->index[i]].soft_failure = false;
+        processor_context->b.parameters[suit_index->index[i]].soft_failure = false;
 
         suit_err_t result = suit_process_command_sequence_buf(processor_context, extracted, buf, &tmp_suit_index, true);
-        if (result != SUIT_SUCCESS && !processor_context->parameters[suit_index->index[i]].soft_failure) {
+        if (result != SUIT_SUCCESS && !processor_context->b.parameters[suit_index->index[i]].soft_failure) {
             return result;
         }
     }
@@ -1315,14 +1383,14 @@ suit_err_t suit_process_try_each(suit_processor_context_t *processor_context,
                     tmp_suit_index.index[0] = suit_index->index[j];
 
                     // soft-failure is true by default in try-each
-                    processor_context->parameters[suit_index->index[j]].soft_failure = true;
+                    processor_context->b.parameters[suit_index->index[j]].soft_failure = true;
 
                     result = suit_process_command_sequence_buf(processor_context, extracted, item.val.string, &tmp_suit_index, true);
                     if (result == SUIT_SUCCESS) {
                         done_any = true;
                         done = true;
                     }
-                    else if (!processor_context->parameters[suit_index->index[j]].soft_failure) {
+                    else if (!processor_context->b.parameters[suit_index->index[j]].soft_failure) {
                         return SUIT_ERR_TRY_OUT;
                     }
                 }
@@ -1383,204 +1451,204 @@ suit_err_t suit_process_copy_params(suit_processor_context_t *processor_context,
                 /* int64 */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY)
                 case SUIT_PARAMETER_UPDATE_PRIORITY:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY;
-                    processor_context->parameters[processor_context->component_index].update_priority = processor_context->parameters[src_index].update_priority;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_UPDATE_PRIORITY;
+                    processor_context->b.parameters[processor_context->component_index].update_priority = processor_context->b.parameters[src_index].update_priority;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_UPDATE_PRIORITY */
 
                 /* uint64 */
                 case SUIT_PARAMETER_IMAGE_SIZE:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_IMAGE_SIZE)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_SIZE;
-                    processor_context->parameters[processor_context->component_index].image_size = processor_context->parameters[src_index].image_size;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_SIZE;
+                    processor_context->b.parameters[processor_context->component_index].image_size = processor_context->b.parameters[src_index].image_size;
                     break;
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_SOURCE_COMPONENT)
                 case SUIT_PARAMETER_SOURCE_COMPONENT:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT;
-                    processor_context->parameters[processor_context->component_index].source_component = processor_context->parameters[src_index].source_component;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOURCE_COMPONENT;
+                    processor_context->b.parameters[processor_context->component_index].source_component = processor_context->b.parameters[src_index].source_component;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_SOURCE_COMPONENT */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_SLOT)
                 case SUIT_PARAMETER_COMPONENT_SLOT:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT;
-                    processor_context->parameters[processor_context->component_index].component_slot = processor_context->parameters[src_index].component_slot;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_SLOT;
+                    processor_context->b.parameters[processor_context->component_index].component_slot = processor_context->b.parameters[src_index].component_slot;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_COMPONENT_SLOT */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_USE_BEFORE)
                 case SUIT_PARAMETER_USE_BEFORE:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_USE_BEFORE)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_USE_BEFORE)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_USE_BEFORE;
-                    processor_context->parameters[processor_context->component_index].use_before = processor_context->parameters[src_index].use_before;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_USE_BEFORE;
+                    processor_context->b.parameters[processor_context->component_index].use_before = processor_context->b.parameters[src_index].use_before;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_USE_BEFORE */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_MINIMUM_BATTERY)
                 case SUIT_PARAMETER_MINIMUM_BATTERY:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY;
-                    processor_context->parameters[processor_context->component_index].minimum_battery = processor_context->parameters[src_index].minimum_battery;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_MINIMUM_BATTERY;
+                    processor_context->b.parameters[processor_context->component_index].minimum_battery = processor_context->b.parameters[src_index].minimum_battery;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_MINIMUM_BATTERY */
 
                 /* bool */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE)
                 case SUIT_PARAMETER_SOFT_FAILURE:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_SOFT_FAILURE)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_SOFT_FAILURE)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOFT_FAILURE;
-                    processor_context->parameters[processor_context->component_index].soft_failure = processor_context->parameters[src_index].soft_failure;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_SOFT_FAILURE;
+                    processor_context->b.parameters[processor_context->component_index].soft_failure = processor_context->b.parameters[src_index].soft_failure;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_SOFT_FAILURE */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER)
                 case SUIT_PARAMETER_STRICT_ORDER:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_STRICT_ORDER)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_STRICT_ORDER)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_STRICT_ORDER;
-                    processor_context->parameters[processor_context->component_index].strict_order = processor_context->parameters[src_index].strict_order;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_STRICT_ORDER;
+                    processor_context->b.parameters[processor_context->component_index].strict_order = processor_context->b.parameters[src_index].strict_order;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_STRICT_ORDER */
 
                 /* tstr */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_URI)
                 case SUIT_PARAMETER_URI:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_URI)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_URI)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
-                    processor_context->parameters[processor_context->component_index].uri = processor_context->parameters[src_index].uri;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_URI;
+                    processor_context->b.parameters[processor_context->component_index].uri = processor_context->b.parameters[src_index].uri;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_URI */
 
                 /* bstr */
                 case SUIT_PARAMETER_VENDOR_IDENTIFIER:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER;
-                    processor_context->parameters[processor_context->component_index].vendor_id = processor_context->parameters[src_index].vendor_id;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VENDOR_IDENTIFIER;
+                    processor_context->b.parameters[processor_context->component_index].vendor_id = processor_context->b.parameters[src_index].vendor_id;
                     break;
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_CLASS_IDENTIFIER)
                 case SUIT_PARAMETER_CLASS_IDENTIFIER:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER;
-                    processor_context->parameters[processor_context->component_index].class_id = processor_context->parameters[src_index].class_id;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CLASS_IDENTIFIER;
+                    processor_context->b.parameters[processor_context->component_index].class_id = processor_context->b.parameters[src_index].class_id;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_CLASS_IDENTIFIER */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_DEVICE_IDENTIFIER)
                 case SUIT_PARAMETER_DEVICE_IDENTIFIER:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER;
-                    processor_context->parameters[processor_context->component_index].device_id = processor_context->parameters[src_index].device_id;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_DEVICE_IDENTIFIER;
+                    processor_context->b.parameters[processor_context->component_index].device_id = processor_context->b.parameters[src_index].device_id;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_DEVICE_IDENTIFIER */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_CONTENT)
                 case SUIT_PARAMETER_CONTENT:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_CONTENT)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CONTENT;
-                    processor_context->parameters[processor_context->component_index].content = processor_context->parameters[src_index].content;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_CONTENT;
+                    processor_context->b.parameters[processor_context->component_index].content = processor_context->b.parameters[src_index].content;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_CONTENT */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_INVOKE_ARGS)
                 case SUIT_PARAMETER_INVOKE_ARGS:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_INVOKE_ARGS)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
-                    processor_context->parameters[processor_context->component_index].invoke_args = processor_context->parameters[src_index].invoke_args;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_INVOKE_ARGS;
+                    processor_context->b.parameters[processor_context->component_index].invoke_args = processor_context->b.parameters[src_index].invoke_args;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_INVOKE_ARGS */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS)
                 case SUIT_PARAMETER_FETCH_ARGS:
-                    if (!(processor_context->parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS)) {
+                    if (!(processor_context->b.parameters[processor_context->component_index].exists & SUIT_PARAMETER_CONTAINS_FETCH_ARGS)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_FETCH_ARGS;
-                    processor_context->parameters[processor_context->component_index].fetch_args = processor_context->parameters[src_index].fetch_args;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_FETCH_ARGS;
+                    processor_context->b.parameters[processor_context->component_index].fetch_args = processor_context->b.parameters[src_index].fetch_args;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_FETCH_ARGS */
 
                 /* bstr .cbor COSE_Encrypt0 // bstr .cbor COSE_Encrypt */
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO)
                 case SUIT_PARAMETER_ENCRYPTION_INFO:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO;
-                    processor_context->parameters[processor_context->component_index].encryption_info = processor_context->parameters[src_index].encryption_info;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO;
+                    processor_context->b.parameters[processor_context->component_index].encryption_info = processor_context->b.parameters[src_index].encryption_info;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_ENCRYPTION_INFO */
 
                 /* bstr .cbor SUIT_Diget */
                 case SUIT_PARAMETER_IMAGE_DIGEST:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_ENCRYPTION_INFO)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
-                    processor_context->parameters[processor_context->component_index].image_digest_buf = processor_context->parameters[src_index].image_digest_buf;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_IMAGE_DIGEST;
+                    processor_context->b.parameters[processor_context->component_index].image_digest_buf = processor_context->b.parameters[src_index].image_digest_buf;
                     break;
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_VERSION)
                 /* SUIT_Parameter_Version_Match */
                 case SUIT_PARAMETER_VERSION:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_VERSION)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_VERSION)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VERSION;
-                    processor_context->parameters[processor_context->component_index].version_match_buf = processor_context->parameters[src_index].version_match_buf;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_VERSION;
+                    processor_context->b.parameters[processor_context->component_index].version_match_buf = processor_context->b.parameters[src_index].version_match_buf;
                     break;
 #endif
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO)
                 /* SUIT_Wait_Event */
                 case SUIT_PARAMETER_WAIT_INFO:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_CONTAINS_WAIT_INFO)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_WAIT_INFO;
-                    processor_context->parameters[processor_context->component_index].wait_info_buf = processor_context->parameters[src_index].wait_info_buf;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_WAIT_INFO;
+                    processor_context->b.parameters[processor_context->component_index].wait_info_buf = processor_context->b.parameters[src_index].wait_info_buf;
                     break;
 #endif /* !LIBCSUIT_DISABLE_PARAMETER_WAIT_INFO */
 
 #if !defined(LIBCSUIT_DISABLE_PARAMETER_COMPONENT_METADATA)
                 /* SUIT_Component_Metadata */
                 case SUIT_PARAMETER_COMPONENT_METADATA:
-                    if (!(processor_context->parameters[src_index].exists & SUIT_PARAMETER_COMPONENT_METADATA)) {
+                    if (!(processor_context->b.parameters[src_index].exists & SUIT_PARAMETER_COMPONENT_METADATA)) {
                         return SUIT_ERR_PARAMETER_NOT_FOUND;
                     }
-                    processor_context->parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
-                    processor_context->parameters[processor_context->component_index].component_metadata_buf = processor_context->parameters[src_index].component_metadata_buf;
+                    processor_context->b.parameters[processor_context->component_index].exists |= SUIT_PARAMETER_CONTAINS_COMPONENT_METADATA;
+                    processor_context->b.parameters[processor_context->component_index].component_metadata_buf = processor_context->b.parameters[src_index].component_metadata_buf;
                     break;
 #endif
 
@@ -1607,8 +1675,10 @@ suit_err_t suit_process_dependency(suit_processor_context_t *processor_context,
     suit_err_t result = SUIT_SUCCESS;
 
     for (size_t i = 0; i < suit_index->len; i++) {
+        if (processor_context->dependency_tree.len + 1 >= SUIT_MAX_DEPENDENCY_LENGTH) {
+            return SUIT_ERR_NO_MEMORY;
+        }
         processor_context->component_index = suit_index->index[i];
-
         result = suit_index_is_dependency(extracted, processor_context->component_index);
         if (result != SUIT_SUCCESS) {
             goto report;
@@ -1620,20 +1690,16 @@ suit_err_t suit_process_dependency(suit_processor_context_t *processor_context,
             goto report;
         }
 
+        // backup several contexts
+        struct suit_processor_context_backup backup;
+        memcpy(&backup, &processor_context->b, sizeof(struct suit_processor_context_backup));
+
         // OK, let's dive into the dependency manifest
         processor_context->dependency_tree.manifest_index[processor_context->dependency_tree.len] = processor_context->component_index;
         processor_context->dependency_tree.len++;
-        result = suit_decode_digest(processor_context->parameters[processor_context->component_index].image_digest_buf, &processor_context->expected_manifest_digest);
-        if (result != SUIT_SUCCESS) {
-            processor_context->reason = SUIT_REPORT_REASON_CBOR_PARSE;
-            return result;
-        }
-
-        UsefulBufC manifest_backup = processor_context->manifest;
-        processor_context->manifest = payload->bytes;
-
-        // checks only suit-delegation and suit-authentication-wrapper
-        suit_process_flag_t process_flags_backup = processor_context->process_flags;
+        processor_context->b.manifest = payload->bytes;
+        processor_context->b.manifest_digest = processor_context->b.parameters[processor_context->component_index].image_digest_buf;
+        // checks corresponding section of the manifest
         processor_context->process_flags = suit_manifest_key_to_process_flag(processor_context->manifest_key);
 
         /*
@@ -1644,9 +1710,7 @@ suit_err_t suit_process_dependency(suit_processor_context_t *processor_context,
         result = suit_process_envelope(processor_context);
 
         // recover the context
-        processor_context->process_flags = process_flags_backup;
-        processor_context->manifest = manifest_backup;
-        processor_context->dependency_tree.len--;
+        memcpy(&processor_context->b, &backup, sizeof(struct suit_processor_context_backup));
 
 report:
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
@@ -1656,7 +1720,7 @@ report:
                     suit_report_extend_system_property_claims(
                         processor_context->reporting_engine,
                         processor_context->component_index,
-                        processor_context->component,
+                        processor_context->encoded_component,
                         processor_context->parameter_keys,
                         &processor_context->parameter_value
                     );
@@ -2004,7 +2068,7 @@ suit_err_t suit_process_common_and_command_sequence(suit_processor_context_t *pr
 {
     suit_err_t result = SUIT_SUCCESS;
     for (size_t i = 0; i < SUIT_MAX_INDEX_NUM; i++) {
-        processor_context->parameters[i].soft_failure = true;
+        processor_context->b.parameters[i].soft_failure = true;
     }
 
     UsefulBufC command_buf;
@@ -2088,24 +2152,31 @@ suit_err_t suit_process_digest(QCBORDecodeContext *context,
 }
 
 suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
-                                               suit_processor_context_t *processor_context,
-                                               suit_digest_t *digest)
+                                               suit_processor_context_t *processor_context)
 {
     QCBORItem item;
+    UsefulBufC manifest_digest;
 
     /* authentication-wrapper */
     QCBORDecode_EnterBstrWrapped(context, QCBOR_TAG_REQUIREMENT_NOT_A_TAG, NULL);
+
     QCBORDecode_EnterArray(context, &item);
-    size_t length = item.val.uCount;
-    if (length < 1) {
+
+    if (item.uDataType != QCBOR_TYPE_ARRAY || item.val.uCount < 1) {
         return SUIT_ERR_FAILED_TO_VERIFY;
     }
+    size_t length = item.val.uCount;
 
     /* digest */
-    UsefulBufC digest_buf;
-    suit_err_t result = suit_process_digest(context, digest, &digest_buf);
-    if (result != SUIT_SUCCESS) {
-        return result;
+    QCBORDecode_GetByteString(context, &manifest_digest);
+    if (processor_context->b.manifest_digest.len > 0) {
+        /*
+         * Check with expected digest
+         * mainly for suit-condition-dependency-integrity
+         */
+        if (UsefulBuf_Compare(processor_context->b.manifest_digest, manifest_digest) != 0) {
+            return SUIT_ERR_FAILED_TO_VERIFY;
+        }
     }
 
     /* signatures */
@@ -2118,12 +2189,13 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
         }
         size_t j = 0;
         for (; j < SUIT_MAX_KEY_NUM; j++) {
+            suit_err_t result = SUIT_ERR_FAILED_TO_VERIFY;
             switch (processor_context->mechanisms[j].cose_tag) {
             case COSE_SIGN1_TAG:
-                result = suit_verify_cose_sign1(signature, &processor_context->mechanisms[j].key, &digest_buf);
+                result = suit_verify_cose_sign1(signature, &processor_context->mechanisms[j].key, &manifest_digest);
                 break;
             case COSE_MAC0_TAG:
-                result = suit_validate_cose_mac0(signature, &processor_context->mechanisms[j].key, &digest_buf);
+                result = suit_validate_cose_mac0(signature, &processor_context->mechanisms[j].key, &manifest_digest);
                 break;
             default:
                 continue;
@@ -2141,14 +2213,18 @@ suit_err_t suit_process_authentication_wrapper(QCBORDecodeContext *context,
         return suit_error_from_qcbor_error(error);
     }
 
+    if (verified) {
+        // trigger callbacks
 #if !defined(LIBCSUIT_DISABLE_SUIT_REPORT)
-    if (verified && processor_context->reporting_engine != NULL) {
-        suit_report_manifest_digest(
-            processor_context->reporting_engine,
-            *digest
-        );
-    }
+        if (processor_context->reporting_engine != NULL) {
+            suit_report_manifest_digest(
+                processor_context->reporting_engine,
+                manifest_digest
+            );
+        }
 #endif /* LIBCSUIT_DISABLE_SUIT_REPORT */
+        processor_context->b.manifest_digest = manifest_digest;
+    }
 
     return (verified) ? SUIT_SUCCESS : SUIT_ERR_FAILED_TO_VERIFY;
 }
@@ -2193,8 +2269,8 @@ suit_err_t suit_extract_common(suit_processor_context_t *processor_context,
                     processor_context->reason = SUIT_REPORT_REASON_CBOR_PARSE;
                     return SUIT_ERR_NO_MEMORY;
                 }
-                extracted->components[index].component = extracted->dependencies.dependency[j].dependency_metadata.prefix;
-                extracted->components[index].index = index;
+                extracted->encoded_components[index].encoded_component = extracted->dependencies.dependency[j].dependency_metadata.prefix;
+                extracted->encoded_components[index].index = index;
                 if (extracted->components_len < index + 1) {
                     extracted->components_len = index + 1;
                 }
@@ -2203,7 +2279,7 @@ suit_err_t suit_extract_common(suit_processor_context_t *processor_context,
 #endif /* !LIBCSUIT_DISABLE_COMMON_DEPENDENCIES */
 
         case SUIT_COMPONENTS:
-            result = suit_decode_components_from_item(context, &item, true, extracted->components, &tmp_len);
+            result = suit_decode_components_from_item(context, &item, true, extracted->encoded_components, &tmp_len);
             if (extracted->components_len < tmp_len) {
                 extracted->components_len = tmp_len;
             }
@@ -2285,7 +2361,7 @@ suit_err_t suit_extract_manifest(suit_processor_context_t *processor_context, su
             if (error != QCBOR_SUCCESS) {
                 goto out;
             }
-            if (!(item.uDataType == QCBOR_TYPE_INT64 || item.uDataType == QCBOR_TYPE_UINT64)) {
+            if (!suit_qcbor_value_is_uint64(&item)) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto out;
             }
@@ -2305,11 +2381,11 @@ suit_err_t suit_extract_manifest(suit_processor_context_t *processor_context, su
             if (error != QCBOR_SUCCESS) {
                 goto out;
             }
-            if (!(item.uDataType == QCBOR_TYPE_INT64 || item.uDataType == QCBOR_TYPE_UINT64)) {
+            if (!suit_qcbor_value_is_uint64(&item)) {
                 result = SUIT_ERR_INVALID_TYPE_OF_VALUE;
                 goto out;
             }
-            // TODO: check sequence-number
+            processor_context->b.manifest_sequence_number = item.val.uint64;
             break;
 
         case SUIT_COMMON:
@@ -2339,9 +2415,7 @@ suit_err_t suit_extract_manifest(suit_processor_context_t *processor_context, su
 
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
         case SUIT_MANIFEST_COMPONENT_ID:
-            result = suit_decode_component_identifiers_from_item(
-                &context, &item, true,
-                &extracted->manifest_component_id);
+            QCBORDecode_GetArray(&context, &item, &extracted->encoded_manifest_component_id);
             break;
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID */
 
@@ -2619,7 +2693,7 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
 
     /* extract items */
     QCBORDecode_Init(&context,
-                     (UsefulBufC){processor_context->manifest.ptr, processor_context->manifest.len},
+                     (UsefulBufC){processor_context->b.manifest.ptr, processor_context->b.manifest.len},
                      QCBOR_DECODE_MODE_NORMAL);
     QCBORDecode_EnterMap(&context, &item);
     size_t length = item.val.uCount;
@@ -2657,28 +2731,19 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
 #endif
 
             case SUIT_AUTHENTICATION:
-                result = suit_process_authentication_wrapper(&context, processor_context, &manifest_digest);
+                result = suit_process_authentication_wrapper(&context, processor_context);
                 if (result != SUIT_SUCCESS) {
                     processor_context->final_state = result;
-                    goto report;
-                }
-
-                /*
-                 * Check with expected digest
-                 * mainly for suit-condition-dependency-integrity
-                 */
-                if (processor_context->expected_manifest_digest.bytes.len > 0) {
-                    if (processor_context->expected_manifest_digest.bytes.len != manifest_digest.bytes.len ||
-                        memcmp(processor_context->expected_manifest_digest.bytes.ptr, manifest_digest.bytes.ptr, manifest_digest.bytes.len) != 0) {
-                        result = SUIT_ERR_FAILED_TO_VERIFY;
+                    if (result == SUIT_ERR_FAILED_TO_VERIFY) {
                         processor_context->reason = SUIT_REPORT_REASON_UNAUTHORIZED;
-                        goto report;
                     }
+                    goto report;
                 }
                 break;
 
             case SUIT_MANIFEST:
-                if (manifest_digest.algorithm_id == SUIT_ALGORITHM_ID_INVALID) {
+                result = suit_decode_digest(processor_context->b.manifest_digest, &manifest_digest);
+                if (result != SUIT_SUCCESS || manifest_digest.algorithm_id == SUIT_ALGORITHM_ID_INVALID) {
                     result = SUIT_ERR_AUTHENTICATION_NOT_FOUND;
                     processor_context->reason = SUIT_REPORT_REASON_UNAUTHORIZED;
                     goto report;
@@ -2783,11 +2848,14 @@ suit_err_t suit_process_envelope(suit_processor_context_t *processor_context)
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
     if (processor_context->process_flags.manifest_component_id) {
         processor_context->manifest_key = SUIT_MANIFEST_COMPONENT_ID;
-        if (extracted.manifest_component_id.len > 0) {
+        if (!UsefulBuf_IsNULLOrEmptyC(extracted.encoded_manifest_component_id)) {
             suit_store_args_t store = {0};
-            store.report_policy.val = 0;
-            store.dst = extracted.manifest_component_id;
-            store.src_buf = processor_context->manifest;
+            store.manifest_digest = processor_context->b.manifest_digest;
+            store.manifest_sequence_number = processor_context->b.manifest_sequence_number;
+            store.is_manifest_itself = true;
+
+            store.dst = extracted.encoded_manifest_component_id;
+            store.src_buf = processor_context->b.manifest;
             store.operation = SUIT_STORE;
 
             suit_callback_ret_t ret = {0};
@@ -2983,14 +3051,14 @@ suit_err_t suit_processor_add_manifest(
     if (processor_context->u.manifest_loaded) {
         return SUIT_ERR_INITIALIZED_AGAIN;
     }
-    if (manifest.ptr != processor_context->manifest.ptr) {
+    if (manifest.ptr != processor_context->b.manifest.ptr) {
         return SUIT_ERR_INVALID_VALUE;
     }
-    if (manifest.len > processor_context->manifest.len) {
+    if (manifest.len > processor_context->b.manifest.len) {
         return SUIT_ERR_INVALID_VALUE;
     }
 
-    processor_context->manifest = manifest;
+    processor_context->b.manifest = manifest;
     processor_context->left_len -= manifest.len;
     processor_context->process_flags = process_flags;
     processor_context->u.manifest_loaded = 1;
@@ -3062,7 +3130,7 @@ suit_err_t suit_processor_init(
     memset(processor_context, 0, sizeof(processor_context) + buf_size);
     // just to be sure
     processor_context->final_state = SUIT_SUCCESS;
-    processor_context->component = NULL;
+    processor_context->encoded_component = NULLUsefulBufC;
 
     // NULL is allowed, but it should be started if exists
     if (report_context != NULL && report_context->state != SUIT_REPORTING_ENGINE_STARTED) {
@@ -3077,9 +3145,9 @@ suit_err_t suit_processor_init(
     processor_context->allocated.len = buf_size;
     processor_context->left_len = buf_size;
 
-    processor_context->manifest.ptr = processor_context->buf;
-    processor_context->manifest.len = buf_size;
-    *manifest = UsefulBuf_Unconst(processor_context->manifest);
+    processor_context->b.manifest.ptr = processor_context->buf;
+    processor_context->b.manifest.len = buf_size;
+    *manifest = UsefulBuf_Unconst(processor_context->b.manifest);
 
     processor_context->u.initialized = 1;
     return SUIT_SUCCESS;

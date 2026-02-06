@@ -643,23 +643,6 @@ suit_err_t suit_encode_shared_sequence(suit_encoder_context_t *encoder_context,
     return suit_fix_suit_encode_buf(encoder_context, t_buf.len);
 }
 
-suit_err_t suit_encode_append_component_identifier(const suit_component_identifier_t *component_id,
-                                                   uint32_t label,
-                                                   QCBOREncodeContext *context)
-{
-    if (label > 0) {
-        QCBOREncode_OpenArrayInMapN(context, label);
-    }
-    else {
-        QCBOREncode_OpenArray(context);
-    }
-    for (size_t j = 0; j < component_id->len; j++) {
-        QCBOREncode_AddBytes(context, component_id->identifier[j]);
-    }
-    QCBOREncode_CloseArray(context);
-    return SUIT_SUCCESS;
-}
-
 suit_err_t suit_encode_common(suit_encoder_context_t *encoder_context,
                               const suit_common_t *suit_common,
                               UsefulBuf *buf)
@@ -688,7 +671,7 @@ suit_err_t suit_encode_common(suit_encoder_context_t *encoder_context,
             const suit_dependency_t *dependency = &suit_common->dependencies.dependency[i];
             QCBOREncode_AddUInt64(&context, dependency->index);
             QCBOREncode_OpenMap(&context);
-            suit_encode_append_component_identifier(&dependency->dependency_metadata.prefix, SUIT_DEPENDENCY_PREFIX, &context);
+            QCBOREncode_AddEncodedToMapN(&context, SUIT_DEPENDENCY_PREFIX, dependency->dependency_metadata.prefix);
             //TODO: SUIT_Dependency-extensions
             QCBOREncode_CloseMap(&context);
         }
@@ -700,7 +683,7 @@ suit_err_t suit_encode_common(suit_encoder_context_t *encoder_context,
     if (suit_common->components_len > 0) {
         QCBOREncode_OpenArrayInMapN(&context, SUIT_COMPONENTS);
         for (size_t i = 0; i < suit_common->components_len; i++) {
-            suit_encode_append_component_identifier(&suit_common->components[i].component, 0, &context);
+            QCBOREncode_AddEncoded(&context, suit_common->components[i].encoded_component);
         }
         QCBOREncode_CloseArray(&context);
     }
@@ -751,12 +734,7 @@ suit_err_t suit_encoder_context_text_lmap(const suit_text_lmap_t *text,
 
     // SUIT_Component_Identifier : {}
     for (size_t i = 0; i < text->component_len; i++) {
-        const suit_component_identifier_t *component = &text->component[i].key;
-        QCBOREncode_OpenArray(context);
-        for (size_t j = 0; j < component->len; j++) {
-            QCBOREncode_AddBytes(context, (UsefulBufC){.ptr = component->identifier[j].ptr, .len = component->identifier[j].len});
-        }
-        QCBOREncode_CloseArray(context);
+        QCBOREncode_AddEncoded(context, text->component[i].key);
         QCBOREncode_OpenMap(context);
         const suit_text_component_t *text_component = &text->component[i].text_component;
         if (text_component->vendor_name.len > 0) {
@@ -1089,15 +1067,15 @@ suit_err_t suit_encode_manifest(suit_encoder_context_t *encoder_context,
 
     // 4
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI)
-    if (manifest->reference_uri.len > 0) {
+    if (!UsefulBuf_IsNULLOrEmptyC(manifest->reference_uri)) {
         QCBOREncode_AddTextToMapN(&context, SUIT_REFERENCE_URI, (UsefulBufC){.ptr = manifest->reference_uri.ptr, .len = manifest->reference_uri.len});
     }
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_REFERENCE_URI */
 
     // 5
 #if !defined(LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID)
-    if (manifest->manifest_component_id.len > 0) {
-        suit_encode_append_component_identifier(&manifest->manifest_component_id, SUIT_MANIFEST_COMPONENT_ID, &context);
+    if (!UsefulBuf_IsNULLOrEmptyC(manifest->encoded_manifest_component_id)) {
+        QCBOREncode_AddEncodedToMapN(&context, SUIT_MANIFEST_COMPONENT_ID, manifest->encoded_manifest_component_id);
     }
 #endif /* !LIBCSUIT_DISABLE_MANIFEST_COMPONENT_ID */
 

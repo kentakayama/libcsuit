@@ -202,7 +202,7 @@ void suit_print_suit_parameters_from_item(QCBORDecodeContext *context,
                 printf(",\n");
             }
             printf("%*s/ system-component-id / 0: ", indent_space + indent_delta, "");
-            if (suit_decode_component_identifiers_from_item(context, item, false, &v.component_identifier)) {
+            if (suit_decode_component_identifier_from_item(context, item, false, &v.component_identifier)) {
                 return;
             }
             suit_print_component_identifier(&v.component_identifier);

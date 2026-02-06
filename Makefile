@@ -77,16 +77,16 @@ install: $(NAME).a $(PUBLIC_INTERFACE)
 
 .PHONY: install_so
 install_so: $(NAME).so $(PUBLIC_INTERFACE)
-	install -m 755 $(NAME).so $(DESTDIR)$(PREFIX)/lib/$(NAME).so.1.0.0
+	install -m 755 $(NAME).so $(DESTDIR)$(PREFIX)/lib/$(NAME).so.1.0.2
 	ln -sf $(NAME).so.1 $(DESTDIR)$(PREFIX)/lib/$(NAME).so
-	ln -sf $(NAME).so.1.0.0 $(DESTDIR)$(PREFIX)/lib$(NAME).so.1
+	ln -sf $(NAME).so.1.0.2 $(DESTDIR)$(PREFIX)/lib$(NAME).so.1
 
 .PHONY: uninstall
 uninstall:
 	$(RM) -d $(DESTDIR)$(PREFIX)/include/csuit/*
 	$(RM) -d $(DESTDIR)$(PREFIX)/include/csuit/
 	$(RM) $(addprefix $(DESTDIR)$(PREFIX)/lib/, \
-		$(NAME).a $(NAME).so $(NAME).so.1 $(NAME).so.1.0.0)
+		$(NAME).a $(NAME).so $(NAME).so.1 $(NAME).so.1.0.2)
 
 .PHONY: build_deps
 build_deps:

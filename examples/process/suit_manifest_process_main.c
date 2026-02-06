@@ -65,7 +65,12 @@ suit_err_t __wrap_suit_fetch_callback(suit_fetch_args_t fetch_args, suit_callbac
         return SUIT_ERR_NO_MEMORY;
     }
     char *tmp_filename = &filename[len];
-    result = suit_component_identifier_to_filename(&fetch_args.dst, SUIT_MAX_NAME_LENGTH, tmp_filename);
+    suit_component_identifier_t dst;
+    result = suit_decode_component_identifier(fetch_args.dst, &dst);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
+    result = suit_component_identifier_to_filename(&dst, SUIT_MAX_NAME_LENGTH, tmp_filename);
     if (result != SUIT_SUCCESS) {
         return result;
     }
@@ -292,6 +297,11 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
 
     bool match = true;
     suit_digest_t digest;
+    suit_component_identifier_t dst;
+    result = suit_decode_component_identifier(condition_args.dst, &dst);
+    if (result != SUIT_SUCCESS) {
+        return result;
+    }
     switch (condition_args.condition) {
     /* bstr */
     case SUIT_CONDITION_VENDOR_IDENTIFIER:
@@ -308,7 +318,7 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
         break;
     case SUIT_CONDITION_CHECK_CONTENT:
         condition_ret->consumed_parameter_keys[0] = SUIT_PARAMETER_CONTENT;
-        result = suit_condition_check_content(&condition_args.dst, condition_args.expected.str);
+        result = suit_condition_check_content(&dst, condition_args.expected.str);
         break;
 
     /* SUIT_Digest */
@@ -319,7 +329,7 @@ suit_err_t __wrap_suit_condition_callback(suit_condition_args_t condition_args, 
         if (result != SUIT_SUCCESS) {
             condition_ret->reason = SUIT_REPORT_REASON_CBOR_PARSE;
         }
-        result = suit_condition_image_match(&condition_args.dst, &digest, condition_args.expected.u64, match, condition_ret);
+        result = suit_condition_image_match(&dst, &digest, condition_args.expected.u64, match, condition_ret);
         break;
 
     case SUIT_CONDITION_COMPONENT_SLOT:
@@ -503,17 +513,25 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args, suit_callbac
         goto out;
     }
 
-    char src[SUIT_MAX_NAME_LENGTH];
-    char dst[SUIT_MAX_NAME_LENGTH];
+    char src_filename[SUIT_MAX_NAME_LENGTH];
+    char dst_filename[SUIT_MAX_NAME_LENGTH];
+    suit_component_identifier_t dst;
+    suit_component_identifier_t src;
+
     fetch_ret->on_src = false;
-    ssize_t len = suit_prefix_filename(dst, sizeof(dst));
+    ssize_t len = suit_prefix_filename(dst_filename, sizeof(dst_filename));
     if (len < 0) {
         result = SUIT_ERR_NO_MEMORY;
         fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
         goto out;
     }
-    char *tmp_filename = &dst[len];
-    result = suit_component_identifier_to_filename(&store_args.dst, SUIT_MAX_NAME_LENGTH, tmp_filename);
+    char *tmp_filename = &dst_filename[len];
+    result = suit_decode_component_identifier(store_args.dst, &dst);
+    if (result != SUIT_SUCCESS) {
+        fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+        goto out;
+    }
+    result = suit_component_identifier_to_filename(&dst, SUIT_MAX_NAME_LENGTH, tmp_filename);
     if (result != SUIT_SUCCESS) {
         fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
         goto out;
@@ -522,41 +540,57 @@ suit_err_t __wrap_suit_store_callback(suit_store_args_t store_args, suit_callbac
     switch (store_args.operation) {
     case SUIT_STORE:
         fetch_ret->on_src = false;
-        result = store_component(dst, store_args.src_buf, store_args.encryption_info, store_args.mechanisms, store_args.component_metadata_buf, fetch_ret);
+        result = store_component(dst_filename, store_args.src_buf, store_args.encryption_info, store_args.mechanisms, store_args.component_metadata_buf, fetch_ret);
         break;
     case SUIT_COPY:
         fetch_ret->on_src = true;
-        len = suit_prefix_filename(src, sizeof(src));
+        len = suit_prefix_filename(src_filename, sizeof(src_filename));
         if (len < 0) {
             result = SUIT_ERR_NO_MEMORY;
             fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
             break;
         }
-        tmp_filename = &src[len];
-        result = suit_component_identifier_to_filename(&store_args.src, SUIT_MAX_NAME_LENGTH, tmp_filename);
+        tmp_filename = &src_filename[len];
+        result = suit_decode_component_identifier(store_args.src, &src);
         if (result != SUIT_SUCCESS) {
             fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+            break;
         }
-        result = copy_component(dst, src, store_args.encryption_info, store_args.mechanisms, store_args.component_metadata_buf, fetch_ret);
+        result = suit_decode_component_identifier(store_args.src, &src);
+        if (result != SUIT_SUCCESS) {
+            fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+            break;
+        }
+        result = suit_component_identifier_to_filename(&src, SUIT_MAX_NAME_LENGTH, tmp_filename);
+        if (result != SUIT_SUCCESS) {
+            fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+            break;
+        }
+        result = copy_component(dst_filename, src_filename, store_args.encryption_info, store_args.mechanisms, store_args.component_metadata_buf, fetch_ret);
         break;
     case SUIT_SWAP:
         fetch_ret->on_src = true;
-        len = suit_prefix_filename(src, sizeof(src));
+        len = suit_prefix_filename(src_filename, sizeof(src_filename));
         if (len < 0) {
             result = SUIT_ERR_NO_MEMORY;
             fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
             break;
         }
-        tmp_filename = &src[len];
-        result = suit_component_identifier_to_filename(&store_args.src, SUIT_MAX_NAME_LENGTH, tmp_filename);
+        tmp_filename = &src_filename[len];
+        result = suit_decode_component_identifier(store_args.src, &src);
+        if (result != SUIT_SUCCESS) {
+            fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
+            break;
+        }
+        result = suit_component_identifier_to_filename(&src, SUIT_MAX_NAME_LENGTH, tmp_filename);
         if (result == SUIT_SUCCESS) {
-            result = swap_component(dst, src, fetch_ret);
+            result = swap_component(dst_filename, src_filename, fetch_ret);
             //result = (renameat2(AT_FDCWD, dst, AT_FDCWD, src, RENAME_EXCHANGE) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
         }
         break;
     case SUIT_UNLINK:
         fetch_ret->on_src = false;
-        result = (unlink(dst) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
+        result = (unlink(dst_filename) == 0) ? SUIT_SUCCESS : SUIT_ERR_FATAL;
         if (result != SUIT_SUCCESS) {
             fetch_ret->reason = SUIT_REPORT_REASON_OPERATION_FAILED;
         }

@@ -51,9 +51,6 @@ suit_err_t suit_use_suit_encode_buf(suit_encoder_context_t *encoder_context,
 suit_err_t suit_fix_suit_encode_buf(suit_encoder_context_t *encoder_context,
                                     const size_t used_len);
 
-suit_err_t suit_encode_append_component_identifier(const suit_component_identifier_t *component_id,
-                                                   uint32_t label,
-                                                   QCBOREncodeContext *context);
 suit_err_t suit_encode_append_version_match(const suit_version_match_t *version_match,
                                             const uint32_t label,
                                             QCBOREncodeContext *context);

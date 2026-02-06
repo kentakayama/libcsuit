@@ -36,6 +36,17 @@ suit_err_t suit_decode_envelope(UsefulBufC buf,
                                 suit_envelope_t *envelope,
                                 suit_mechanism_t *mechanism);
 
+suit_err_t suit_decode_component_identifier_from_item(QCBORDecodeContext *context,
+                                                      QCBORItem *item,
+                                                      bool next,
+                                                      suit_component_identifier_t *component_identifier);
+
+suit_err_t suit_decode_components_from_item(QCBORDecodeContext *context,
+                                            QCBORItem *item,
+                                            bool next,
+                                            suit_encoded_component_with_index_t *components,
+                                            uint8_t *num);
+
 /*!
     \brief  Decode array of SUIT_Component_Identifier.
 
@@ -44,8 +55,8 @@ suit_err_t suit_decode_envelope(UsefulBufC buf,
 
     \return     This returns one of the error codes defined by \ref suit_err_t.
  */
-suit_err_t suit_decode_component_identifiers(UsefulBufC buf,
-                                             suit_component_identifier_t *identifier);
+suit_err_t suit_decode_component_identifier(UsefulBufC buf,
+                                            suit_component_identifier_t *identifier);
 
 /*!
     \brief  Decode bstr-wrapped command sequence.
