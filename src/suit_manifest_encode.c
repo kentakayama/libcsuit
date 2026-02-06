@@ -643,23 +643,6 @@ suit_err_t suit_encode_shared_sequence(suit_encoder_context_t *encoder_context,
     return suit_fix_suit_encode_buf(encoder_context, t_buf.len);
 }
 
-suit_err_t suit_encode_append_component_identifier(const suit_component_identifier_t *component_id,
-                                                   uint32_t label,
-                                                   QCBOREncodeContext *context)
-{
-    if (label > 0) {
-        QCBOREncode_OpenArrayInMapN(context, label);
-    }
-    else {
-        QCBOREncode_OpenArray(context);
-    }
-    for (size_t j = 0; j < component_id->len; j++) {
-        QCBOREncode_AddBytes(context, component_id->identifier[j]);
-    }
-    QCBOREncode_CloseArray(context);
-    return SUIT_SUCCESS;
-}
-
 suit_err_t suit_encode_common(suit_encoder_context_t *encoder_context,
                               const suit_common_t *suit_common,
                               UsefulBuf *buf)
